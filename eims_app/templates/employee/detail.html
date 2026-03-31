@@ -1,0 +1,88 @@
+{% extends 'base/base.html' %}
+
+{% block title %}员工详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:employee_list' %}">员工管理</a></li>
+<li class="breadcrumb-item active">{{ employee.name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> 员工详情 - {{ employee.name }}</h5>
+                    <div>
+                        <a href="{% url 'eims_app:employee_edit' employee.pk %}" class="btn btn-sm btn-warning me-2">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </a>
+                        <a href="{% url 'eims_app:employee_list' %}" class="btn btn-sm btn-light">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary mb-3"><i class="bi bi-person-badge"></i> 基本信息</h6>
+                    <div class="row mb-4">
+                        {% for item in field_data %}
+                            {% if item.name in 'employee_code,name,gender,id_card,native_place,ethnic,education,entry_time,leave_time' %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">{{ item.label }}</label>
+                                <p class="mb-0 fw-bold">
+                                    {% if item.has_choices and item.value %}
+                                        {{ item.value }}
+                                    {% elif item.type == 'DateField' and item.value %}
+                                        {{ item.value|date:"Y-m-d" }}
+                                    {% else %}
+                                        {{ item.value|default:"-" }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="text-primary mb-3"><i class="bi bi-telephone"></i> 联系方式</h6>
+                    <div class="row mb-4">
+                        {% for item in field_data %}
+                            {% if item.name in 'mobile,home_phone,address,wechat,emergency_contact,emergency_phone' %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">{{ item.label }}</label>
+                                <p class="mb-0 fw-bold">{{ item.value|default:"-" }}</p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="text-primary mb-3"><i class="bi bi-briefcase"></i> 职务信息</h6>
+                    <div class="row">
+                        {% for item in field_data %}
+                            {% if item.name in 'admin_position,tech_position,professional_qualification,professional_title,job_qualification' %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">{{ item.label }}</label>
+                                <p class="mb-0 fw-bold">{{ item.value|default:"-" }}</p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if employee.remark %}
+                    <hr>
+                    <h6 class="text-primary mb-3"><i class="bi bi-sticky"></i> 备注</h6>
+                    <div class="alert alert-light">
+                        {{ employee.remark }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

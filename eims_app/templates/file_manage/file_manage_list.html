@@ -1,0 +1,192 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}文件管理{% endblock %}
+
+{% block extra_css %}
+<!-- 文件名称链接样式 - 内联到 HTML -->
+<style>
+    .file-name-link {
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        color: inherit !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+    
+    .file-name-link:hover {
+        color: #0d6efd !important;
+        font-weight: 700 !important;
+        font-size: 1.05em !important;
+        text-shadow: 0 0 8px rgba(13, 110, 253, 0.3) !important;
+        transform: translateX(3px) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- 页面标题 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>文件管理
+                </h2>
+                <div class="btn-group">
+                    {% if request.user|has_perm:'eims_app.add_filemanage' %}
+                    <a href="{% url 'eims_app:file_manage_add' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>上传文件
+                    </a>
+                    <a href="{% url 'eims_app:file_manage_batch_upload_page' %}" class="btn btn-success">
+                        <i class="bi bi-cloud-upload me-1"></i>批量上传
+                    </a>
+                    {% else %}
+                    <!-- 非超级管理员显示为灰色不可用状态 -->
+                    <button type="button" class="btn btn-secondary disabled" title="上传文件（仅超级管理员）">
+                        <i class="bi bi-plus-lg me-1"></i>上传文件
+                    </button>
+                    <button type="button" class="btn btn-secondary disabled" title="批量上传（仅超级管理员）">
+                        <i class="bi bi-cloud-upload me-1"></i>批量上传
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 搜索和过滤 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">搜索</label>
+                            <input type="text" class="form-control" name="search" 
+                                   value="{{ search_key }}" placeholder="搜索文件名称、编号或摘要">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">文件类别</label>
+                            <input type="text" class="form-control" name="file_category" 
+                                   value="{{ file_category }}" placeholder="输入文件类别">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-1"></i>搜索
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 文件列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-folder me-2"></i>文件列表</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if files %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="80">ID</th>
+                                    <th width="120">文件类别</th>
+                                    <th width="120">文件编号</th>
+                                    <th>文件名称</th>
+                                    <th width="80">格式</th>
+                                    <th width="150">内容摘要</th>
+                                    <th width="100">上传人</th>
+                                    <th width="160">发布时间</th>
+                                    <th width="160">更新时间</th>
+                                    <th width="100">大小</th>
+                                    <th width="220">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td>{{ file.id }}</td>
+                                    <td>
+                                        {{ file.file_category|default:'-' }}
+                                    </td>
+                                    <td>{{ file.file_number|default:'-' }}</td>
+                                    <td>
+                                        {% if file.file_path %}
+                                            <a href="{% url 'eims_app:file_manage_preview' file.id %}" 
+                                               class="file-name-link" 
+                                               title="点击预览：{{ file.file_name }}"
+                                               target="_blank">
+                                                <strong><i class="bi bi-file-earmark me-1"></i>{{ file.file_name }}</strong>
+                                            </a>
+                                        {% else %}
+                                            <strong>{{ file.file_name }}</strong>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if file.file_format %}
+                                            <span class="badge bg-secondary">{{ file.file_format }}</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ file.content_summary|truncatechars:20|default:'-' }}
+                                        </small>
+                                    </td>
+                                    <td>{{ file.uploader }}</td>
+                                    <td>{{ file.publish_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td>{{ file.update_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        <small>{{ file.file_size|filesizeformat }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- 查看和下载按钮 - 所有用户可用 -->
+                                            <a href="{% url 'eims_app:file_manage_detail' file.id %}" 
+                                               class="btn btn-info btn-sm" title="查看详情">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'eims_app:file_manage_download' file.id %}" 
+                                               class="btn btn-success btn-sm" title="下载">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            {% if request.user|has_perm:'eims_app.change_filemanage' %}
+                                            <!-- 编辑和删除按钮 - 仅超级管理员可用 -->
+                                            <a href="{% url 'eims_app:file_manage_edit' file.id %}" 
+                                               class="btn btn-warning btn-sm" title="编辑">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'eims_app:file_manage_delete' file.id %}" 
+                                               class="btn btn-danger btn-sm" 
+                                               title="删除"
+                                               onclick="if(confirm('确定要删除文件吗？')) return true; else return false;">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            {% else %}
+                                            <!-- 非超级管理员显示为灰色不可用状态 -->
+                                            <button type="button" class="btn btn-secondary btn-sm disabled" title="编辑（仅超级管理员）">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm disabled" title="删除（仅超级管理员）">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-folder-x display-1 text-muted"></i>
+                        <p class="mt-3">暂无文件</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

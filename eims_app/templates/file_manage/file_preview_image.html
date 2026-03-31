@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}文件预览 - {{ file.file_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- 页面标题 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">
+                    <i class="bi bi-image me-2"></i>图片预览
+                </h4>
+                <a href="{% url 'eims_app:file_manage_detail' file.id %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>返回详情
+                </a>
+            </div>
+
+            <!-- 图片预览 -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-image me-2"></i>{{ file.file_name }}</h5>
+                </div>
+                <div class="card-body text-center bg-light">
+                    <img src="{{ file.file_path.url }}" 
+                         alt="{{ file.file_name }}" 
+                         class="img-fluid rounded shadow-sm"
+                         style="max-height: 80vh; object-fit: contain;">
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="bi bi-file-earmark me-1"></i>{{ file.file_name }} | 
+                        <i class="bi bi-arrows-fullscreen me-1"></i>{{ file.file_size|filesizeformat }} |
+                        <i class="bi bi-person me-1"></i>{{ file.uploader }} |
+                        <i class="bi bi-clock me-1"></i>{{ file.publish_time|date:"Y-m-d H:i:s" }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="mt-4 text-center">
+                <a href="{% url 'eims_app:file_manage_download' file.id %}" class="btn btn-success">
+                    <i class="bi bi-download me-1"></i>下载文件
+                </a>
+                <a href="{% url 'eims_app:file_manage_detail' file.id %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

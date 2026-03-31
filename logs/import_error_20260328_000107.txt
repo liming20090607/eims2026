@@ -1,0 +1,9 @@
+导入错误详情 - 2026-03-28 00:01:07
+成功：1 条，失败：2 条
+
+================================================================================
+
+1. 第2行：cannot access local variable 'logger' where it is not associated with a value
+
+2. 第54行：NOT NULL constraint failed: eims_app_projectdetail.contract_amount
+

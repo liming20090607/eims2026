@@ -1,0 +1,146 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}文件详情{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>文件详情</h5>
+                    <div>
+                        <a href="{% url 'eims_app:file_manage_download' file.id %}" class="btn btn-success btn-sm">
+                            <i class="bi bi-download me-1"></i>下载
+                        </a>
+                        {% if request.user|has_perm:'eims_app.change_filemanage' %}
+                        <a href="{% url 'eims_app:file_manage_edit' file.id %}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil me-1"></i>编辑
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'eims_app:file_manage_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>返回
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- 左侧：文件信息 -->
+                        <div class="col-md-6">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-info-circle me-1"></i>基本信息
+                            </h6>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">文件 ID：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">{{ file.id }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">文件类别：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">
+                                        <span class="badge bg-info">{{ file.file_category }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">文件编号：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">{{ file.file_number|default:'-' }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">文件名称：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext fw-bold">{{ file.file_name }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">文件大小：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">{{ file.file_size|filesizeformat }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">文件类型：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">
+                                        <code>{{ file.file_type|default:'未知' }}</code>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 右侧：时间和人员信息 -->
+                        <div class="col-md-6">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-clock-history me-1"></i>时间信息
+                            </h6>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">发布时间：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">{{ file.publish_time|date:"Y-m-d H:i:s" }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">更新时间：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">{{ file.update_time|date:"Y-m-d H:i:s" }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label fw-bold">上传人：</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-plaintext">{{ file.uploader }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 内容摘要 -->
+                    <div class="mt-4">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-card-text me-1"></i>内容摘要
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ file.content_summary|default:'无'|linebreaksbr }}
+                        </div>
+                    </div>
+                    
+                    <!-- 备注信息 -->
+                    <div class="mt-4">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-chat-left-text me-1"></i>备注信息
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ file.remark|default:'无'|linebreaksbr }}
+                        </div>
+                    </div>
+                    
+                    <!-- 文件路径 -->
+                    <div class="mt-4">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-folder me-1"></i>文件路径
+                        </h6>
+                        <div class="alert alert-secondary mb-0">
+                            <code>{{ file.file_path.name }}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

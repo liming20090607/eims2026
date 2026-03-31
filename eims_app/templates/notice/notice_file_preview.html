@@ -1,0 +1,95 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 面包屑导航 -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:notice_list' %}">通知公告</a></li>
+            <li class="breadcrumb-item"><a href="{{ back_url }}">公告详情</a></li>
+            <li class="breadcrumb-item active">文件预览</li>
+        </ol>
+    </nav>
+
+    <!-- 页面标题 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-file-earmark-text me-2"></i>文件预览</h3>
+        <div>
+            <a href="{{ back_url }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>返回
+            </a>
+            <a href="{% url 'eims_app:notice_file_download' pk=notice.pk %}" class="btn btn-primary">
+                <i class="bi bi-download me-1"></i>下载
+            </a>
+        </div>
+    </div>
+
+    <!-- 文件信息卡片 -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <i class="bi bi-info-circle me-1"></i>文件信息
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>文件名称：</strong>{{ notice.file_name }}</p>
+                    <p><strong>文件大小：</strong>
+                        {% if notice.file_size >= 1048576 %}
+                            {{ notice.file_size|floatformat:2 }} MB
+                        {% elif notice.file_size >= 1024 %}
+                            {{ notice.file_size|floatformat:2 }} KB
+                        {% else %}
+                            {{ notice.file_size }} B
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>文件类型：</strong>{{ file_type|upper }}</p>
+                    <p><strong>所属通知：</strong>{{ notice.notice_title }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文件预览区域 -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <i class="bi bi-eye me-1"></i>在线预览
+        </div>
+        <div class="card-body p-0">
+            {% if file_type == '.pdf' %}
+                <!-- PDF 预览 -->
+                <iframe src="{{ notice.attach_file.url }}" width="100%" height="600px" style="border: none;"></iframe>
+            
+            {% elif file_type in '.jpg,.jpeg,.png,.gif,.bmp,.webp' %}
+                <!-- 图片预览 -->
+                <div class="text-center p-4" style="background-color: #f8f9fa;">
+                    <img src="{{ notice.attach_file.url }}" alt="{{ notice.file_name }}" class="img-fluid" style="max-width: 100%; max-height: 600px;">
+                </div>
+            
+            {% elif file_type in '.txt,.md,.log' %}
+                <!-- 文本文件预览 -->
+                <pre class="p-4" style="background-color: #f8f9fa; overflow-x: auto; max-height: 600px; overflow-y: auto;">
+                    {% if notice.attach_file %}
+                        {{ notice.attach_file.read|escape }}
+                    {% endif %}
+                </pre>
+            
+            {% else %}
+                <!-- 其他文件类型 - 显示提示 -->
+                <div class="alert alert-info m-4" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>暂不支持在线预览</strong><br>
+                    该文件类型（{{ file_type }}）暂不支持在线预览，请下载后查看。
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 返回顶部按钮 -->
+    <button class="btn btn-primary position-fixed bottom-0 end-0 m-4" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+</div>
+{% endblock %}

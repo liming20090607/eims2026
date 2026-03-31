@@ -1,0 +1,238 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.id %}编辑产值回款{% else %}添加产值回款{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-cash-coin me-2"></i>{% if form.instance.id %}编辑产值回款{% else %}添加产值回款{% endif %}</h2>
+                <a href="{% url 'eims_app:output_payment_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg me-1"></i>取消
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>基本信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.project.id_for_label }}" class="form-label">项目 <span class="text-danger">*</span></label>
+                                {{ form.project }}
+                                {% if form.project.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.project.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.month.id_for_label }}" class="form-label">月份 <span class="text-danger">*</span></label>
+                                {{ form.month }}
+                                {% if form.month.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.month.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>产值数据</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.monthly_output.id_for_label }}" class="form-label">当月产值 (万元)</label>
+                                {{ form.monthly_output }}
+                                {% if form.monthly_output.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.monthly_output.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.cumulative_output.id_for_label }}" class="form-label">累计产值 (万元)</label>
+                                {{ form.cumulative_output }}
+                                {% if form.cumulative_output.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.cumulative_output.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-cash-stack me-2"></i>回款数据</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.contract_total.id_for_label }}" class="form-label">合同总额 (元)</label>
+                                {{ form.contract_total }}
+                                {% if form.contract_total.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.contract_total.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.actual_payment.id_for_label }}" class="form-label">本月实际回款 (元)</label>
+                                {{ form.actual_payment }}
+                                {% if form.actual_payment.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.actual_payment.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.cumulative_received.id_for_label }}" class="form-label">累计已收款 (元)</label>
+                                {{ form.cumulative_received }}
+                                {% if form.cumulative_received.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.cumulative_received.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.contract_receivable.id_for_label }}" class="form-label">合同应收款 (元)</label>
+                                {{ form.contract_receivable }}
+                                {% if form.contract_receivable.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.contract_receivable.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.near_term_receivable.id_for_label }}" class="form-label">近期待收款 (元)</label>
+                                {{ form.near_term_receivable }}
+                                {% if form.near_term_receivable.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.near_term_receivable.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>回款详情</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="{{ form.payment_basis.id_for_label }}" class="form-label">合同付款依据</label>
+                            {{ form.payment_basis }}
+                            {% if form.payment_basis.errors %}
+                                <div class="invalid-feedback d-block">{{ form.payment_basis.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.last_payment_situation.id_for_label }}" class="form-label">上次回款情况</label>
+                            {{ form.last_payment_situation }}
+                            {% if form.last_payment_situation.errors %}
+                                <div class="invalid-feedback d-block">{{ form.last_payment_situation.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.recent_payment_request.id_for_label }}" class="form-label">近期请款情况</label>
+                            {{ form.recent_payment_request }}
+                            {% if form.recent_payment_request.errors %}
+                                <div class="invalid-feedback d-block">{{ form.recent_payment_request.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.next_month_request.id_for_label }}" class="form-label">下个月请款</label>
+                            {{ form.next_month_request }}
+                            {% if form.next_month_request.errors %}
+                                <div class="invalid-feedback d-block">{{ form.next_month_request.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.next_month_plan.id_for_label }}" class="form-label">下月计划收款 (元)</label>
+                                {{ form.next_month_plan }}
+                                {% if form.next_month_plan.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.next_month_plan.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment_measures.id_for_label }}" class="form-label">请款措施</label>
+                                {{ form.payment_measures }}
+                                {% if form.payment_measures.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.payment_measures.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.need_assistance.id_for_label }}" class="form-label">需要协助</label>
+                                {{ form.need_assistance }}
+                                {% if form.need_assistance.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.need_assistance.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment_date.id_for_label }}" class="form-label">回款日期</label>
+                                {{ form.payment_date }}
+                                {% if form.payment_date.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.payment_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">回款方式</label>
+                                {{ form.payment_method }}
+                                {% if form.payment_method.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.payment_method.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.remark.id_for_label }}" class="form-label">备注</label>
+                            {{ form.remark }}
+                            {% if form.remark.errors %}
+                                <div class="invalid-feedback d-block">{{ form.remark.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-lg me-1"></i>保存
+                    </button>
+                    <a href="{% url 'eims_app:output_payment_list' %}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-lg me-1"></i>取消
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 引入公式计算功能 -->
+<script src="{% static 'js/formula-calculation.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化公式计算功能
+    if (window.formulaCalculation) {
+        window.formulaCalculation.init();
+        console.log('产值回款表单 - 公式计算功能已初始化');
+    }
+    
+    // 在表单提交前确保所有字段都已计算公式
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // 获取所有需要计算的输入框
+            const numericInputs = form.querySelectorAll('input[type="number"], input[type="text"]');
+            numericInputs.forEach(function(input) {
+                const value = input.value.trim();
+                if (value && (value.includes('+') || value.includes('-') || 
+                    value.includes('*') || value.includes('/') || 
+                    value.includes('%') || value.startsWith('='))) {
+                    const result = window.formulaCalculation.safeCalculate(value);
+                    if (result !== null) {
+                        input.value = result.toFixed(2);
+                        console.log(`公式计算：${value} = ${input.value}`);
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

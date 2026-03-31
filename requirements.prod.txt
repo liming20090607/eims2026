@@ -1,0 +1,30 @@
+# Django 项目生产环境依赖
+
+# 核心框架
+Django==5.2
+gunicorn==21.2.0  # WSGI HTTP 服务器
+
+# 数据库驱动（根据选择的数据库取消注释）
+# PostgreSQL
+psycopg2-binary==2.9.9
+# MySQL
+# mysqlclient==2.2.0
+
+# 环境变量管理
+python-dotenv==1.0.0
+
+# 静态文件处理
+whitenoise==6.6.0  # 可选，简化静态文件部署
+
+# 安全增强
+django-cors-headers==4.3.1  # CORS 支持
+
+# 性能优化
+django-redis==5.4.0  # Redis 缓存（可选）
+redis==5.0.1
+
+# 监控和日志（可选）
+# sentry-sdk==1.39.1
+
+# 项目原有依赖
+django-widget-tweaks==1.5.0

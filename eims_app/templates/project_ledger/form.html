@@ -1,0 +1,661 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目台账</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+    .form-section {
+        margin-bottom: 32px;
+    }
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+    }
+    .section-title i {
+        margin-right: 8px;
+        color: #667eea;
+    }
+    .form-label {
+        font-weight: 500;
+        color: #1e293b;
+        margin-bottom: 6px;
+    }
+    .required::after {
+        content: " *";
+        color: red;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .help-text {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- 返回按钮 -->
+            <div class="mb-4">
+                <a href="{% url 'eims_app:project_ledger_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+            
+            <!-- 表单卡片 -->
+            <div class="form-card">
+                <h3 class="mb-4">{{ title }}</h3>
+                
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- 基础信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="bi bi-journal-text"></i>
+                            基础信息
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">项目月报</label>
+                                {{ form.monthly_report_required }}
+                                <div class="help-text">是否需要提交月度报告</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">项目编号</label>
+                                {{ form.project_code }}
+                                {% if form.project_code.errors %}
+                                    <div class="text-danger small mt-1">{{ form.project_code.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">合同编号</label>
+                                {{ form.contract_code }}
+                                {% if form.contract_code.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contract_code.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">项目名称</label>
+                                {{ form.project_name }}
+                                {% if form.project_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.project_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">项目状态</label>
+                                <div class="input-group">
+                                    {{ form.project_status }}
+                                    <button type="button" class="btn btn-outline-primary" onclick="showAddProjectStatusModal()" title="添加新的项目状态">
+                                        <i class="bi bi-plus-circle"></i> 新增
+                                    </button>
+                                </div>
+                                {% if form.project_status.errors %}
+                                    <div class="text-danger small mt-1">{{ form.project_status.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted"><i class="bi bi-info-circle"></i> 选择或添加项目当前状态</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">合同状态</label>
+                                <div class="input-group">
+                                    {{ form.contract_status }}
+                                    <button type="button" class="btn btn-outline-primary" onclick="showAddContractStatusModal()" title="添加新的合同状态">
+                                        <i class="bi bi-plus-circle"></i> 新增
+                                    </button>
+                                </div>
+                                {% if form.contract_status.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contract_status.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted"><i class="bi bi-info-circle"></i> 选择或添加合同执行状态</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 合同信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="bi bi-file-earmark-text"></i>
+                            合同信息
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">合同甲方</label>
+                                {{ form.contract_party_a }}
+                                {% if form.contract_party_a.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contract_party_a.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">合同乙方</label>
+                                {{ form.contract_party_b }}
+                                {% if form.contract_party_b.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contract_party_b.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">签订日期</label>
+                                {{ form.signing_date }}
+                                {% if form.signing_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.signing_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">合同总价 (元)</label>
+                                {{ form.contract_amount }}
+                                {% if form.contract_amount.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contract_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">累计回款</label>
+                                {{ form.cumulative_payment }}
+                                {% if form.cumulative_payment.errors %}
+                                    <div class="text-danger small mt-1">{{ form.cumulative_payment.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">合同余款</label>
+                                {{ form.contract_balance }}
+                                {% if form.contract_balance.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contract_balance.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">付款约定</label>
+                                {{ form.payment_agreement }}
+                                {% if form.payment_agreement.errors %}
+                                    <div class="text-danger small mt-1">{{ form.payment_agreement.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">合同文本</label>
+                                {{ form.contract_text }}
+                                <div class="help-text">支持 PDF、Word 等格式文件</div>
+                                {% if form.contract_text.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contract_text.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目属性 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="bi bi-building"></i>
+                            项目属性
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">项目规模</label>
+                                {{ form.project_scale }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">项目总投资 (万元)</label>
+                                {{ form.project_investment }}
+                                {% if form.project_investment.errors %}
+                                    <div class="text-danger small mt-1">{{ form.project_investment.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">项目地址</label>
+                                {{ form.project_address }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">约定人员配备</label>
+                                {{ form.agreed_staffing }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">服务周期 (月)</label>
+                                {{ form.service_period_months }}
+                                {% if form.service_period_months.errors %}
+                                    <div class="text-danger small mt-1">{{ form.service_period_months.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 进度管理 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="bi bi-calendar-event"></i>
+                            进度管理
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">进场通知</label>
+                                {{ form.entry_notice }}
+                                <input type="text" class="form-control mt-1" id="entry_notice_other" 
+                                       placeholder="请输入其他状态" style="display:none;">
+                                {% if form.entry_notice.errors %}
+                                    <div class="text-danger small mt-1">{{ form.entry_notice.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">服务开始时间</label>
+                                {{ form.service_start_date }}
+                                {% if form.service_start_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.service_start_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">进场时间</label>
+                                {{ form.entry_time }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">服务到期日期</label>
+                                {{ form.service_deadline }}
+                                {% if form.service_deadline.errors %}
+                                    <div class="text-danger small mt-1">{{ form.service_deadline.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">实际开工日期</label>
+                                {{ form.actual_start_date }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">预计竣工日期</label>
+                                {{ form.estimated_completion_date }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">进场通知书</label>
+                                {{ form.entry_notice_document }}
+                                {% if form.entry_notice_document.errors %}
+                                    <div class="text-danger small mt-1">{{ form.entry_notice_document.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">报建情况</label>
+                                {{ form.construction_permit_status }}
+                                <input type="text" class="form-control mt-1" id="construction_permit_status_other" 
+                                       placeholder="请输入其他状态" style="display:none;">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">施工许可证</label>
+                                {{ form.construction_permit }}
+                                {% if form.construction_permit.errors %}
+                                    <div class="text-danger small mt-1">{{ form.construction_permit.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 延期管理 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="bi bi-clock-history"></i>
+                            延期管理
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">延期约定</label>
+                                {{ form.extension_agreement }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">实际延期情况</label>
+                                {{ form.actual_extension_status }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 人员信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="bi bi-people"></i>
+                            人员信息
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">项目总监</label>
+                                {{ form.project_director }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">现场负责人</label>
+                                {{ form.project_manager }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">联系电话</label>
+                                {{ form.contact_phone }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 备注 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="bi bi-chat-left-text"></i>
+                            备注
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">备注</label>
+                                {{ form.remark }}
+                                {% if form.remark.errors %}
+                                    <div class="text-danger small mt-1">{{ form.remark.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>保存
+                        </button>
+                        <a href="{% url 'eims_app:project_ledger_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 数据列表 - 支持手动输入选项 -->
+    <datalist id="project_status_list">
+        <option value="未开工">
+        <option value="在施工">
+        <option value="在停工">
+        <option value="已完工">
+    </datalist>
+    <datalist id="contract_status_list">
+        <option value="审批中">
+        <option value="执行中">
+        <option value="已解除">
+        <option value="已中止">
+        <option value="已终止">
+    </datalist>
+    <datalist id="construction_permit_status_list">
+        <option value="未办理">
+        <option value="办理中">
+        <option value="已办理">
+    </datalist>
+    <datalist id="entry_notice_list">
+        <option value="未提交">
+        <option value="已提交">
+        <option value="已审批">
+    </datalist>
+    
+    <!-- 引入公式计算功能 -->
+    <script src="{% static 'js/formula-calculation.js' %}"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化公式计算功能
+        if (window.formulaCalculation) {
+            window.formulaCalculation.init();
+            console.log('公式计算功能已初始化');
+        }
+        
+        // 在表单提交前确保所有字段都已计算公式
+        const projectForm = document.querySelector('form');
+        if (projectForm) {
+            projectForm.addEventListener('submit', function(e) {
+                // 获取所有需要计算的输入框
+                const numericInputs = projectForm.querySelectorAll('input[type="number"], input[type="text"]');
+                numericInputs.forEach(function(input) {
+                    const value = input.value.trim();
+                    if (value && (value.includes('+') || value.includes('-') || 
+                        value.includes('*') || value.includes('/') || 
+                        value.includes('%') || value.startsWith('='))) {
+                        const result = window.formulaCalculation.safeCalculate(value);
+                        if (result !== null) {
+                            input.value = result.toFixed(2);
+                            console.log(`公式计算：${value} = ${input.value}`);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // 项目状态
+        const projectStatusSelect = document.getElementById('id_project_status');
+        const projectStatusOther = document.getElementById('project_status_other');
+        if (projectStatusSelect) {
+            projectStatusSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    projectStatusOther.style.display = 'block';
+                    projectStatusOther.focus();
+                } else {
+                    projectStatusOther.style.display = 'none';
+                    projectStatusOther.value = '';
+                }
+            });
+        }
+        
+        // 合同状态
+        const contractStatusSelect = document.getElementById('id_contract_status');
+        const contractStatusOther = document.getElementById('contract_status_other');
+        if (contractStatusSelect) {
+            contractStatusSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    contractStatusOther.style.display = 'block';
+                    contractStatusOther.focus();
+                } else {
+                    contractStatusOther.style.display = 'none';
+                    contractStatusOther.value = '';
+                }
+            });
+        }
+        
+        // 报建情况
+        const permitStatusSelect = document.getElementById('id_construction_permit_status');
+        const permitStatusOther = document.getElementById('construction_permit_status_other');
+        if (permitStatusSelect) {
+            permitStatusSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    permitStatusOther.style.display = 'block';
+                    permitStatusOther.focus();
+                } else {
+                    permitStatusOther.style.display = 'none';
+                    permitStatusOther.value = '';
+                }
+            });
+        }
+        
+        // 进场通知
+        const entryNoticeSelect = document.getElementById('id_entry_notice');
+        const entryNoticeOther = document.getElementById('entry_notice_other');
+        if (entryNoticeSelect) {
+            entryNoticeSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    entryNoticeOther.style.display = 'block';
+                    entryNoticeOther.focus();
+                } else {
+                    entryNoticeOther.style.display = 'none';
+                    entryNoticeOther.value = '';
+                }
+            });
+        }
+    });
+    
+    // 显示添加项目状态模态框
+    function showAddProjectStatusModal() {
+        const modal = new bootstrap.Modal(document.getElementById('addProjectStatusModal'));
+        modal.show();
+    }
+    
+    // 保存新的项目状态
+    function saveNewProjectStatus() {
+        const name = document.getElementById('newProjectStatus').value.trim();
+        if (!name) {
+            alert('请输入项目状态！');
+            return;
+        }
+        
+        // 直接填充到项目状态字段
+        const projectStatusSelect = document.getElementById('{{ form.project_status.auto_id }}');
+        if (projectStatusSelect) {
+            // 检查是否已存在
+            let found = false;
+            for (let i = 0; i < projectStatusSelect.options.length; i++) {
+                if (projectStatusSelect.options[i].text === name) {
+                    projectStatusSelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                // 添加新选项
+                const option = document.createElement('option');
+                option.value = name;
+                option.text = name;
+                option.selected = true;
+                projectStatusSelect.add(option);
+            }
+            
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addProjectStatusModal'));
+            modal.hide();
+            
+            // 清空表单
+            document.getElementById('newProjectStatus').value = '';
+            
+            alert('项目状态已添加！');
+        }
+    }
+    
+    // 显示添加合同状态模态框
+    function showAddContractStatusModal() {
+        const modal = new bootstrap.Modal(document.getElementById('addContractStatusModal'));
+        modal.show();
+    }
+    
+    // 保存新的合同状态
+    function saveNewContractStatus() {
+        const name = document.getElementById('newContractStatus').value.trim();
+        if (!name) {
+            alert('请输入合同状态！');
+            return;
+        }
+        
+        // 直接填充到合同状态字段
+        const contractStatusSelect = document.getElementById('{{ form.contract_status.auto_id }}');
+        if (contractStatusSelect) {
+            // 检查是否已存在
+            let found = false;
+            for (let i = 0; i < contractStatusSelect.options.length; i++) {
+                if (contractStatusSelect.options[i].text === name) {
+                    contractStatusSelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                // 添加新选项
+                const option = document.createElement('option');
+                option.value = name;
+                option.text = name;
+                option.selected = true;
+                contractStatusSelect.add(option);
+            }
+            
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addContractStatusModal'));
+            modal.hide();
+            
+            // 清空表单
+            document.getElementById('newContractStatus').value = '';
+            
+            alert('合同状态已添加！');
+        }
+    }
+    </script>
+</div>
+
+<!-- 添加项目状态模态框 -->
+<div class="modal fade" id="addProjectStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> 添加新的项目状态</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addProjectStatusForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">项目状态名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newProjectStatus" required 
+                               placeholder="请输入项目状态，如：暂停中">
+                        <small class="text-muted">输入项目的当前状态</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveNewProjectStatus()">
+                    <i class="bi bi-check-circle"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加合同状态模态框 -->
+<div class="modal fade" id="addContractStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> 添加新的合同状态</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addContractStatusForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">合同状态名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newContractStatus" required 
+                               placeholder="请输入合同状态，如：履行中">
+                        <small class="text-muted">输入合同的执行状态</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="saveNewContractStatus()">
+                    <i class="bi bi-check-circle"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

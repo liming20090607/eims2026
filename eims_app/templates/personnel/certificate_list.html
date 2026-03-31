@@ -1,0 +1,159 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}人员证书管理{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">人员证书管理</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">证书总数</h5>
+                    <h2>{{ total_certificates }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作按钮和筛选 -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-award"></i> 人员证书信息</h5>
+                <div>
+                    {% if user.is_superuser %}
+                    <a href="{% url 'eims_app:certificate_add' %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle"></i> 添加证书
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">关键词</label>
+                    <input type="text" class="form-control" name="keyword" value="{{ selected_keyword }}" placeholder="证书名称/编号">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">证书类型</label>
+                    <select name="certificate_type" class="form-control">
+                        <option value="">全部类型</option>
+                        <option value="qualification" {% if selected_certificate_type == 'qualification' %}selected{% endif %}>职业资格证书</option>
+                        <option value="training" {% if selected_certificate_type == 'training' %}selected{% endif %}>培训证书</option>
+                        <option value="academic" {% if selected_certificate_type == 'academic' %}selected{% endif %}>学历证书</option>
+                        <option value="technical" {% if selected_certificate_type == 'technical' %}selected{% endif %}>专业技术证书</option>
+                        <option value="other" {% if selected_certificate_type == 'other' %}selected{% endif %}>其他证书</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">人员编号</label>
+                    <input type="text" class="form-control" name="personnel_code" value="{{ selected_personnel_code }}" placeholder="输入人员编号">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> 搜索
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>证书编号</th>
+                            <th>人员编号</th>
+                            <th>姓名</th>
+                            <th>证书名称</th>
+                            <th>证书类型</th>
+                            <th>发证机关</th>
+                            <th>发证日期</th>
+                            <th>有效期至</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cert in page_obj %}
+                        <tr>
+                            <td>{{ cert.certificate_code }}</td>
+                            <td>{{ cert.personnel_code }}</td>
+                            <td>{{ cert.personnel_name|default:"-" }}</td>
+                            <td>{{ cert.certificate_name }}</td>
+                            <td>
+                                {% if cert.certificate_type == 'qualification' %}职业资格证书
+                                {% elif cert.certificate_type == 'training' %}培训证书
+                                {% elif cert.certificate_type == 'academic' %}学历证书
+                                {% elif cert.certificate_type == 'technical' %}专业技术证书
+                                {% else %}其他证书{% endif %}
+                            </td>
+                            <td>{{ cert.issuing_authority }}</td>
+                            <td>{{ cert.issue_date|date:"Y-m-d" }}</td>
+                            <td>{{ cert.valid_date|date:"Y-m-d"|default:"长期有效" }}</td>
+                            <td>
+                                <a href="{% url 'eims_app:certificate_detail' cert.pk %}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> 详情
+                                </a>
+                                {% if user.is_superuser %}
+                                <a href="{% url 'eims_app:certificate_edit' cert.pk %}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </a>
+                                <a href="{% url 'eims_app:certificate_delete' cert.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('确定删除？')">
+                                    <i class="bi bi-trash"></i> 删除
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">暂无数据</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">首页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">末页</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

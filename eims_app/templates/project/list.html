@@ -1,0 +1,918 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}项目管理{% endblock %}
+
+<!-- 防止浏览器缓存 -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">项目管理</li>
+{% endblock %}
+
+{% block extra_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
+<style>
+    /* 隐藏原来的Django分页，使用DataTables分页 */
+    .card-footer .pagination, 
+    .card-body .pagination {
+        display: none !important;
+    }
+    /* DataTables 样式优化 */
+    .dataTables_wrapper .dataTables_paginate {
+        padding-top: 8px;
+    }
+    /* 状态、类别、重置按钮 */
+    #statusFilter, #categoryFilter, #reset-filters {
+        font-size: 13px !important;
+        width: 80px;
+        height: 25px;
+    }
+    /* 批量删除、选择导出、取消*/
+    #batch-delete, #export-selected, #cancel-selection {
+        font-size: 13px !important;
+        width: 60px;
+        height: 25px;
+    }
+    /* 全部导出按钮 */
+    #export-all {
+        font-size: 13px !important;
+        width: 80px;
+        height: 25px;
+    }
+    /* 导入按钮（使用data-bs-target选择器） */
+    button[data-bs-target="#importModal"] {
+        font-size: 14px !important;
+        width: 75px;
+        height: 25px;
+    }
+    /* 添加项目按钮 */
+    .btn-primary.btn-sm {
+        font-size: 15px !important;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    /* 紧凑布局样式 */
+    .table thead th {
+        font-size: 14px !important;
+        padding: 6px 4px !important;
+    }
+    .table tbody td {
+        font-size: 14px !important;
+        padding: 4px 4px !important;
+    }
+    .table tbody tr {
+        line-height: 1.2 !important;
+    }
+    /* 选中行的深色背景 */
+    .table tbody tr.table-active,
+    .table tbody tr.selected {
+        background-color: #d1e7dd !important;
+    }
+    .btn-sm, .btn-group-sm > .btn {
+        padding: 2px 8px;
+        font-size: 13px;
+    }
+    .form-control, .form-select {
+        font-size: 13px;
+        padding: 4px 8px;
+    }
+    .input-group {
+        height: 28px;
+    }
+    .input-group .btn {
+        padding: 2px 8px;
+    }
+    .input-group .form-control {
+        padding: 2px 8px;
+    }
+    .dropdown-toggle::after {
+        display: inline-block;
+        margin-left: 4px;
+        vertical-align: middle;
+    }
+    .filter-chip {
+        display: inline-block;
+        padding: 2px 8px;
+        margin: 1px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        color: #495057;
+        text-decoration: none;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    .filter-chip:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    .filter-chip.active {
+        background: #0d6efd;
+        color: white;
+    }
+    .table-actions a {
+        margin: 0 2px;
+        padding: 2px 4px;
+        border-radius: 3px;
+        transition: all 0.2s;
+        font-size: 13px;
+    }
+    .table-actions a:hover {
+        background: #f0f0f0;
+    }
+    .resize-col {
+        position: relative;
+        cursor: col-resize;
+        user-select: none;
+    }
+    .resize-col::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        cursor: col-resize;
+        background: transparent;
+    }
+    .resize-col:hover::after {
+        background: #0d6efd;
+    }
+    th.resize-col:active::after {
+        background: #0d6efd;
+    }
+    .table thead th:last-child,
+    .table tbody td:last-child {
+        position: sticky;
+        right: 0;
+        background: #fff;
+        z-index: 10;
+    }
+    .table thead th:last-child {
+        z-index: 20;
+    }
+    .status-badge {
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .status-not_started { background: #e9ecef; color: #6c757d; }
+    .status-normal_construction { background: #d1e7dd; color: #0f5132; }
+    .status-stopped { background: #fff3cd; color: #664d03; }
+    .status-completed { background: #cfe2ff; color: #084298; }
+    .filter-chip {
+        display: inline-block;
+        padding: 4px 12px;
+        margin: 2px;
+        border-radius: 15px;
+        background: #f8f9fa;
+        color: #495057;
+        text-decoration: none;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    .filter-chip:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    .filter-chip.active {
+        background: #0d6efd;
+        color: white;
+    }
+    .table-actions a {
+        margin: 0 3px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    .table-actions a:hover {
+        background: #f0f0f0;
+    }
+    .resize-col {
+        position: relative;
+    }
+    .resize-col::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: transparent;
+    }
+    .resize-col:hover::after {
+        background: #0d6efd;
+    }
+    .wrap-text {
+        white-space: nowrap;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 11px;
+        }
+    }
+    
+    /* ========== 快捷筛选样式 ========== */
+    /* 快捷筛选区域容器 */
+    .quick-filter {
+        font-size: 13px !important;
+        font-weight: 400 !important;
+        font-family: inherit !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+    }
+    
+    /* 快捷筛选按钮 */
+    .filter-chip {
+        font-size: 14px !important;
+        padding: 2px 8px !important;
+    }
+    
+    /* 快捷筛选文字标签 */
+    .quick-filter strong {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        font-family: inherit !important;
+        margin-right: 8px !important;
+    }
+    
+    /* 操作按钮组 */
+    .action-buttons .btn {
+        height: 30px !important;
+        font-size: 13px !important;
+        padding: 2px 10px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- CSRF token for JavaScript operations -->
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <h6 class="mb-0">项目列表</h6>
+                        {% if user.is_superuser %}
+                        <a href="javascript:void(0);" class="btn btn-primary btn-sm py-0" id="project-detail-btn">
+                            <i class="bi bi-info-circle me-1"></i>项目详情
+                        </a>
+                        <a href="{% url 'eims_app:project_add' %}" class="btn btn-primary btn-sm py-0">
+                            <i class="bi bi-plus-lg me-1"></i>添加项目
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="px-3 py-2 border-bottom">
+                        <div class="row align-items-center g-2">
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" placeholder="搜索..." 
+                                           value="{{ keyword|default:'' }}" name="keyword" id="project-search-input">
+                                    <button class="btn btn-primary" type="button" id="search-btn">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="d-flex flex-wrap justify-content-md-end gap-1">
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary btn-sm py-0" type="button" 
+                                                id="statusFilter" data-bs-toggle="dropdown">
+                                            <i class="fas fa-filter me-1"></i>{{ selected_status_label|default:"状态" }}
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="statusFilter">
+                                            <li><a class="dropdown-item" href="{% url 'eims_app:project_list' %}{% if keyword or selected_category %}?{% endif %}{% if keyword %}keyword={{ keyword }}{% endif %}{% if keyword and selected_category %}&{% endif %}{% if selected_category %}category={{ selected_category }}{% endif %}">全部状态</a></li>
+                                            {% for value, label in status_choices %}
+                                            <li><a class="dropdown-item" href="?status={{ value }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ label }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary btn-sm py-0" type="button" 
+                                                id="categoryFilter" data-bs-toggle="dropdown">
+                                            <i class="fas fa-tag me-1"></i>{{ selected_category_label|default:"类别" }}
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="categoryFilter">
+                                            <li><a class="dropdown-item" href="{% url 'eims_app:project_list' %}{% if keyword or selected_status %}?{% endif %}{% if keyword %}keyword={{ keyword }}{% endif %}{% if keyword and selected_status %}&{% endif %}{% if selected_status %}status={{ selected_status }}{% endif %}">全部</a></li>
+                                            {% for value, label in category_choices %}
+                                            <li><a class="dropdown-item" href="?category={{ value }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ label }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    
+                                    <button class="btn btn-outline-secondary btn-sm py-0" id="reset-filters">
+                                        <i class="fas fa-redo me-1"></i>重置
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 py-3 border-bottom">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <div class="quick-filter">
+                                <strong>快捷筛选：</strong>
+                                <a href="{% url 'eims_app:project_list' %}" class="filter-chip {% if not selected_status and not selected_category %}active{% endif %}">
+                                    全部
+                                </a>
+                                {% for value, label in status_choices %}
+                                <a href="?status={{ value }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" class="filter-chip {% if selected_status == value %}active{% endif %}">
+                                    {{ label }}
+                                </a>
+                                {% endfor %}
+                                {% for value, label in category_choices %}
+                                <a href="?category={{ value }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" class="filter-chip {% if selected_category == value %}active{% endif %}">
+                                    {{ label }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% if user.is_superuser %}
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-danger py-0" id="batch-delete" disabled>
+                                    <i class="fas fa-trash-alt me-1"></i>删除
+                                </button>
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                <button class="btn btn-sm btn-outline-success py-0" id="export-selected" disabled>
+                                    <i class="fas fa-file-export me-1"></i>导出
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary py-0" id="cancel-selection" style="display: none;">
+                                    <i class="fas fa-times me-1"></i>取消
+                                </button>
+                                <a href="{% url 'eims_app:project_import' %}" class="btn btn-sm btn-outline-primary py-0">
+                                    <i class="fas fa-file-import me-1"></i>导入
+                                </a>
+                                <button class="btn btn-sm btn-outline-success py-0" id="export-all">
+                                    <i class="fas fa-file-export me-1"></i>导出全部
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-secondary py-0 disabled" title="导入（仅超级管理员）">
+                                    <i class="fas fa-file-import me-1"></i>导入
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 py-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-muted">
+                                    <i class="fas fa-clipboard-list me-1"></i>
+                                    共 <strong class="text-primary">{{ total_projects }}</strong> 条项目
+                                </span>
+                                <span class="text-muted">
+                                    <i class="fas fa-play-circle text-success me-1"></i>施工中: <strong class="text-success">{{ active_projects }}</strong>
+                                </span>
+                                <span class="text-muted">
+                                    <i class="fas fa-check-circle text-info me-1"></i>已完工: <strong class="text-info">{{ completed_projects }}</strong>
+                                </span>
+                                <span class="text-muted">
+                                    已选择 <strong id="selected-count">0</strong> 条
+                                </span>
+                            </div>
+                            
+                            {% if page_obj.paginator.num_pages > 1 %}
+                            <ul class="pagination pagination-sm mb-0" id="django-pagination">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Previous">
+                                        <span aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'4' %}
+                                        {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Next">
+                                        <span aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                            <span class="text-muted small">第 {{ page_obj.number }}/{{ page_obj.paginator.num_pages }} 页</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive p-4" style="max-height: 70vh; overflow: auto;">
+                    <div class="table-wrapper">
+                        <table class="table align-items-center mb-0" id="project-table">
+                            <thead style="position: sticky; top: 0; z-index: 100;">
+                                <tr class="resize-handle">
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7" style="width: 50px; min-width: 50px;">
+                                        <input class="form-check-input" type="checkbox" id="select-all" style="margin: 0 auto;">
+                                    </th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 60px;">序号</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 100px;">项目编号</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 180px;">项目名称</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 100px;">项目类别</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 80px;">项目状态</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 180px;">项目地址</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 100px;">项目投资(万)</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 100px;">进场时间</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 100px;">预计竣工</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 90px;">项目总监</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 90px;">现场负责人</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 resize-col" style="min-width: 150px;">备注</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7" style="min-width: 100px; position: sticky; right: 0;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if page_obj %}
+                                    {% for project in page_obj %}
+                                    <tr ondblclick="window.location.href='{% url 'eims_app:project_ledger_detail' project.id %}'" style="cursor: pointer;">
+                                        <td class="align-middle text-center">
+                                            <div class="form-check justify-content-center">
+                                                <input class="form-check-input project-checkbox" type="checkbox" 
+                                                       value="{{ project.id }}" data-project-id="{{ project.id }}">
+                                            </div>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ forloop.counter0|add:page_obj.start_index }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.project_code|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.project_name|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.get_project_category_display|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            {% if project.project_status == 'not_started' %}
+                                            <span class="status-badge status-not_started">未开工</span>
+                                            {% elif project.project_status == 'normal_construction' %}
+                                            <span class="status-badge status-normal_construction">正常施工</span>
+                                            {% elif project.project_status == 'stopped' %}
+                                            <span class="status-badge status-stopped">在停工</span>
+                                            {% elif project.project_status == 'completed' %}
+                                            <span class="status-badge status-completed">已完工</span>
+                                            {% else %}
+                                            <span class="status-badge status-not_started">{{ project.project_status|default:"未开工" }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.project_address|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.project_investment|floatformat:2|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.entry_time|date:"Y-m-d"|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.planned_completion_time|date:"Y-m-d"|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.project_director|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.project_manager|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ project.remark|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-center table-actions">
+                                            <a href="{% url 'eims_app:project_ledger_detail' project.id %}" class="text-secondary font-weight-bold text-xs" data-bs-toggle="tooltip" data-bs-placement="top" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if user.is_superuser %}
+                                            <a href="{% url 'eims_app:project_edit' project.id %}" class="text-secondary font-weight-bold text-xs" data-bs-toggle="tooltip" data-bs-placement="top" title="编辑">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="14" class="text-center py-5">
+                                            <div class="text-center">
+                                                <i class="fas fa-inbox fa-3x text-secondary mb-3"></i>
+                                                <p class="text-muted mb-0">暂无项目数据</p>
+                                                {% if user.is_superuser %}
+                                                <p class="text-muted small">当前没有项目记录，您可以点击"新建项目"按钮添加第一条记录</p>
+                                                <a href="{% url 'eims_app:project_add' %}" class="btn btn-primary btn-sm mt-3">
+                                                    <i class="fas fa-plus me-1"></i>添加项目
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                    
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="card-footer py-3">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <span class="text-muted small">
+                                显示 {{ page_obj.start_index }}-{{ page_obj.end_index }} 条， 共 {{ page_obj.paginator.count }} 条记录
+                            </span>
+                            <ul class="pagination mb-0" id="django-pagination-bottom">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Previous">
+                                        <span aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'4' %}
+                                        {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Next">
+                                        <span aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">删除确认</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除项目 <strong id="delete-project-name"></strong> 吗？</p>
+                <p class="text-muted small">此操作不可恢复！</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <a href="#" class="btn btn-danger" id="confirm-delete">确认删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'js/table-resize.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var selectedProjectIds = new Set();
+    
+    // 全选
+    var selectAll = document.getElementById('select-all');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            var checkboxes = document.querySelectorAll('.project-checkbox');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = selectAll.checked;
+                var projectId = checkbox.getAttribute('data-project-id');
+                if (selectAll.checked) {
+                    selectedProjectIds.add(projectId);
+                } else {
+                    selectedProjectIds.delete(projectId);
+                }
+            });
+            updateSelectionUI();
+        });
+    }
+    
+    // 单选
+    var checkboxes = document.querySelectorAll('.project-checkbox');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            var projectId = this.getAttribute('data-project-id');
+            if (this.checked) {
+                selectedProjectIds.add(projectId);
+            } else {
+                selectedProjectIds.delete(projectId);
+            }
+            updateSelectionUI();
+        });
+    });
+    
+    function updateSelectionUI() {
+        var selectedCount = document.getElementById('selected-count');
+        if (selectedCount) {
+            selectedCount.textContent = selectedProjectIds.size;
+        }
+        
+        var selectAll = document.getElementById('select-all');
+        if (selectAll) {
+            var allCheckboxes = document.querySelectorAll('.project-checkbox');
+            selectAll.checked = allCheckboxes.length > 0 && selectedProjectIds.size === allCheckboxes.length;
+            selectAll.indeterminate = selectedProjectIds.size > 0 && selectedProjectIds.size < allCheckboxes.length;
+        }
+        
+        var batchDeleteBtn = document.getElementById('batch-delete');
+        if (batchDeleteBtn) batchDeleteBtn.disabled = selectedProjectIds.size === 0;
+        var exportSelectedBtn = document.getElementById('export-selected');
+        if (exportSelectedBtn) exportSelectedBtn.disabled = selectedProjectIds.size === 0;
+        
+        var cancelSelection = document.getElementById('cancel-selection');
+        if (cancelSelection) {
+            cancelSelection.style.display = selectedProjectIds.size > 0 ? 'inline-block' : 'none';
+        }
+    }
+    
+    // 搜索
+    var searchInput = document.getElementById('project-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                var keyword = this.value.trim();
+                var url = new URL(window.location.href);
+                if (keyword) url.searchParams.set('keyword', keyword);
+                else url.searchParams.delete('keyword');
+                window.location.href = url.toString();
+            }
+        });
+    }
+    
+    var searchBtn = document.getElementById('search-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            var searchInput = document.getElementById('project-search-input');
+            var keyword = searchInput ? searchInput.value.trim() : '';
+            var url = new URL(window.location.href);
+            if (keyword) url.searchParams.set('keyword', keyword);
+            else url.searchParams.delete('keyword');
+            window.location.href = url.toString();
+        });
+    }
+    
+    // 重置
+    var resetBtn = document.getElementById('reset-filters');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            window.location.href = '{% url "eims_app:project_list" %}';
+        });
+    }
+    
+    // 删除
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    var deleteBtns = document.querySelectorAll('.delete-project');
+    deleteBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var projectId = this.getAttribute('data-id');
+            var projectName = this.getAttribute('data-project-name');
+            var deleteUrl = this.getAttribute('data-delete-url');
+            
+            document.getElementById('delete-project-name').textContent = projectName;
+            document.getElementById('confirm-delete').href = deleteUrl;
+            deleteModal.show();
+        });
+    });
+    
+    // 批量删除
+    var batchDeleteBtn = document.getElementById('batch-delete');
+    if (batchDeleteBtn) {
+        batchDeleteBtn.addEventListener('click', function() {
+            if (selectedProjectIds.size === 0) return;
+            if (confirm('确定要删除选中的 ' + selectedProjectIds.size + ' 个项目吗？')) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{% url "eims_app:project_batch_delete" %}';
+                
+                var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrfToken) {
+                    var csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = csrfToken.value;
+                    form.appendChild(csrfInput);
+                }
+                
+                selectedProjectIds.forEach(function(id) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'project_ids';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+    
+    // 取消选择
+    var cancelSelection = document.getElementById('cancel-selection');
+    if (cancelSelection) {
+        cancelSelection.addEventListener('click', function() {
+            selectedProjectIds.clear();
+            var checkboxes = document.querySelectorAll('.project-checkbox');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = false;
+            });
+            updateSelectionUI();
+        });
+    }
+    
+    // 导出选中
+    var exportSelectedBtn = document.getElementById('export-selected');
+    if (exportSelectedBtn) {
+        exportSelectedBtn.addEventListener('click', function() {
+            if (selectedProjectIds.size === 0) {
+                alert('请先选择要导出的项目');
+                return;
+            }
+            var ids = Array.from(selectedProjectIds).join(',');
+            window.location.href = '{% url "eims_app:project_export" %}?ids=' + ids;
+        });
+    }
+    
+    // 导出全部
+    var exportAllBtn = document.getElementById('export-all');
+    if (exportAllBtn) {
+        exportAllBtn.addEventListener('click', function() {
+            window.location.href = '{% url "eims_app:project_export" %}';
+        });
+    }
+    
+    // 双击行跳转到编辑页面
+    var tableRows = document.querySelectorAll('#project-table tbody tr');
+    tableRows.forEach(function(row) {
+        // 单击行选中该项目（添加深色背景）
+        row.addEventListener('click', function(e) {
+            // 排除复选框和操作列的点击
+            if (e.target.tagName === 'INPUT' || e.target.closest('.table-actions')) {
+                return;
+            }
+            // 移除其他行的选中状态
+            document.querySelectorAll('#project-table tbody tr').forEach(function(r) {
+                r.classList.remove('table-active', 'selected');
+            });
+            // 为当前行添加选中状态
+            row.classList.add('table-active', 'selected');
+        });
+        
+        // 双击行跳转到详情页面
+        row.addEventListener('dblclick', function(e) {
+            // 排除复选框和操作列
+            if (e.target.tagName === 'INPUT' || e.target.closest('.table-actions')) {
+                return;
+            }
+            var checkbox = row.querySelector('.project-checkbox');
+            if (checkbox) {
+                var projectId = checkbox.getAttribute('data-project-id');
+                window.location.href = '/projects/' + projectId + '/';
+            }
+        });
+        row.style.cursor = 'pointer';
+    });
+});
+
+// 项目详情按钮点击事件 - 跳转到当前获得焦点的项目
+document.getElementById('project-detail-btn').addEventListener('click', function() {
+    // 尝试获取当前选中的项目（通过复选框）
+    const checkedCheckbox = document.querySelector('input[name="project-checkbox"]:checked');
+    if (checkedCheckbox) {
+        const projectId = checkedCheckbox.value;
+        window.location.href = '/projects/' + projectId + '/';
+    } else {
+        // 如果没有选中项目，尝试获取最后点击/获得焦点的项目行（带有table-active或selected类的行）
+        const focusedRow = document.querySelector('tr.table-active, tr.selected');
+        if (focusedRow) {
+            const checkbox = focusedRow.querySelector('.project-checkbox');
+            if (checkbox) {
+                const projectId = checkbox.getAttribute('data-project-id');
+                if (projectId) {
+                    window.location.href = '/projects/' + projectId + '/';
+                    return;
+                }
+            }
+        }
+        // 如果都没有，尝试获取表格中第一行
+        const firstRow = document.querySelector('tbody tr[data-project-id], tbody tr[data-id]');
+        if (firstRow) {
+            const projectId = firstRow.getAttribute('data-project-id') || firstRow.getAttribute('data-id');
+            if (projectId) {
+                window.location.href = '/projects/' + projectId + '/';
+                return;
+            }
+        }
+        alert('请先选择一个项目');
+    }
+});
+
+// ========== 页面加载后自动处理 ==========
+$(document).ready(function() {
+    // 如果 show_detail 参数存在，自动打开第一个项目的详情
+    {% if show_detail and first_project %}
+    setTimeout(function() {
+        // 自动跳转到第一个项目的详情页面
+        window.location.href = '/projects/{{ first_project.pk }}/';
+    }, 500);  // 延迟 500ms 执行，确保页面已加载完成
+    {% endif %}
+    
+    // DataTables 初始化
+    // 完全移除原来的 Django 分页控件
+    $('#django-pagination, #django-pagination-bottom').remove();
+    
+    // 隐藏 Django 显示的记录数信息
+    $('.card-footer .text-muted.small').hide();
+    
+    // 如果表格有数据且不是空数据提示行，则初始化 DataTables
+    if ($('#project-table').length && $('#project-table tbody tr').length > 0) {
+        // 检查是否有空数据提示行（检查第一行是否有 colspan 属性）
+        var firstRow = $('#project-table tbody tr:first');
+        var hasColspan = firstRow.find('td[colspan]').length > 0;
+        
+        // 只有当不是空数据行时才初始化 DataTables
+        if (!hasColspan) {
+            $('#project-table').DataTable({
+            // 中文语言设置
+            language: {
+                lengthMenu: '每页 _MENU_ 条',
+                zeroRecords: '没有找到匹配的数据',
+                info: '第 _PAGE_ 页 (共 _PAGES_ 页)',
+                infoEmpty: '没有数据',
+                infoFiltered: '(从 _MAX_ 条数据中过滤)',
+                search: '搜索:',
+                paginate: {
+                    first: '首页',
+                    last: '末页',
+                    next: '下一页',
+                    previous: '上一页'
+                }
+            },
+            // 启用列宽调整
+            colResize: true,
+            // 启用排序
+            ordering: true,
+            // 初始排序列（第 3 列，即项目编号）
+            order: [[2, 'asc']],
+            // 分页设置
+            paging: true,
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            // 禁用搜索框（因为已有自定义搜索）
+            searching: false,
+            // 启用水平滚动
+            scrollX: true,
+            // 自动列宽
+            autoWidth: false,
+            // 固定列头
+            fixedHeader: true
+        });
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,16 @@
+# Django核心依赖（稳定版本，适配项目配置）
+Django==4.2.7
+# 数据库驱动（MySQL，生产环境使用）
+mysqlclient==2.2.0
+# 可选：MySQL替代驱动（若mysqlclient安装失败）
+# pymysql==1.1.0
+# 时间处理依赖（Django依赖，避免版本冲突）
+pytz==2024.1
+# 静态文件处理（生产环境可选）
+whitenoise==6.5.0
+# 表单验证增强（可选，按需使用）
+django-crispy-forms==2.0
+# 日志处理（可选，按需使用）
+logging==0.5.1.2
+# 虚拟环境管理（Anaconda可选）
+conda-pack==0.6.0

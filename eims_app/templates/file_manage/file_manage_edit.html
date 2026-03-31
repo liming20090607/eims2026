@@ -1,0 +1,143 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}编辑文件{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>编辑文件信息</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- 文件类别 -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_category.id_for_label }}" class="form-label">
+                                <i class="bi bi-folder me-1"></i>文件类别 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.file_category }}
+                            {% if form.file_category.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 文件编号 -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_number.id_for_label }}" class="form-label">
+                                <i class="bi bi-hash me-1"></i>文件编号
+                            </label>
+                            {{ form.file_number }}
+                            {% if form.file_number.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 文件名称 -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-file-earmark me-1"></i>文件名称 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.file_name }}
+                            {% if form.file_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 文件格式（只读） -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_format.id_for_label }}" class="form-label">
+                                <i class="bi bi-filetype-ai me-1"></i>文件格式
+                            </label>
+                            {{ form.file_format }}
+                            <small class="form-text text-muted">系统自动识别，不可修改</small>
+                            {% if form.file_format.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_format.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 内容摘要 -->
+                        <div class="mb-3">
+                            <label for="{{ form.content_summary.id_for_label }}" class="form-label">
+                                <i class="bi bi-card-text me-1"></i>内容摘要
+                            </label>
+                            {{ form.content_summary }}
+                            {% if form.content_summary.errors %}
+                                <div class="text-danger small mt-1">{{ form.content_summary.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 当前文件 -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-file-earmark-check me-1"></i>当前文件
+                            </label>
+                            <div class="form-control-plaintext">
+                                <a href="{% url 'eims_app:file_manage_download' file.id %}" class="text-primary">
+                                    {{ file.file_path.name }}
+                                </a>
+                                <br>
+                                <small class="text-muted">大小：{{ file.file_size|filesizeformat }}</small>
+                            </div>
+                        </div>
+
+                        <!-- 替换文件（可选） -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_path.id_for_label }}" class="form-label">
+                                <i class="bi bi-upload me-1"></i>替换文件（可选）
+                            </label>
+                            {{ form.file_path }}
+                            {% if form.file_path.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_path.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">如需替换文件，请选择新文件上传</small>
+                        </div>
+
+                        <!-- 备注 -->
+                        <div class="mb-3">
+                            <label for="{{ form.remark.id_for_label }}" class="form-label">
+                                <i class="bi bi-chat-left-text me-1"></i>备注
+                            </label>
+                            {{ form.remark }}
+                            {% if form.remark.errors %}
+                                <div class="text-danger small mt-1">{{ form.remark.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 系统信息 -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">发布人</label>
+                                <div class="form-control-plaintext">{{ file.uploader }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">发布时间</label>
+                                <div class="form-control-plaintext">{{ file.publish_time|date:"Y-m-d H:i:s" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">更新时间</label>
+                                <div class="form-control-plaintext">{{ file.update_time|date:"Y-m-d H:i:s" }}</div>
+                            </div>
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:file_manage_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>保存修改
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

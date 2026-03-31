@@ -1,0 +1,107 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}上传文件{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>上传文件</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- 文件类别 -->
+                        <div class="mb-3">
+                            <label for="file_category" class="form-label">
+                                <i class="bi bi-folder me-1"></i>文件类别 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="file_category" name="file_category" 
+                                   placeholder="例：合同、人员、项目等" required 
+                                   title="请输入文件类别">
+                            {% if form.file_category.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ form.file_category.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">请输入文件类别，如：合同、人员、项目等（必填）</small>
+                        </div>
+
+                        <!-- 文件编号 -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_number.id_for_label }}" class="form-label">
+                                <i class="bi bi-hash me-1"></i>文件编号
+                            </label>
+                            {{ form.file_number }}
+                            {% if form.file_number.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_number.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">例：2026-001</small>
+                        </div>
+
+                        <!-- 文件名称 -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-file-earmark me-1"></i>文件名称 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.file_name }}
+                            {% if form.file_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 内容摘要 -->
+                        <div class="mb-3">
+                            <label for="{{ form.content_summary.id_for_label }}" class="form-label">
+                                <i class="bi bi-card-text me-1"></i>内容摘要
+                            </label>
+                            {{ form.content_summary }}
+                            {% if form.content_summary.errors %}
+                                <div class="text-danger small mt-1">{{ form.content_summary.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 文件上传 -->
+                        <div class="mb-3">
+                            <label for="{{ form.file_path.id_for_label }}" class="form-label">
+                                <i class="bi bi-upload me-1"></i>选择文件 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.file_path }}
+                            {% if form.file_path.errors %}
+                                <div class="text-danger small mt-1">{{ form.file_path.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">支持 PDF、Word、Excel 等常见格式</small>
+                        </div>
+
+                        <!-- 备注 -->
+                        <div class="mb-3">
+                            <label for="{{ form.remark.id_for_label }}" class="form-label">
+                                <i class="bi bi-chat-left-text me-1"></i>备注
+                            </label>
+                            {{ form.remark }}
+                            {% if form.remark.errors %}
+                                <div class="text-danger small mt-1">{{ form.remark.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:file_manage_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>上传文件
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,365 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}EIMS 系统功能模块导航{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">系统功能导航</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- 页面标题 -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h2 class="display-5 fw-bold text-primary mb-3">
+                <i class="bi bi-grid-3x3-gap-fill"></i> EIMS 工程信息管理系统
+            </h2>
+            <p class="lead text-muted">完整的功能模块导航 - 快速定位您需要的功能</p>
+        </div>
+    </div>
+
+    <!-- 核心业务模块 -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h4 class="border-bottom pb-2 mb-3"><i class="bi bi-briefcase-fill text-primary"></i> 核心业务模块</h4>
+        </div>
+        
+        <!-- 合同管理 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-primary hover-card">
+                <div class="card-header bg-primary text-white text-center p-3">
+                    <i class="bi bi-file-earmark-text display-4"></i>
+                    <h5 class="mt-2 mb-0">合同管理</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">工程合同全生命周期管理</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 合同录入与编辑</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 合同变更管理</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 合同收付款跟踪</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Excel 导入导出</li>
+                    </ul>
+                    <a href="{% url 'eims_app:contract_list' %}" class="btn btn-primary btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 项目管理 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-success hover-card">
+                <div class="card-header bg-success text-white text-center p-3">
+                    <i class="bi bi-diagram-3 display-4"></i>
+                    <h5 class="mt-2 mb-0">项目管理</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">项目全过程信息化管理</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 项目基本信息</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 项目动态跟踪</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 产值回款管理</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 项目统计分析</li>
+                    </ul>
+                    <a href="{% url 'eims_app:project_list' %}" class="btn btn-success btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 人员管理 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-info hover-card">
+                <div class="card-header bg-info text-white text-center p-3">
+                    <i class="bi bi-people-fill display-4"></i>
+                    <h5 class="mt-2 mb-0">人员管理</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">完整的人员信息化管理</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 人员花名册</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 人员证书管理</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 人员分配调配</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 可视化分配界面</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 人员去向追踪</li>
+                    </ul>
+                    <a href="{% url 'eims_app:personnel_navigation' %}" class="btn btn-info btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 部门与审批 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-warning hover-card">
+                <div class="card-header bg-warning text-dark text-center p-3">
+                    <i class="bi bi-building-gear display-4"></i>
+                    <h5 class="mt-2 mb-0">组织与审批</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">部门管理和审批流程配置</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 部门信息管理</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 部门角色配置</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 审批流程定义</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 跨部门协同</li>
+                    </ul>
+                    <a href="/departments/welcome/" class="btn btn-warning btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 辅助功能模块 -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h4 class="border-bottom pb-2 mb-3"><i class="bi bi-tools text-secondary"></i> 辅助功能模块</h4>
+        </div>
+
+        <!-- 产值回款 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-primary hover-card">
+                <div class="card-header bg-primary text-white text-center p-3">
+                    <i class="bi bi-cash-coin display-4"></i>
+                    <h5 class="mt-2 mb-0">产值回款</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">项目产值和回款统计</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 产值登记</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 回款记录</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 统计分析</li>
+                    </ul>
+                    <a href="{% url 'eims_app:output_payment_list' %}" class="btn btn-primary btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文件管理 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-info hover-card">
+                <div class="card-header bg-info text-white text-center p-3">
+                    <i class="bi bi-folder2-open display-4"></i>
+                    <h5 class="mt-2 mb-0">文件管理</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">工程文档和资料管理</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 文件上传</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 文件分类</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 文件检索</li>
+                    </ul>
+                    <a href="{% url 'eims_app:file_manage_list' %}" class="btn btn-info btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 办公自动化模块 -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h4 class="border-bottom pb-2 mb-3"><i class="bi bi-calendar-check text-primary"></i> 办公自动化</h4>
+        </div>
+
+        <!-- 月度报告 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-primary hover-card">
+                <div class="card-header bg-primary text-white text-center p-3">
+                    <i class="bi bi-calendar-event display-4"></i>
+                    <h5 class="mt-2 mb-0">月度报告</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">项目月度进展报告管理</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 报告填报</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 报告审核</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 统计看板</li>
+                    </ul>
+                    <a href="{% url 'eims_app:monthly_report_list' %}" class="btn btn-primary btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 审批流程 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-success hover-card">
+                <div class="card-header bg-success text-white text-center p-3">
+                    <i class="bi bi-diagram-3-fill display-4"></i>
+                    <h5 class="mt-2 mb-0">审批流程</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">工作流审批管理</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 我的待办</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 审批历史</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 流程跟踪</li>
+                    </ul>
+                    <a href="{% url 'eims_app:approval_flow_list' %}" class="btn btn-success btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通知公告 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-warning hover-card">
+                <div class="card-header bg-warning text-dark text-center p-3">
+                    <i class="bi bi-bell-fill display-4"></i>
+                    <h5 class="mt-2 mb-0">通知公告</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="card-text text-muted">系统通知和公告发布</p>
+                    <ul class="list-unstyled text-start small mt-3">
+                        <li><i class="bi bi-check-circle text-success"></i> 公告列表</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 公告详情</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 通知推送</li>
+                    </ul>
+                    <a href="{% url 'eims_app:notice_list' %}" class="btn btn-warning btn-sm mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速操作指南 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm bg-light">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-question-circle text-primary"></i> 快速操作指南</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-1-circle fs-4 text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>新手入门</h6>
+                                    <p class="mb-0 text-muted">建议从"人员管理"开始，熟悉系统基本操作，然后逐步使用其他模块。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-2-circle fs-4 text-success"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>常用功能</h6>
+                                    <p class="mb-0 text-muted">合同管理、项目管理是核心业务模块，日常使用频率最高。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-3-circle fs-4 text-info"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>权限说明</h6>
+                                    <p class="mb-0 text-muted">部分功能需要特定权限，如部门管理、审批流程等需要管理员权限。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-4-circle fs-4 text-warning"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>数据关联</h6>
+                                    <p class="mb-0 text-muted">各模块数据相互关联，如项目与合同关联、人员与项目关联等。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统统计卡片 -->
+    <div class="row g-4 mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-line"></i> 系统概览</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <i class="bi bi-file-earmark-text display-4 text-primary"></i>
+                                <h3 class="mt-2">合同管理</h3>
+                                <p class="text-muted">工程项目合同全生命周期</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <i class="bi bi-diagram-3 display-4 text-success"></i>
+                                <h3 class="mt-2">项目管理</h3>
+                                <p class="text-muted">项目全过程信息化管理</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <i class="bi bi-people-fill display-4 text-info"></i>
+                                <h3 class="mt-2">人员管理</h3>
+                                <p class="text-muted">3 个子模块，完整人员档案</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <i class="bi bi-building-gear display-4 text-warning"></i>
+                                <h3 class="mt-2">组织审批</h3>
+                                <p class="text-muted">部门 + 角色 + 审批流程</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.hover-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+
+.card-header i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+</style>
+{% endblock %}

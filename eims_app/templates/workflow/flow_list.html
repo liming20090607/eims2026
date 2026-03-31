@@ -1,0 +1,134 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-diagram-3"></i> 
+                        {{ title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- 筛选条件 -->
+                    <form method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">流程状态</label>
+                                <select name="status" class="form-control">
+                                    <option value="">全部</option>
+                                    {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary form-control">
+                                    <i class="bi bi-search"></i> 筛选
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- 表格 -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>项目编号</th>
+                                    <th>项目名称</th>
+                                    <th>报告月份</th>
+                                    <th>发起人</th>
+                                    <th>当前步骤</th>
+                                    <th>状态</th>
+                                    <th>发起时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for flow in page_obj %}
+                                <tr>
+                                    <td>{{ flow.report.project_code }}</td>
+                                    <td>{{ flow.report.project.project_name }}</td>
+                                    <td>{{ flow.report.report_year }}年{{ flow.report.report_month }}月</td>
+                                    <td>{{ flow.initiator.first_name|default:flow.initiator.username }}</td>
+                                    <td>
+                                        {% if flow.current_step == 1 %}
+                                            <span class="badge bg-warning">总监审核</span>
+                                        {% elif flow.current_step == 2 %}
+                                            <span class="badge bg-info">管理员审批</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">完成</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if flow.status == 'draft' %}
+                                            <span class="badge bg-secondary">{{ flow.get_status_display }}</span>
+                                        {% elif flow.status == 'pending_review' %}
+                                            <span class="badge bg-warning">{{ flow.get_status_display }}</span>
+                                        {% elif flow.status == 'pending_approval' %}
+                                            <span class="badge bg-info">{{ flow.get_status_display }}</span>
+                                        {% elif flow.status == 'approved' %}
+                                            <span class="badge bg-success">{{ flow.get_status_display }}</span>
+                                        {% elif flow.status == 'rejected' %}
+                                            <span class="badge bg-danger">{{ flow.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ flow.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ flow.initiate_time|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'eims_app:approval_flow_detail' flow.pk %}" class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i> 详情
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">暂无数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">首页</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">末页</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

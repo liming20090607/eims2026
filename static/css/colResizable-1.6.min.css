@@ -1,0 +1,17 @@
+/* colResizable 1.6 - CSS */
+.colresizable {
+  table-layout: fixed;
+}
+.colresizable .colresizable-handle {
+  position: absolute;
+  width: 5px;
+  background: #ccc;
+  cursor: col-resize;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
+}
+.colresizable .colresizable-handle:hover {
+  background: #999;
+}

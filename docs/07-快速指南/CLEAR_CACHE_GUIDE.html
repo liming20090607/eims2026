@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除浏览器缓存 - 解决 DataTables 错误</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .alert {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .alert-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .step {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .browser-btn {
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px 25px;
+            margin: 10px 10px 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .browser-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+        .quick-fix {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .quick-fix h2 {
+            color: white;
+            margin-top: 0;
+        }
+        .key-combo {
+            font-size: 24px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.2);
+            padding: 15px 30px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 15px 0;
+        }
+        ul {
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 解决 DataTables 列数错误</h1>
+        
+        <div class="alert">
+            <div class="alert-title">⚠️ 问题描述</div>
+            <p>您看到的错误提示：</p>
+            <code>DataTables warning: table id=project-table - Incorrect column count.</code>
+            <p style="margin-bottom: 0;">这是因为浏览器缓存了旧版本的页面，而新版本已经修复了列数问题。</p>
+        </div>
+
+        <div class="quick-fix">
+            <h2>🚀 最快解决方法（推荐）</h2>
+            <p>在浏览器中打开项目列表页面，然后按：</p>
+            <div class="key-combo">Ctrl + Shift + Delete</div>
+            <p>或</p>
+            <div class="key-combo">Ctrl + F5</div>
+        </div>
+
+        <h2 style="color: #667eea;">📋 详细解决步骤</h2>
+
+        <div class="step">
+            <div><span class="step-number">1</span><strong>选择您的浏览器</strong></div>
+            <div style="margin-top: 15px;">
+                <div class="browser-btn" onclick="showSteps('chrome')">Chrome / Edge</div>
+                <div class="browser-btn" onclick="showSteps('firefox')">Firefox</div>
+                <div class="browser-btn" onclick="showSteps('safari')">Safari</div>
+            </div>
+        </div>
+
+        <div id="chrome-steps" class="step" style="display: none;">
+            <div><span class="step-number">2</span><strong>Chrome / Edge 清除缓存步骤</strong></div>
+            <ul>
+                <li>按 <code>Ctrl + Shift + Delete</code></li>
+                <li>时间范围选择：<strong>全部时间</strong></li>
+                <li>勾选：
+                    <ul>
+                        <li>✅ Cookie 及其他网站数据</li>
+                        <li>✅ 缓存的图片和文件</li>
+                    </ul>
+                </li>
+                <li>点击"清除数据"按钮</li>
+                <li>关闭浏览器</li>
+                <li>重新打开浏览器</li>
+                <li>访问：<code>http://localhost:8000/projects/</code></li>
+            </ul>
+        </div>
+
+        <div id="firefox-steps" class="step" style="display: none;">
+            <div><span class="step-number">2</span><strong>Firefox 清除缓存步骤</strong></div>
+            <ul>
+                <li>按 <code>Ctrl + Shift + Delete</code></li>
+                <li>时间范围选择：<strong>全部</strong></li>
+                <li>勾选：
+                    <ul>
+                        <li>✅ Cookie</li>
+                        <li>✅ 缓存</li>
+                    </ul>
+                </li>
+                <li>点击"立即清除"按钮</li>
+                <li>关闭浏览器</li>
+                <li>重新打开浏览器</li>
+                <li>访问：<code>http://localhost:8000/projects/</code></li>
+            </ul>
+        </div>
+
+        <div id="safari-steps" class="step" style="display: none;">
+            <div><span class="step-number">2</span><strong>Safari 清除缓存步骤</strong></div>
+            <ul>
+                <li>按 <code>Command + Option + E</code></li>
+                <li>或选择菜单：开发 → 清空缓存</li>
+                <li>关闭浏览器</li>
+                <li>重新打开浏览器</li>
+                <li>访问：<code>http://localhost:8000/projects/</code></li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <div><span class="step-number">3</span><strong>验证修复</strong></div>
+            <p>清除缓存后，访问项目列表页面，应该：</p>
+            <div class="success">
+                <ul>
+                    <li>✅ 不再出现错误弹窗</li>
+                    <li>✅ 表格正常显示</li>
+                    <li>✅ 可以正常使用排序、分页、搜索功能</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step">
+            <div><span class="step-number">4</span><strong>使用无痕模式（备选方案）</strong></div>
+            <p>如果以上方法都不行，可以尝试使用无痕模式：</p>
+            <ul>
+                <li><strong>Chrome/Edge:</strong> <code>Ctrl + Shift + N</code></li>
+                <li><strong>Firefox:</strong> <code>Ctrl + Shift + P</code></li>
+                <li><strong>Safari:</strong> <code>Command + Shift + N</code></li>
+            </ul>
+            <p>然后在无痕窗口中访问：<code>http://localhost:8000/projects/</code></p>
+        </div>
+
+        <div class="alert">
+            <div class="alert-title">💡 技术说明</div>
+            <p><strong>问题已修复：</strong>项目列表表格现在有 14 列（包括复选框和操作列），空数据提示的 colspan 也已从 13 改为 14。</p>
+            <p><strong>为什么需要清除缓存：</strong>浏览器缓存了旧版本的 HTML 页面（13 列），而服务器返回的新版本是 14 列，DataTables 插件检测到不匹配所以报错。</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #dee2e6;">
+            <p style="color: #6c757d;">服务器已重启，代码已修复，只需清除浏览器缓存即可！</p>
+            <p style="font-size: 14px; color: #999;">修复时间：2026-03-24 19:14</p>
+        </div>
+    </div>
+
+    <script>
+        function showSteps(browser) {
+            document.getElementById('chrome-steps').style.display = 'none';
+            document.getElementById('firefox-steps').style.display = 'none';
+            document.getElementById('safari-steps').style.display = 'none';
+            
+            document.getElementById(browser + '-steps').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

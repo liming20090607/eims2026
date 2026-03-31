@@ -1,0 +1,321 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+{% load attachment_tags %}
+
+{% block title %}通知公告{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 隐藏搜索框 */
+    .search-box {
+        display: none !important;
+    }
+    
+    /* 标题字段鼠标悬停效果 */
+    .notice-title-link {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: inherit;
+        text-decoration: none;
+    }
+    
+    .notice-title-link:hover {
+        color: #0d6efd !important;
+        font-weight: 700 !important;
+        transform: translateX(5px);
+        text-shadow: 0 0 8px rgba(13, 110, 253, 0.3);
+    }
+    
+    /* 有附件的标题特殊样式 */
+    .notice-title-with-attachment:hover {
+        color: #198754 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- 页面标题 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="bi bi-bell me-2"></i>通知公告
+                </h2>
+                {% if request.user|has_perm:'eims_app.add_notice' %}
+                <a href="{% url 'eims_app:notice_add' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>发布通知
+                </a>
+                {% else %}
+                <!-- 非超级管理员显示为灰色不可用状态 -->
+                <button type="button" class="btn btn-secondary disabled" title="发布通知（仅超级管理员）">
+                    <i class="bi bi-plus-lg me-1"></i>发布通知
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- 搜索和过滤 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">搜索</label>
+                            <input type="text" class="form-control" name="search" 
+                                   value="{{ search_key }}" placeholder="搜索标题、关键字、发布人、上传人">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">关键字</label>
+                            <input type="text" class="form-control" name="keywords" 
+                                   value="{{ keywords }}" placeholder="输入关键字筛选">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">类型</label>
+                            <select class="form-select" name="notice_type">
+                                <option value="">全部类型</option>
+                                <option value="通知" {% if notice_type == '通知' %}selected{% endif %}>通知</option>
+                                <option value="公告" {% if notice_type == '公告' %}selected{% endif %}>公告</option>
+                                <option value="预警" {% if notice_type == '预警' %}selected{% endif %}>预警</option>
+                                <option value="提醒" {% if notice_type == '提醒' %}selected{% endif %}>提醒</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">状态</label>
+                            <select class="form-select" name="notice_status">
+                                <option value="">全部状态</option>
+                                <option value="草稿" {% if notice_status == '草稿' %}selected{% endif %}>草稿</option>
+                                <option value="已发布" {% if notice_status == '已发布' %}selected{% endif %}>已发布</option>
+                                <option value="已撤回" {% if notice_status == '已撤回' %}selected{% endif %}>已撤回</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 通知公告列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>通知列表</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if notices %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="50">ID</th>
+                                    <th>标题</th>
+                                    <th width="150">关键字</th>
+                                    <th width="80">类型</th>
+                                    <th width="80">状态</th>
+                                    <th width="80">上传人</th>
+                                    <th width="80">发布人</th>
+                                    <th width="150">发布时间</th>
+                                    <th width="80">附件</th>
+                                    <th width="180">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for notice in notices %}
+                                <tr>
+                                    <td>{{ notice.id }}</td>
+                                    <td>
+                                        {% get_notice_attachments notice.id as title_attachments %}
+                                        {% if title_attachments %}
+                                            <div class="dropdown d-inline">
+                                                <a href="#" 
+                                                   class="notice-title-link dropdown-toggle" 
+                                                   data-bs-toggle="dropdown"
+                                                   aria-expanded="false">
+                                                    <strong><i class="bi bi-paperclip me-1"></i>{{ notice.notice_title|default:'-' }}</strong>
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    {% for attachment in title_attachments %}
+                                                    <li>
+                                                        <a class="dropdown-item" 
+                                                           href="{% url 'eims_app:notice_file_preview' notice.id %}?file={{ attachment.id }}" 
+                                                           target="_blank"
+                                                           title="{{ attachment.file_name }}">
+                                                            <i class="bi bi-file-earmark"></i>
+                                                            {% if attachment.file_name|length > 30 %}
+                                                                {{ attachment.file_name|truncatechars:30 }}
+                                                            {% else %}
+                                                                {{ attachment.file_name }}
+                                                            {% endif %}
+                                                        </a>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% else %}
+                                            <span class="notice-title-link">
+                                                <strong>{{ notice.notice_title|default:'-' }}</strong>
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ notice.keywords|default:'-' }}</span>
+                                    </td>
+                                    <td>
+                                        {% if notice.notice_type %}
+                                            <span class="badge bg-secondary">{{ notice.notice_type }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if notice.notice_status == '已发布' %}
+                                            <span class="badge bg-success">{{ notice.notice_status }}</span>
+                                        {% elif notice.notice_status == '草稿' %}
+                                            <span class="badge bg-secondary">{{ notice.notice_status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ notice.notice_status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ notice.upload_person|default:'-' }}</td>
+                                    <td>{{ notice.publish_person|default:'-' }}</td>
+                                    <td>
+                                        {{ notice.create_time|date:"Y-m-d H:i" }}
+                                    </td>
+                                    <td>
+                                        {% get_notice_attachments notice.id as attachments %}
+                                        {% if attachments %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-info dropdown-toggle" 
+                                                        type="button" 
+                                                        data-bs-toggle="dropdown" 
+                                                        aria-expanded="false">
+                                                    <i class="bi bi-paperclip"></i> {{ attachments|length }}
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    {% for attachment in attachments %}
+                                                    <li>
+                                                        <a class="dropdown-item" 
+                                                           href="{% url 'eims_app:notice_file_preview' notice.id %}?file={{ attachment.id }}" 
+                                                           target="_blank"
+                                                           title="{{ attachment.file_name }}">
+                                                            <i class="bi bi-file-earmark"></i>
+                                                            {% if attachment.file_name|length > 25 %}
+                                                                {{ attachment.file_name|truncatechars:25 }}
+                                                            {% else %}
+                                                                {{ attachment.file_name }}
+                                                            {% endif %}
+                                                        </a>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            {% get_notice_attachments notice.id as op_attachments %}
+                                            {% if op_attachments %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-info btn-sm dropdown-toggle" 
+                                                        type="button" 
+                                                        data-bs-toggle="dropdown" 
+                                                        aria-expanded="false">
+                                                    <i class="bi bi-eye"></i> 预览
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    {% for attachment in op_attachments %}
+                                                    <li>
+                                                        <a class="dropdown-item" 
+                                                           href="{% url 'eims_app:notice_file_preview' notice.id %}?file={{ attachment.id }}" 
+                                                           target="_blank"
+                                                           title="{{ attachment.file_name }}">
+                                                            <i class="bi bi-file-earmark"></i>
+                                                            {% if attachment.file_name|length > 25 %}
+                                                                {{ attachment.file_name|truncatechars:25 }}
+                                                            {% else %}
+                                                                {{ attachment.file_name }}
+                                                            {% endif %}
+                                                        </a>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            {% else %}
+                                            <button type="button" 
+                                                    class="btn btn-outline-secondary btn-sm" 
+                                                    title="无附件"
+                                                    disabled>
+                                                <i class="bi bi-eye"></i> 预览
+                                            </button>
+                                            {% endif %}
+                                            {% if request.user|has_perm:'eims_app.change_notice' %}
+                                            <a href="{% url 'eims_app:notice_edit' notice.id %}" 
+                                               class="btn btn-outline-warning btn-sm" title="编辑">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'eims_app:notice_file_download' notice.id %}" 
+                                               class="btn btn-outline-success btn-sm" 
+                                               title="下载"
+                                               {% if not notice.attach_file %}disabled{% endif %}>
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            <a href="{% url 'eims_app:notice_delete' notice.id %}" 
+                                               class="btn btn-outline-danger btn-sm" 
+                                               title="删除"
+                                               onclick="return confirm('确定要删除该通知吗？')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    {% if notices.has_other_pages %}
+                    <nav aria-label="Page navigation" class="p-3">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if notices.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ notices.previous_page_number }}&search={{ search_key }}&notice_status={{ notice_status }}">上一页</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">上一页</span>
+                            </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">第 {{ notices.number }} 页 / 共 {{ notices.paginator.num_pages }} 页</span>
+                            </li>
+
+                            {% if notices.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ notices.next_page_number }}&search={{ search_key }}&notice_status={{ notice_status }}">下一页</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">下一页</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <p class="mt-3">暂无通知公告</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

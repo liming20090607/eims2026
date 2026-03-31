@@ -1,0 +1,8 @@
+/* colResizable v1.6 - Minimal CSS */
+table.resizable th, table.resizable td {
+    overflow: hidden;
+}
+.dragging {
+    background-color: #e9ecef !important;
+    cursor: col-resize !important;
+}

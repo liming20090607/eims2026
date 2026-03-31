@@ -1,0 +1,192 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}部门详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:department_list' %}">部门管理</a></li>
+<li class="breadcrumb-item active">{{ dept.department_name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- 左侧：部门基本信息 -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> 基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-building display-1 text-primary"></i>
+                        <h4 class="mt-2">{{ dept.department_name }}</h4>
+                        <p class="text-muted">{{ dept.department_code }}</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th width="100">部门类型：</th>
+                            <td><span class="badge bg-primary">{{ dept.get_department_type_display }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>负责人：</th>
+                            <td>{{ dept.manager_name|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>联系电话：</th>
+                            <td>{{ dept.contact_phone|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>联系邮箱：</th>
+                            <td>{{ dept.contact_email|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>成立日期：</th>
+                            <td>{{ dept.established_date|date:"Y-m-d"|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>状态：</th>
+                            <td>
+                                <span class="badge {% if dept.status == 'active' %}bg-success{% elif dept.status == 'inactive' %}bg-secondary{% else %}bg-warning{% endif %}">
+                                    {{ dept.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>排序：</th>
+                            <td>{{ dept.order }}</td>
+                        </tr>
+                    </table>
+                    
+                    {% if user.is_superuser %}
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'eims_app:department_edit' dept.pk %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil"></i> 编辑部门
+                        </a>
+                        <a href="{% url 'eims_app:department_list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 部门统计 -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">部门人数</h6>
+                    <h2 class="display-4 fw-bold text-primary">{{ member_count|default:0 }}</h2>
+                    <small class="text-muted">在职人员</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧：详细信息和角色配置 -->
+        <div class="col-lg-8">
+            <!-- 部门职能 -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> 部门职能</h5>
+                </div>
+                <div class="card-body">
+                    <h6>部门描述：</h6>
+                    <p class="text-muted">{{ dept.description|default:"暂无描述"|linebreaksbr }}</p>
+                    
+                    <h6 class="mt-4">详细职能：</h6>
+                    <p class="text-muted">{{ dept.responsibilities|default:"暂无详细说明"|linebreaksbr }}</p>
+                </div>
+            </div>
+            
+            <!-- 部门角色配置 -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> 部门角色配置</h5>
+                        {% if user.is_superuser %}
+                        <a href="{% url 'eims_app:department_role_add' %}?dept={{ dept.pk }}" class="btn btn-sm btn-light">
+                            <i class="bi bi-plus-circle"></i> 添加角色
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if roles %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>用户</th>
+                                    <th>角色类型</th>
+                                    <th>角色名称</th>
+                                    <th>是否主要负责人</th>
+                                    {% if user.is_superuser %}
+                                    <th width="100">操作</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for role in roles %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <i class="bi bi-person-circle"></i>
+                                        {{ role.user.username }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ role.get_role_type_display }}</span>
+                                    </td>
+                                    <td>{{ role.role_name }}</td>
+                                    <td>
+                                        {% if role.is_primary %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> 是</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">否</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if user.is_superuser %}
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'eims_app:department_role_edit' role.pk %}" class="btn btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button onclick="deleteRole('{{ role.pk }}')" class="btn btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox display-4"></i>
+                        <p class="mt-2">暂无角色配置</p>
+                        {% if user.is_superuser %}
+                        <a href="{% url 'eims_app:department_role_add' %}?dept={{ dept.pk }}" class="btn btn-sm btn-primary mt-2">
+                            <i class="bi bi-plus-circle"></i> 添加第一个角色
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteRole(pk) {
+    if (confirm('确定要删除这个角色配置吗？')) {
+        window.location.href = `/department-roles/${pk}/delete/`;
+    }
+}
+</script>
+{% endblock %}

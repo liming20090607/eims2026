@@ -1,0 +1,211 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<style>
+/* 月度报告列表表格样式 */
+.table-responsive table {
+    table-layout: auto;  /* 自动调整列宽 */
+    width: 100%;
+}
+
+.table-responsive th,
+.table-responsive td {
+    white-space: nowrap;  /* 不换行，确保只有一行 */
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+}
+
+/* 表头样式 */
+.table-responsive thead th {
+    font-weight: 600;
+    text-align: left;
+}
+
+/* 操作列固定宽度 */
+.table-responsive td:last-child,
+.table-responsive th:last-child {
+    min-width: 200px;
+}
+
+/* 状态列 */
+.table-responsive td:nth-child(4),
+.table-responsive th:nth-child(4) {
+    min-width: 80px;
+}
+
+/* 日期列 */
+.table-responsive td:nth-child(5),
+.table-responsive td:nth-child(6),
+.table-responsive th:nth-child(5),
+.table-responsive th:nth-child(6) {
+    min-width: 120px;
+}
+
+/* 项目编号列 */
+.table-responsive td:first-child,
+.table-responsive th:first-child {
+    min-width: 80px;
+}
+
+/* 报告月份列 */
+.table-responsive td:nth-child(3),
+.table-responsive th:nth-child(3) {
+    min-width: 100px;
+}
+
+/* 填报人列 */
+.table-responsive td:nth-child(7),
+.table-responsive th:nth-child(7) {
+    min-width: 100px;
+}
+</style>
+
+<div class="container-fluid py-4">
+    <!-- 页面标题 -->
+    {% include 'components/page_title.html' with title=title subtitle='每月 25 日前填报项目动态信息' %}
+    
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">全部报告</h5>
+                    <h2 class="mb-0">{{ stats.total }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">草稿</h5>
+                    <h2 class="mb-0">{{ stats.draft }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">已提交</h5>
+                    <h2 class="mb-0">{{ stats.submitted }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">已逾期</h5>
+                    <h2 class="mb-0">{{ stats.overdue }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 操作按钮和筛选 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <a href="{% url 'eims_app:monthly_report_add' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 新建月度报告
+                    </a>
+                    <a href="{% url 'eims_app:monthly_report_dashboard' %}" class="btn btn-info">
+                        <i class="bi bi-speedometer2"></i> 填报提醒
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <form method="get" class="row g-2">
+                        <div class="col-md-4">
+                            {{ filter_form.report_month }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ filter_form.status }}
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-search"></i> 筛选
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 表格列表 -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>项目编号</th>
+                            <th>项目名称</th>
+                            <th>报告月份</th>
+                            <th>状态</th>
+                            <th>应提交日期</th>
+                            <th>实际提交日期</th>
+                            <th>填报人</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in page_obj %}
+                        <tr>
+                            <td>{{ report.project_code }}</td>
+                            <td>{{ report.project.project_name }}</td>
+                            <td>{{ report.report_month }}</td>
+                            <td>
+                                {% if report.status == 'draft' %}
+                                    <span class="badge bg-secondary">草稿</span>
+                                {% elif report.status == 'submitted' %}
+                                    <span class="badge bg-success">已提交</span>
+                                {% elif report.status == 'overdue' %}
+                                    <span class="badge bg-danger">已逾期</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ report.should_submit_date|date:"Y-m-d" }}</td>
+                            <td>
+                                {% if report.actual_submit_date %}
+                                    {{ report.actual_submit_date|date:"Y-m-d" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ report.operator }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'eims_app:monthly_report_detail' report.pk %}" 
+                                       class="btn btn-info">
+                                        <i class="bi bi-eye"></i> 详情
+                                    </a>
+                                    {% if report.status == 'draft' or report.status == 'overdue' %}
+                                        <a href="{% url 'eims_app:monthly_report_edit' report.pk %}" 
+                                           class="btn btn-warning">
+                                            <i class="bi bi-pencil"></i> 编辑
+                                        </a>
+                                        <a href="{% url 'eims_app:monthly_report_submit' report.pk %}" 
+                                           class="btn btn-success">
+                                            <i class="bi bi-check-circle"></i> 提交
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                <p class="mt-2">暂无月度报告</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 分页 -->
+            {% include 'components/pagination.html' with page_obj=page_obj %}
+        </div>
+    </div>
+</div>
+{% endblock %}

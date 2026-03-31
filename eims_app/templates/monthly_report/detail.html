@@ -1,0 +1,182 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- 页面标题 -->
+            {% include 'components/page_title.html' with title=title subtitle='查看月度报告详细信息' %}
+            
+            <!-- 报告详情卡片 -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-text"></i> {{ report.project.project_name }} - {{ report.report_month }}月度报告
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- 状态标签 -->
+                    <div class="mb-4">
+                        {% if report.status == 'draft' %}
+                            <span class="badge bg-secondary">草稿</span>
+                        {% elif report.status == 'submitted' %}
+                            <span class="badge bg-success">已提交</span>
+                        {% elif report.status == 'overdue' %}
+                            <span class="badge bg-danger">已逾期</span>
+                        {% endif %}
+                        
+                        <span class="ms-2 text-muted">
+                            <i class="bi bi-clock"></i> 应提交日期：{{ report.should_submit_date|date:"Y-m-d" }}
+                        </span>
+                        
+                        {% if report.actual_submit_date %}
+                            <span class="ms-2 text-muted">
+                                <i class="bi bi-check-circle"></i> 实际提交：{{ report.actual_submit_date|date:"Y-m-d" }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 详细信息 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="bi bi-info-circle"></i> 基础信息</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="30%">项目编号</th>
+                                    <td>{{ report.project_code }}</td>
+                                </tr>
+                                <tr>
+                                    <th>项目名称</th>
+                                    <td>{{ report.project.project_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>报告月份</th>
+                                    <td>{{ report.report_month }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="bi bi-bar-chart-line"></i> 项目进度</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="30%">当前状态</th>
+                                    <td>{{ report.get_current_status_display|default:"未选择" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>项目进度说明</th>
+                                    <td>{{ report.project_progress|default:"未填写"|linebreaksbr }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="bi bi-currency-yen"></i> 产值信息</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="30%">本月完成产值</th>
+                                    <td><strong>{{ report.monthly_output_value }}</strong> 万元</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="bi bi-cash"></i> 回款信息</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="30%">本月回款金额</th>
+                                    <td><strong>{{ report.monthly_payment }}</strong> 元</td>
+                                </tr>
+                                <tr>
+                                    <th>回款情况说明</th>
+                                    <td>{{ report.payment_description|default:"未填写"|linebreaksbr }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="bi bi-people"></i> 人员情况</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="30%">当前总人数</th>
+                                    <td>{{ report.total_personnel }} 人</td>
+                                </tr>
+                                <tr>
+                                    <th>本月人员变动</th>
+                                    <td>{{ report.personnel_changes|default:"未填写"|linebreaksbr }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-primary"><i class="bi bi-file-earmark-text"></i> 请款与计划</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="30%">本月请款情况</th>
+                                    <td>{{ report.payment_request|default:"未填写"|linebreaksbr }}</td>
+                                </tr>
+                                <tr>
+                                    <th>下月工作计划</th>
+                                    <td>{{ report.next_month_plan|default:"未填写"|linebreaksbr }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- 填报信息 -->
+                    <div class="alert alert-light border">
+                        <h6 class="text-primary"><i class="bi bi-person-badge"></i> 填报信息</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>填报人：</strong>{{ report.operator|default:"未知" }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>创建时间：</strong>{{ report.created_at|date:"Y-m-d H:i" }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>更新时间：</strong>{{ report.updated_at|date:"Y-m-d H:i" }}
+                            </div>
+                        </div>
+                        {% if report.submitted_at %}
+                        <div class="row mt-2">
+                            <div class="col-md-4">
+                                <strong>提交人：</strong>{{ report.submitter|default:"未知" }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>提交时间：</strong>{{ report.submitted_at|date:"Y-m-d H:i" }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="mt-4">
+                        <a href="{% url 'eims_app:monthly_report_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                        
+                        {% if report.status == 'draft' or report.status == 'overdue' %}
+                            <a href="{% url 'eims_app:monthly_report_edit' report.pk %}" class="btn btn-warning">
+                                <i class="bi bi-pencil"></i> 编辑
+                            </a>
+                            <a href="{% url 'eims_app:monthly_report_submit' report.pk %}" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> 提交
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

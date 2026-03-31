@@ -1,0 +1,82 @@
+{% extends 'base/base.html' %}
+
+{% block title %}人员详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:personnel_list' %}">人员管理</a></li>
+<li class="breadcrumb-item active">{{ personnel.name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> 人员详情 - {{ personnel.name }}</h5>
+                    <a href="{% url 'eims_app:personnel_list' %}" class="btn btn-sm btn-light">
+                        <i class="bi bi-arrow-left"></i> 返回列表
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for item in field_data %}
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">{{ item.label }}</label>
+                            <p class="mb-0 fw-bold">
+                                {% if item.has_choices and item.value %}
+                                    {{ item.value }}
+                                {% elif item.type == 'BooleanField' %}
+                                    {% if item.value %}<span class="badge bg-success">是</span>{% else %}<span class="badge bg-secondary">否</span>{% endif %}
+                                {% elif item.type == 'DateField' %}
+                                    {{ item.value|date:"Y-m-d"|default:"-" }}
+                                {% else %}
+                                    {{ item.value|default:"-" }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p class="text-muted">暂无数据</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        {% if user.is_superuser %}
+                        <a href="{% url 'eims_app:personnel_edit' personnel.pk %}" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </a>
+                        <a href="{% url 'eims_app:personnel_delete' personnel.pk %}" class="btn btn-danger" 
+                           onclick="return confirm('确定要删除该人员吗？')">
+                            <i class="bi bi-trash"></i> 删除
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-clock-history"></i> 系统信息</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted small">创建时间</p>
+                            <p class="fw-bold">{{ personnel.create_time|date:"Y-m-d H:i:s" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted small">更新时间</p>
+                            <p class="fw-bold">{{ personnel.update_time|date:"Y-m-d H:i:s" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

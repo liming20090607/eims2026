@@ -1,0 +1,282 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}人员管理模块导航{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">人员管理模块</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="display-6"><i class="bi bi-people-fill text-primary"></i> 人员管理模块</h2>
+            <p class="text-muted mt-2">完整的人员信息化管理系统 - 包含花名册、证书、分配三大功能</p>
+        </div>
+    </div>
+
+    <!-- 三个核心功能卡片 -->
+    <div class="row g-4 mb-4">
+        <!-- 人员花名册 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0"><i class="bi bi-journal-text"></i> 人员花名册</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-clipboard-data display-1 text-primary mb-3"></i>
+                    <p class="card-text mt-3">
+                        完整的人员信息管理系统，包含详细的员工档案、联系方式、职务信息等。
+                    </p>
+                    <ul class="list-unstyled text-start mx-auto" style="max-width: 300px;">
+                        <li><i class="bi bi-check-circle text-success"></i> 人员基本信息</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 详细联系方式</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 职务职称信息</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 入职离职管理</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 导入导出功能</li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <a href="{% url 'eims_app:personnel_list' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                    <div class="mt-2">
+                        <small class="text-muted">当前状态：<span class="text-success">✅ 已上线</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 人员证书 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h4 class="mb-0"><i class="bi bi-award"></i> 人员证书</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-patch-check display-1 text-warning mb-3"></i>
+                    <p class="card-text mt-3">
+                        专业证书管理系统，支持证书扫描件上传、有效期管理、分类查询等功能。
+                    </p>
+                    <ul class="list-unstyled text-start mx-auto" style="max-width: 300px;">
+                        <li><i class="bi bi-check-circle text-success"></i> 证书信息管理</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 证书类型分类</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 附件上传下载</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 有效期提醒</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 按人员查询</li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <a href="{% url 'eims_app:certificate_list' %}" class="btn btn-warning btn-lg text-dark">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                    <div class="mt-2">
+                        <small class="text-muted">当前状态：<span class="text-success">✅ 已上线</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 人员分配 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-info">
+                <div class="card-header bg-info text-white text-center">
+                    <h4 class="mb-0"><i class="bi bi-person-badge"></i> 人员分配</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-diagram-3 display-1 text-info mb-3"></i>
+                    <p class="card-text mt-3">
+                        灵活的人员调配系统，支持项目间人员调动、部门分配、可视化操作等功能。
+                    </p>
+                    <ul class="list-unstyled text-start mx-auto" style="max-width: 300px;">
+                        <li><i class="bi bi-check-circle text-success"></i> 项目人员分配</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 部门管理分配</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 可视化分配界面</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 批量操作功能</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 分配历史记录</li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <a href="{% url 'eims_app:allocation_visual' %}" class="btn btn-info btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> 可视化分配
+                    </a>
+                    <div class="mt-2">
+                        <small class="text-muted">当前状态：<span class="text-success">✅ 已上线</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速操作指南 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> 快速操作指南</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-1-circle fs-4 text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>添加新员工</h6>
+                                    <p class="mb-0 text-muted">进入<strong>人员花名册</strong> → 点击<strong>"添加人员"</strong> → 填写完整信息 → 保存</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-2-circle fs-4 text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>分配部门</h6>
+                                    <p class="mb-0 text-muted">进入<strong>可视化分配</strong> → 选择人员 → 点击<strong>"分配到部门"</strong> → 选择部门 → 确认</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-3-circle fs-4 text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>分配项目</h6>
+                                    <p class="mb-0 text-muted">进入<strong>可视化分配</strong> → 选择人员 → 点击<strong>"分配到项目"</strong> → 选择项目和岗位 → 确认</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-4-circle fs-4 text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>添加证书</h6>
+                                    <p class="mb-0 text-muted">进入<strong>人员证书</strong> → 点击<strong>"添加证书"</strong> → 选择人员和证书信息 → 上传附件 → 保存</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-5-circle fs-4 text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>召回人员</h6>
+                                    <p class="mb-0 text-muted">进入<strong>可视化分配</strong> → 在右侧找到已分配人员 → 点击<strong>"召回"</strong> → 确认</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-6-circle fs-4 text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>查看统计</h6>
+                                    <p class="mb-0 text-muted">各模块首页均有统计卡片，显示总人数、在岗人数、证书数量等关键指标</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据关联说明 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-diagram-3"></i> 三大模块数据关联</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>核心理念：</strong>所有模块通过 <code>人员编号</code> 进行关联，实现数据互通和自动同步。
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6><i class="bi bi-journal-text text-primary"></i> 人员花名册</h6>
+                                <p class="small text-muted mb-0">基础数据中心<br>存储所有人员基本信息</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6><i class="bi bi-link-45deg text-success"></i> 数据关联</h6>
+                                <p class="small text-muted mb-0">通过人员编号<br>实现三向数据联动</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6><i class="bi bi-award text-warning"></i> 人员证书</h6>
+                                <p class="small text-muted mb-0">证书管理<br>与人员信息实时同步</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <div class="p-3 border rounded bg-light d-inline-block">
+                            <h6><i class="bi bi-person-badge text-info"></i> 人员分配</h6>
+                            <p class="small text-muted mb-0">项目/部门分配<br>自动更新花名册项目信息</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>数据同步示例：</h6>
+                        <ol>
+                            <li><strong>分配人员到项目</strong> → 花名册中该人员的"所在项目"自动更新</li>
+                            <li><strong>添加人员证书</strong> → 可通过人员编号在花名册中查看证书信息</li>
+                            <li><strong>修改人员部门</strong> → 所有关联视图中的部门信息同步更新</li>
+                            <li><strong>项目详情页</strong> → 自动显示该项目下的所有人员（来自花名册）</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 技术支持 -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <div class="alert alert-secondary">
+                <i class="bi bi-book"></i> 
+                <strong>需要帮助？</strong> 
+                查看详细文档：
+                <a href="/static/docs/人员管理模块使用手册.pdf" class="alert-link" target="_blank">使用手册</a> |
+                <a href="{% url 'eims_app:eims_index' %}" class="alert-link">返回首页</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5em 0.8em;
+}
+.list-unstyled li {
+    margin-bottom: 0.5rem;
+}
+.display-1 {
+    font-size: 4rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,526 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}合同管理{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="#">合同管理</a></li>
+<li class="breadcrumb-item active">合同列表</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-responsive { overflow-x: auto; }
+    .table thead th { 
+        font-size: 13px; 
+        font-weight: 600; 
+        white-space: nowrap; 
+        background-color: #f8f9fa;
+        padding: 12px 8px;
+        vertical-align: middle;
+    }
+    .table tbody td { 
+        font-size: 13px; 
+        vertical-align: middle;
+        padding: 12px 8px;
+        white-space: nowrap;
+    }
+    .table tbody tr:hover { background-color: rgba(0, 123, 255, 0.05); }
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 500; }
+    .project-not_started { background-color: #ffc107; color: #000; }
+    .project-under_construction { background-color: #28a745; color: #fff; }
+    .project-stopped { background-color: #dc3545; color: #fff; }
+    .project-completed { background-color: #17a2b8; color: #fff; }
+    .contract-pending_review { background-color: #ffc107; color: #000; }
+    .contract-executing { background-color: #28a745; color: #fff; }
+    .contract-terminated { background-color: #dc3545; color: #fff; }
+    .contract-released { background-color: #6c757d; color: #fff; }
+    .settlement-unsettled { background-color: #ffc107; color: #000; }
+    .settlement-settled { background-color: #28a745; color: #fff; }
+    .search-bar { background: white; border-radius: 8px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .btn-action { 
+        padding: 3px 4px; 
+        font-size: 13px; 
+        margin: 0 2px; 
+        border-radius: 3px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .btn-action:active {
+        transform: translateY(0);
+    }
+    
+    /* 不同颜色按钮的悬停效果 */
+    .btn-info.btn-action:hover {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .btn-warning.btn-action:hover {
+        background-color: #e0a800;
+        color: white;
+    }
+    
+    .btn-danger.btn-action:hover {
+        background-color: #c82333;
+        color: white;
+    }
+    
+    /* 禁用状态的编辑和删除按钮 */
+    .btn-disabled-custom {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+        pointer-events: none !important; /* 禁止点击 */
+    }
+    
+    .btn-disabled-custom:hover,
+    .btn-disabled-custom:focus,
+    .btn-disabled-custom:active {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+    }
+    
+    /* 固定操作列 */
+    .table-responsive {
+        position: relative;
+        max-height: calc(100vh - 350px);
+        overflow: auto;
+    }
+    
+    .table-responsive thead th.sticky-col,
+    .table-responsive tbody td.sticky-col {
+        position: sticky;
+        right: 0;
+        background: inherit;
+        z-index: 3;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    }
+    
+    .table-responsive thead th.sticky-col {
+        z-index: 4;
+        background-color: #f8f9fa;
+    }
+    
+    .table-responsive tbody tr:hover td.sticky-col {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-2"><i class="bi bi-file-earmark-text me-2"></i>合同管理</h2>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- 记录统计 -->
+            <div class="me-3">
+                <span class="badge bg-primary fs-6">📊 共 {{ total_count }} 条记录</span>
+                {% if search_key or contract_category or contract_status or settlement_status %}
+                    <span class="text-muted ms-2"><small>（当前筛选条件）</small></span>
+                {% endif %}
+            </div>
+            <!-- 批量操作按钮 - 默认隐藏，选择记录后显示 -->
+            <div id="batchActions" style="display: none;">
+                <span class="text-muted me-2">已选择 <strong id="selectedCount">0</strong> 条</span>
+                <button type="button" class="btn btn-danger btn-sm" onclick="submitBatchDelete()">
+                    <i class="bi bi-trash me-1"></i>批量删除
+                </button>
+                <button type="button" class="btn btn-info btn-sm me-2" onclick="submitBatchExport()">
+                    <i class="bi bi-download me-1"></i>批量导出
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm me-2" onclick="cancelSelection()">
+                    <i class="bi bi-x-circle me-1"></i>取消选择
+                </button>
+            </div>
+            <!-- 常规操作按钮 -->
+            <div>
+                <a href="{% url 'eims_app:contract_management_export' %}" class="btn btn-info me-2" id="exportBtn">
+                    <i class="bi bi-download me-1"></i>导出数据
+                </a>
+                <a href="{% url 'eims_app:contract_management_import' %}" class="btn btn-success me-2">
+                    <i class="bi bi-upload me-1"></i>导入数据
+                </a>
+                <a href="{% url 'eims_app:contract_management_add' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>新增合同
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="search-bar">
+        <form method="get" action="{% url 'eims_app:contract_management_list' %}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="搜索项目名称、合同编号..." value="{{ search_key }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="contract_category" class="form-select">
+                        <option value="">所有合同类别</option>
+                        {% for value, label in CONTRACT_CATEGORY_CHOICES %}
+                        <option value="{{ value }}" {% if contract_category == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="contract_status" class="form-select">
+                        <option value="">所有合同状态</option>
+                        {% for value, label in CONTRACT_STATUS_CHOICES %}
+                        <option value="{{ value }}" {% if contract_status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="settlement_status" class="form-select">
+                        <option value="">所有结算状态</option>
+                        {% for value, label in SETTLEMENT_STATUS_CHOICES %}
+                        <option value="{{ value }}" {% if settlement_status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>搜索</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <form method="post" id="batchForm" action="{% url 'eims_app:contract_management_batch_delete' %}">
+                    {% csrf_token %}
+                    <table class="table table-hover table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center" width="50">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </th>
+                                <th class="text-center">序号</th>
+                                <th>项目编号</th>
+                                <th>合同编号</th>
+                                <th>项目名称</th>
+                                <th>项目状态</th>
+                                <th>合同状态</th>
+                                <th>结算情况</th>
+                                <th>合同甲方</th>
+                                <th>合同乙方</th>
+                                <th>签订日期</th>
+                                <th>合同文本</th>
+                                <th class="text-end">合同总价 (元)</th>
+                                <th class="text-end">付款约定</th>
+                                <th class="text-end">累计回款</th>
+                                <th class="text-end">合同余款</th>
+                                <th>项目规模</th>
+                                <th class="text-end">项目总投资 (万元)</th>
+                                <th>项目地址</th>
+                                <th>约定人员配备</th>
+                                <th>服务开始时间</th>
+                                <th>服务周期 (月)</th>
+                                <th>服务到期时间</th>
+                                <th>延期约定</th>
+                                <th>实际延期情况</th>
+                                <th>项目总监</th>
+                                <th>联系电话</th>
+                                <th>备注</th>
+                                <th class="text-center sticky-col">操作</th>
+                            </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in page_obj %}
+                        <tr>
+                            <td class="text-center">
+                                <input type="checkbox" name="ids" value="{{ item.pk }}" class="form-check-input item-checkbox">
+                            </td>
+                            <td class="text-center">{{ forloop.counter|add:page_obj.start_index|add:-1 }}</td>
+                            <td><code>{{ item.project_code|default:"-" }}</code></td>
+                            <td><code>{{ item.contract_code|default:"-" }}</code></td>
+                            <td>{{ item.project_name|truncatechars:15 }}</td>
+                            <td>
+                                <span class="status-badge project-{{ item.project_status }}">
+                                    {{ item.get_project_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge contract-{{ item.contract_status }}">
+                                    {{ item.get_contract_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge settlement-{{ item.settlement_status }}">
+                                    {{ item.get_settlement_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ item.contract_party_a|truncatechars:12|default:"-" }}</td>
+                            <td>{{ item.contract_party_b|truncatechars:12|default:"-" }}</td>
+                            <td>{{ item.signing_date|date:"Y-m-d"|default:"-" }}</td>
+                            <td>
+                                {% if item.contract_document %}
+                                    <a href="{{ item.contract_document.url }}" target="_blank" class="btn btn-sm btn-link" title="查看合同">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">¥{{ item.contract_amount|floatformat:2 }}</td>
+                            <td class="text-end">{{ item.payment_terms|truncatechars:10|default:"-" }}</td>
+                            <td class="text-end">¥{{ item.cumulative_payment|floatformat:2 }}</td>
+                            <td class="text-end text-warning">¥{{ item.contract_balance|floatformat:2 }}</td>
+                            <td>{{ item.project_scale|truncatechars:10|default:"-" }}</td>
+                            <td class="text-end">{{ item.project_investment|floatformat:2 }}</td>
+                            <td>{{ item.project_address|truncatechars:15|default:"-" }}</td>
+                            <td>{{ item.staffing_plan|truncatechars:10|default:"-" }}</td>
+                            <td>{{ item.service_start_date|date:"Y-m-d"|default:"-" }}</td>
+                            <td class="text-end">{{ item.service_period_months|default:"0" }}</td>
+                            <td>{{ item.service_deadline|date:"Y-m-d"|default:"-" }}</td>
+                            <td>{{ item.extension_agreement|truncatechars:10|default:"-" }}</td>
+                            <td>{{ item.actual_extension|truncatechars:10|default:"-" }}</td>
+                            <td>{{ item.project_director|truncatechars:6|default:"-" }}</td>
+                            <td>{{ item.contact_phone|default:"-" }}</td>
+                            <td>{{ item.remark|truncatechars:15|default:"-" }}</td>
+                            <td class="text-center sticky-col">
+                                <a href="{% url 'eims_app:contract_management_detail' item.pk %}" class="btn btn-sm btn-info btn-action" title="查看"><i class="bi bi-eye"></i></a>
+                                {% if user.is_superuser %}
+                                <a href="{% url 'eims_app:contract_management_edit' item.pk %}" class="btn btn-sm btn-warning btn-action" title="编辑"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'eims_app:contract_management_delete' item.pk %}" class="btn btn-sm btn-danger btn-action" onclick="return confirm('确定要删除这个合同吗？')" title="删除"><i class="bi bi-trash"></i></a>
+                                {% else %}
+                                <button type="button" class="btn btn-sm btn-disabled-custom" title="编辑（仅超级管理员）" disabled>
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-disabled-custom" title="删除（仅超级管理员）" disabled>
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="28" class="text-center text-muted py-4"><i class="bi bi-inbox display-4"></i><p class="mt-2">暂无数据</p></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 分页控件 - 顶部 -->
+        {% if page_obj.has_other_pages %}
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- 首页和上一页 -->
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="首页">
+                                <i class="bi bi-chevron-double-left"></i> 首页
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="上一页">
+                                <i class="bi bi-chevron-left"></i> 上一页
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-double-left"></i> 首页</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-left"></i> 上一页</span>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- 当前页码 -->
+                        <li class="page-item active">
+                            <span class="page-link">
+                                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+                                (共 {{ page_obj.paginator.count }} 条)
+                            </span>
+                        </li>
+                        
+                        <!-- 下一页和末页 -->
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="下一页">
+                                下一页 <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="末页">
+                                末页 <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">下一页 <i class="bi bi-chevron-right"></i></span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">末页 <i class="bi bi-chevron-double-right"></i></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 分页控件 - 底部 -->
+        {% if page_obj.has_other_pages %}
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- 首页和上一页 -->
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="首页">
+                                <i class="bi bi-chevron-double-left"></i> 首页
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="上一页">
+                                <i class="bi bi-chevron-left"></i> 上一页
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-double-left"></i> 首页</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-left"></i> 上一页</span>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- 当前页码 -->
+                        <li class="page-item active">
+                            <span class="page-link">
+                                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+                                (共 {{ page_obj.paginator.count }} 条)
+                            </span>
+                        </li>
+                        
+                        <!-- 下一页和末页 -->
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="下一页">
+                                下一页 <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="末页">
+                                末页 <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">下一页 <i class="bi bi-chevron-right"></i></span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">末页 <i class="bi bi-chevron-double-right"></i></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// 全选/取消全选
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.item-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    updateBatchActions();
+});
+
+// 单项选择时更新状态
+document.querySelectorAll('.item-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateBatchActions);
+});
+
+// 更新批量操作按钮显示和计数
+function updateBatchActions() {
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    const count = checkedBoxes.length;
+    const batchActions = document.getElementById('batchActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    selectedCount.textContent = count;
+    
+    if (count > 0) {
+        batchActions.style.display = 'block';
+    } else {
+        batchActions.style.display = 'none';
+    }
+}
+
+// 提交批量删除
+function submitBatchDelete() {
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('请至少选择一条记录');
+        return;
+    }
+    
+    if (!confirm(`确定要删除选中的 ${checkedBoxes.length} 条记录吗？此操作不可恢复！`)) {
+        return;
+    }
+    
+    // 设置表单 action 为批量删除 URL
+    const form = document.getElementById('batchForm');
+    form.action = "{% url 'eims_app:contract_management_batch_delete' %}";
+    form.submit();
+}
+
+// 提交批量导出
+function submitBatchExport() {
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('请至少选择一条记录');
+        return;
+    }
+    
+    // 收集选中的 ID
+    const ids = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    // 跳转到导出页面，带上选中的 ID
+    window.location.href = "{% url 'eims_app:contract_management_export' %}?ids=" + ids.join(',');
+}
+
+// 取消选择
+function cancelSelection() {
+    document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('selectAll').checked = false;
+    updateBatchActions();
+}
+
+// 确保禁用按钮不可点击（双重保险）
+document.addEventListener('DOMContentLoaded', function() {
+    // 为所有禁用的编辑和删除按钮添加点击阻止
+    document.querySelectorAll('.btn-disabled-custom').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+    });
+});
+</script>
+{% endblock %}

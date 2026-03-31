@@ -1,0 +1,171 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}人员分配管理{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">人员分配管理</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">分配记录总数</h5>
+                    <h2>{{ total_allocations }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作按钮和筛选 -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> 人员分配信息</h5>
+                <div>
+                    {% if user.is_superuser %}
+                    <a href="{% url 'eims_app:allocation_add' %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle"></i> 添加分配
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">关键词</label>
+                    <input type="text" class="form-control" name="keyword" value="{{ selected_keyword }}" placeholder="分配编号/岗位">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">分配状态</label>
+                    <select name="allocation_status" class="form-control">
+                        <option value="">全部状态</option>
+                        <option value="allocated" {% if selected_allocation_status == 'allocated' %}selected{% endif %}>已分配</option>
+                        <option value="pending" {% if selected_allocation_status == 'pending' %}selected{% endif %}>待分配</option>
+                        <option value="recalled" {% if selected_allocation_status == 'recalled' %}selected{% endif %}>已召回</option>
+                        <option value="transferred" {% if selected_allocation_status == 'transferred' %}selected{% endif %}>已调动</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">人员编号</label>
+                    <input type="text" class="form-control" name="personnel_code" value="{{ selected_personnel_code }}" placeholder="输入人员编号">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">分配项目</label>
+                    <select name="to_project_code" class="form-control">
+                        <option value="">全部项目</option>
+                        {% for project in all_projects %}
+                        <option value="{{ project.project_code }}" {% if selected_to_project_code == project.project_code %}selected{% endif %}>
+                            {{ project.project_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> 搜索
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>分配编号</th>
+                            <th>人员编号</th>
+                            <th>姓名</th>
+                            <th>原项目</th>
+                            <th>分配项目</th>
+                            <th>分配岗位</th>
+                            <th>分配日期</th>
+                            <th>预计工期</th>
+                            <th>分配状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alloc in page_obj %}
+                        <tr>
+                            <td>{{ alloc.allocation_code }}</td>
+                            <td>{{ alloc.personnel_code }}</td>
+                            <td>{{ alloc.personnel_name|default:"-" }}</td>
+                            <td>{{ alloc.from_project_name|default:"-" }}</td>
+                            <td>{{ alloc.to_project_name|default:"-" }}</td>
+                            <td>{{ alloc.allocation_position }}</td>
+                            <td>{{ alloc.allocation_date|date:"Y-m-d" }}</td>
+                            <td>{{ alloc.expected_duration|default:"-" }}</td>
+                            <td>
+                                {% if alloc.allocation_status == 'allocated' %}<span class="badge bg-success">已分配</span>
+                                {% elif alloc.allocation_status == 'pending' %}<span class="badge bg-warning">待分配</span>
+                                {% elif alloc.allocation_status == 'recalled' %}<span class="badge bg-secondary">已召回</span>
+                                {% elif alloc.allocation_status == 'transferred' %}<span class="badge bg-info">已调动</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'eims_app:allocation_detail' alloc.pk %}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> 详情
+                                </a>
+                                {% if user.is_superuser %}
+                                <a href="{% url 'eims_app:allocation_edit' alloc.pk %}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </a>
+                                <a href="{% url 'eims_app:allocation_delete' alloc.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('确定删除？')">
+                                    <i class="bi bi-trash"></i> 删除
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">暂无数据</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">首页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">末页</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

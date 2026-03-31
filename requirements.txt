@@ -1,0 +1,35 @@
+# Django核心依赖（稳定版本，适配项目配置+Python3.9，确保能正常安装）
+Django==4.2.7
+# 数据库驱动（MySQL，生产环境使用，若安装失败则注释，启用下方pymysql）
+# mysqlclient==2.2.0
+# 替代驱动（已启用，适配Python3.9，解决mysqlclient安装失败问题）
+pymysql==1.1.0
+# 时间处理依赖（Django依赖，避免版本冲突，必装）
+pytz==2024.1
+# 静态文件处理（生产环境可选，不影响开发环境启动）
+whitenoise==6.5.0
+# 表单验证增强（可选，适配Python3.9，兼容提示可忽略）
+django-crispy-forms==2.0
+# 日志处理（修正为唯一可用版本，彻底解决“找不到版本”报错）
+logging==0.4.9.6
+# 虚拟环境管理（Anaconda可选，无需安装也不影响启动）
+conda-pack==0.6.0
+# 新增：加载.env文件依赖（必装，解决当前dotenv模块找不到报错）
+python-dotenv==1.0.0
+
+#以上就是：
+#Django==4.2.7
+#mysqlclient==2.2.0
+#pymysql==1.1.0
+#pytz==2024.1
+#whitenoise==6.5.0
+#django-crispy-forms==2.0
+#logging==0.4.9.6
+#conda-pack==0.6.0
+
+
+#django==4.2.9
+#pandas==2.1.4
+#openpyxl==3.1.2
+#pillow==10.2.0
+#django-crispy-forms==2.1 

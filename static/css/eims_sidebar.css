@@ -1,0 +1,224 @@
+/* ========================================
+   EIMS 侧边栏专属样式 (Django 静态文件)
+   路径: static/css/eims_sidebar.css
+   用途：不影响现有样式，仅增强侧边栏体验
+   ======================================== */
+:root {
+  --eims-sidebar-width: 240px;
+  --eims-sidebar-collapsed-width: 64px;
+  --eims-sidebar-bg: #2c3e50;
+  --eims-sidebar-hover: #34495e;
+  --eims-sidebar-active: #1abc9c;
+  --eims-sidebar-text: #ecf0f1;
+  --eims-sidebar-border: #34495e;
+}
+
+/* 侧边栏容器 - 无障碍友好 */
+#eims-sidebar {
+  background-color: var(--eims-sidebar-bg);
+  color: var(--eims-sidebar-text);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1020; /* 高于Bootstrap默认navbar (1000) */
+  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  transition: width 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* 折叠状态 */
+#eims-sidebar.collapsed {
+  width: var(--eims-sidebar-collapsed-width) !important;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+}
+
+/* 头部区域 */
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--eims-sidebar-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  transition: padding 0.3s ease;
+}
+
+#eims-sidebar.collapsed .sidebar-header {
+  padding: 16px 12px;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+#eims-sidebar.collapsed .logo {
+  opacity: 0;
+  width: 0;
+}
+
+/* 折叠按钮 */
+.toggle-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-btn:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.05);
+}
+
+/* 菜单区域 */
+#sidebar-menu {
+  list-style: none;
+  padding: 12px 0;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: #4a647d #2c3e50;
+}
+
+#sidebar-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+#sidebar-menu::-webkit-scrollbar-track {
+  background: #2c3e50;
+}
+
+#sidebar-menu::-webkit-scrollbar-thumb {
+  background-color: #4a647d;
+  border-radius: 3px;
+}
+
+.nav-item {
+  margin-bottom: 4px;
+  padding: 0 12px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px !important;
+  color: var(--eims-sidebar-text) !important;
+  border-radius: 6px;
+  margin: 2px 0;
+  transition: all 0.25s ease;
+  text-decoration: none !important;
+  font-size: 0.95rem;
+  height: 42px;
+}
+
+.nav-link:hover {
+  background-color: var(--eims-sidebar-hover);
+  transform: translateX(4px);
+}
+
+.nav-link.active {
+  background-color: var(--eims-sidebar-active) !important;
+  color: #1a252f !important;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* 图标与文字 */
+.menu-icon {
+  width: 24px;
+  display: inline-flex;
+  justify-content: center;
+  margin-right: 14px;
+  font-size: 1.2rem;
+  transition: margin-right 0.3s ease;
+}
+
+.menu-text {
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.3s ease, margin 0.3s ease;
+}
+
+#eims-sidebar.collapsed .menu-text {
+  opacity: 0;
+  width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* 折叠状态Tooltip（无障碍增强） */
+.nav-link.collapsed-tooltip {
+  position: relative;
+}
+
+.nav-link.collapsed-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 15px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a252f;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 1050;
+  opacity: 1;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-50%) scale(0.9); }
+  to { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+
+/* 主内容区偏移（避免被侧边栏遮挡） */
+.main-content {
+  margin-left: var(--eims-sidebar-width);
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+body.sidebar-collapsed .main-content {
+  margin-left: var(--eims-sidebar-collapsed-width);
+}
+
+/* 响应式：小屏设备自动折叠 */
+@media (max-width: 991px) {
+  #eims-sidebar {
+    transform: translateX(-100%);
+  }
+  #eims-sidebar.show {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0 !important;
+  }
+  body.sidebar-collapsed .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* 无障碍：聚焦状态高亮 */
+.nav-link:focus {
+  outline: 2px solid var(--eims-sidebar-active);
+  outline-offset: -2px;
+}

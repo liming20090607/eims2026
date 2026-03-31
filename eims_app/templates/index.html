@@ -1,0 +1,260 @@
+{% extends 'base/base.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">首页</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">协同 AI 办公系统</h1>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">总项目数</h5>
+                    <p class="card-text display-4">{{ total_projects }}</p>
+                    <p class="card-text"><small>当前系统中所有项目</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">进行中项目</h5>
+                    <p class="card-text display-4">{{ active_projects }}</p>
+                    <p class="card-text"><small>当前正在执行的项目</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">延期项目</h5>
+                    <p class="card-text display-4">{{ delayed_projects }}</p>
+                    <p class="card-text"><small>已超过计划完成时间的项目</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">已完成项目</h5>
+                    <p class="card-text display-4">{{ completed_projects }}</p>
+                    <p class="card-text"><small>已成功完成的项目</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 月度填报提醒 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check"></i> 月度填报
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <p class="lead mb-2">
+                                <i class="bi bi-info-circle"></i> 
+                                每月<strong>25 日</strong>前填报项目动态信息
+                            </p>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="bi bi-check-circle text-success"></i> 项目进度、项目状态</li>
+                                <li><i class="bi bi-check-circle text-success"></i> 本月完成产值、本月回款</li>
+                                <li><i class="bi bi-check-circle text-success"></i> 人员变动情况、请款情况</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{% url 'eims_app:monthly_report_dashboard' %}" class="btn btn-warning btn-lg">
+                                <i class="bi bi-speedometer2"></i> 进入填报提醒
+                            </a>
+                            <br>
+                            <small class="text-muted">或</small>
+                            <br>
+                            {% load permission_tags %}
+                            {% check_monthly_report_permission user as can_create_report %}
+                            {% if can_create_report %}
+                            <a href="{% url 'eims_app:monthly_report_add' %}" class="btn btn-primary mt-2">
+                                <i class="bi bi-plus-circle"></i> 新建月度报告
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">最近项目</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>项目名称</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in recent_projects %}
+                                <tr>
+                                    <td>{{ project.project_name }}</td>
+                                    <td>
+                                        <span class="badge {% if project.project_status == 'in_progress' %}bg-primary{% elif project.project_status == 'completed' %}bg-success{% elif project.project_status == 'delayed' %}bg-warning{% elif project.project_status == 'cancelled' %}bg-danger{% endif %}">
+                                            {{ project.get_project_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ project.created_at|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">暂无项目数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">最近合同</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>合同名称</th>
+                                    <th>状态</th>
+                                    <th>签订日期</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract in recent_contracts %}
+                                <tr>
+                                    <td>{{ contract.contract_name }}</td>
+                                    <td>
+                                    <span class="badge {% if contract.status == 'active' %}bg-success{% elif contract.status == 'expired' %}bg-secondary{% elif contract.status == 'terminated' %}bg-danger{% endif %}">
+                                        {{ contract.get_status_display }}
+                                    </span>
+                                    </td>
+                                    <td>{{ contract.signing_time|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">暂无合同数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if has_report_reminder %}
+<!-- 月报填报提醒模态框 -->
+<div class="modal fade" id="monthlyReportReminderModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    月报填报提醒
+                </h5>
+            </div>
+            <div class="modal-body">
+                {% if overdue_reports %}
+                <div class="alert alert-danger">
+                    <h6><i class="bi bi-exclamation-octagon me-2"></i>已逾期月报（{{ overdue_reports.count }}条）</h6>
+                    <ul class="mb-0">
+                        {% for report in overdue_reports %}
+                        <li>
+                            <strong>{{ report.project.project_name }}</strong>
+                            - {{ report.report_month }}月报
+                            {% if report.should_submit_date %}
+                            (已逾期 {{ report.should_submit_date|timesince|default:"多日" }})
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                {% if unreported_projects %}
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle me-2"></i>待填报月报（{{ unreported_projects.count }}个项目）</h6>
+                    <p class="mb-2">以下是您负责但尚未填报本月月报的项目：</p>
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>项目编号</th>
+                                    <th>项目名称</th>
+                                    <th>填报月份</th>
+                                    <th>截止日期</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in unreported_projects %}
+                                <tr>
+                                    <td>{{ project.project_code }}</td>
+                                    <td>{{ project.project_name }}</td>
+                                    <td>{{ current_month_str }}</td>
+                                    <td>{{ current_year }}-{{ current_month|stringformat:"02d" }}-25</td>
+                                    <td>
+                                        <a href="{% url 'eims_app:monthly_report_add' %}?project={{ project.id }}" 
+                                           class="btn btn-sm btn-primary"
+                                           target="_blank">
+                                            <i class="bi bi-pencil-square"></i> 立即填报
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> 稍后处理
+                </button>
+                <a href="{% url 'eims_app:monthly_report_list' %}" class="btn btn-primary">
+                    <i class="bi bi-list-ul"></i> 查看月报列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 页面加载时自动显示月报提醒弹窗
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal(document.getElementById('monthlyReportReminderModal'));
+    modal.show();
+});
+</script>
+{% endif %}
+
+{% endblock %}

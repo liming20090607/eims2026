@@ -1,0 +1,1299 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ project_detail.project_name }} - 项目完整详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目台账</a></li>
+<li class="breadcrumb-item active">{{ project_detail.project_name|truncatechars:20 }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<!-- 注意：如果样式未生效，请按 Ctrl+Shift+R (Windows) 或 Cmd+Shift+R (Mac) 强制刷新浏览器缓存 -->
+<style>
+    /* 项目导航按钮 - 紧凑设计 */
+    .project-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 6px 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border-left: 2px solid #007bff;
+    }
+    
+    .project-nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+        font-size: 12px;
+    }
+    
+    .project-nav-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .project-nav-info {
+        text-align: center;
+        color: #6c757d;
+        font-size: 11px;
+    }
+    
+    .project-nav-title {
+        font-weight: 600;
+        color: #007bff;
+        font-size: 12px;
+    }
+    
+    /* 搜索框样式 */
+    .project-search-box {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+    }
+    
+    .project-search-input {
+        width: 350px;
+        padding: 4px 8px;
+        font-size: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+    
+    .project-search-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    
+    .project-search-input::placeholder {
+        color: #6c757d;
+        font-size: 11px;
+    }
+    
+    .project-search-btn {
+        padding: 4px 12px;
+        font-size: 12px;
+        min-width: 60px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    
+    .search-result-info {
+        font-size: 11px;
+        color: #28a745;
+        font-weight: 500;
+        margin-left: 8px;
+        display: none;
+    }
+    
+    .search-error-info {
+        font-size: 11px;
+        color: #dc3545;
+        font-weight: 500;
+        margin-left: 8px;
+        display: none;
+    }
+    
+    /* 分页控件样式 - 紧凑设计 */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        padding: 10px 0;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .pagination-info {
+        color: #6c757d;
+        font-size: 15px;
+    }
+    
+    .pagination-controls {
+        display: flex;
+        gap: 3px;
+    }
+    
+    .pagination-controls .page-link {
+        padding: 4px 8px;
+        border-radius: 3px;
+        border: 1px solid #dee2e6;
+        color: #007bff;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination-controls .page-link:hover {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    
+    .pagination-controls .active .page-link {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+        font-weight: 600;
+    }
+    
+    .pagination-controls .disabled .page-link {
+        background: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+    
+    /* 主窗体容器 - 紧凑设计 */
+    .main-panel {
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        padding: 10px;
+        margin-bottom: 10px;
+        border-top: 2px solid #007bff;
+    }
+    
+    .main-panel-header {
+        border-bottom: 1px solid #007bff;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .main-panel-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #007bff;
+        margin: 0;
+    }
+    
+    /* 子窗体样式 - 紧凑设计 */
+    .sub-panel {
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        padding: 10px;
+        margin-bottom: 10px;
+        border-left: 2px solid #28a745;
+    }
+    
+    .sub-panel-header {
+        border-bottom: 1px solid #28a745;
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .sub-panel-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #28a745;
+        margin: 0;
+    }
+    
+    /* 信息展示网格 - 主布局 - 紧凑设计 */
+    .info-grid-main {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    /* 信息展示网格 - 次级布局（4 列）- 紧凑设计 */
+    .info-grid-sub {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    /* 响应式布局：中等屏幕 */
+    @media (max-width: 1200px) {
+        .field-grid-main {
+            grid-template-columns: repeat(6, 1fr) !important;
+        }
+        .field-grid-sub {
+            grid-template-columns: repeat(8, 1fr) !important;
+        }
+    }
+    
+    /* 响应式布局：小屏幕 */
+    @media (max-width: 768px) {
+        .field-grid-main {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+        .field-grid-sub {
+            grid-template-columns: repeat(6, 1fr) !important;
+        }
+    }
+    
+    /* 响应式布局：超小屏幕 */
+    @media (max-width: 576px) {
+        .field-grid-main,
+        .field-grid-sub {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+    }
+    
+    /* 字段组容器 - 网格布局 */
+    .field-group-container {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .field-group-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #007bff;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #007bff;
+        display: flex;
+        align-items: center;
+    }
+    
+    .field-group-title i {
+        margin-right: 6px;
+    }
+    
+    /* 字段网格布局 - 主窗体（8 列） */
+    .field-grid-main {
+        display: grid !important;
+        grid-template-columns: repeat(8, 1fr) !important;
+        gap: 6px;
+        width: 100%;
+    }
+    
+    /* 字段网格布局 - 次级窗体（12 列） */
+    .field-grid-sub {
+        display: grid !important;
+        grid-template-columns: repeat(12, 1fr) !important;
+        gap: 4px;
+        width: 100%;
+    }
+    
+    /* 字段项 - 网格单元 */
+    .field-item {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 3px;
+        background: white;
+        border-radius: 3px;
+        border: 1px solid #dee2e6;
+    }
+    
+    /* 字段标签 - 统一宽度对齐 */
+    .field-label {
+        font-size: 13px;
+        color: #6c757d;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 3px;
+        flex-shrink: 0;
+    }
+    
+    /* 字段内容 */
+    .field-value {
+        font-size: 13px;
+        color: #212529;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+    
+    /* 特殊字段：允许自动换行（项目规模、项目地址等长文本） */
+    .field-item.long-text .field-value {
+        white-space: normal;
+        line-height: 1.5;
+        max-height: 4.5em; /* 限制最多 3 行 */
+        overflow-y: auto;
+    }
+    
+    /* 为长文本字段增加最小宽度 */
+    .field-item.long-text {
+        min-width: 200px;  /* 从 150px 增加到 200px */
+    }
+    
+    /* 特别长的文本字段（项目地址、项目规模）使用更大的宽度 */
+    .field-item.long-text.large {
+        min-width: 250px;  /* 更大的宽度 */
+    }
+    
+    /* 资金相关字段使用较大宽度 */
+    .field-item.money-field {
+        min-width: 180px;
+    }
+    
+    .status-badge {
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .status-not_started { background-color: #ffc107; color: #000; }
+    .status-under_construction { background-color: #28a745; color: #fff; }
+    .status-stopped { background-color: #dc3545; color: #fff; }
+    .status-completed { background-color: #17a2b8; color: #fff; }
+    
+    .contract-pending_review { background-color: #ffc107; color: #000; }
+    .contract-executing { background-color: #28a745; color: #fff; }
+    .contract-terminated { background-color: #dc3545; color: #fff; }
+    .contract-released { background-color: #6c757d; color: #fff; }
+    
+    .settlement-unsettled { background-color: #ffc107; color: #000; }
+    .settlement-settled { background-color: #28a745; color: #fff; }
+    
+    .action-buttons {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #e9ecef;
+        text-align: center;
+    }
+    
+    .action-buttons .btn {
+        min-width: 120px;
+        margin: 0 10px;
+    }
+    
+    /* 子窗体样式 */
+    .sub-panel {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    
+    .sub-panel-header {
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .sub-panel-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #007bff;
+        margin: 0;
+    }
+    
+    .sub-panel-table {
+        width: 100%;
+        margin-bottom: 0;
+    }
+    
+    .sub-panel-table thead th {
+        font-size: 15px;
+        font-weight: 600;
+        white-space: nowrap;
+        background-color: #f8f9fa;
+        padding: 8px 6px;
+        vertical-align: middle;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .sub-panel-table tbody td {
+        font-size: 15px;
+        vertical-align: middle;
+        padding: 8px 6px;
+        white-space: nowrap;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    /* 禁用状态的编辑按钮 */
+    .btn-disabled-custom {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+        pointer-events: none !important; /* 禁止点击 */
+    }
+    
+    .btn-disabled-custom:hover,
+    .btn-disabled-custom:focus,
+    .btn-disabled-custom:active {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+    }
+    
+    .sub-panel-table tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .empty-data {
+        text-align: center;
+        padding: 15px;
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .btn-sm-custom {
+        padding: 2px 6px;
+        font-size: 11px;
+        border-radius: 3px;
+    }
+    
+    /* 按钮紧凑化 */
+    .main-panel-header .btn {
+        padding: 4px 10px;
+        font-size: 13px;
+    }
+    
+    .project-nav-btn {
+        padding: 3px 8px !important;
+        font-size: 12px !important;
+    }
+    
+    /* 人员与文档区域查看按钮 - 调低 50% */
+    .field-grid-sub .btn-sm {
+        padding: 1px 5px !important;
+        font-size: 10px !important;
+        line-height: 1.1 !important;
+        min-height: auto !important;
+        vertical-align: middle;
+    }
+    
+    /* 字段项行高调整 */
+    .field-grid-sub .field-item {
+        line-height: 1.2;
+        padding: 2px !important;
+        align-items: center;
+    }
+    
+    .field-grid-sub .field-label {
+        margin-bottom: 2px;
+        font-size: 12px !important;
+        line-height: 1.2;
+    }
+    
+    .field-grid-sub .field-value {
+        font-size: 12px !important;
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <!-- 主窗体：项目完整信息 -->
+    <div class="main-panel">
+        <!-- 主窗体标题 -->
+        <div class="main-panel-header" style="position: relative;">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <!-- 左侧：项目名称（占满可用空间） -->
+                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
+                    <h2 class="main-panel-title">
+                        <i class="bi bi-journal-text me-2"></i>{{ project_detail.project_name }}
+                    </h2>
+                </div>
+                
+                <!-- 中间：导航按钮和搜索框（绝对居中）- 仅超级管理员可见 -->
+                {% if user.is_superuser %}
+                <div style="display: flex; align-items: center; gap: 4px; position: absolute; left: 50%; transform: translateX(-50%);">
+                    <!-- 上一个项目按钮 -->
+                    {% if prev_project %}
+                    <a href="{% url 'eims_app:project_ledger_detail' prev_project.pk %}" 
+                       class="btn btn-outline-primary" 
+                       style="padding: 5px 10px; font-size: 13px; min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"
+                       title="上一个项目：{{ prev_project.project_name|truncatechars:10 }}">
+                        <i class="bi bi-arrow-left-circle" style="font-size: 16px;"></i>
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline-secondary" disabled style="padding: 5px 10px; font-size: 13px; min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="没有上一个项目">
+                        <i class="bi bi-arrow-left-circle" style="font-size: 16px;"></i>
+                    </button>
+                    {% endif %}
+                    
+                    <!-- 下一个项目按钮 -->
+                    {% if next_project %}
+                    <a href="{% url 'eims_app:project_ledger_detail' next_project.pk %}" 
+                       class="btn btn-outline-primary" 
+                       style="padding: 5px 10px; font-size: 13px; min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"
+                       title="下一个项目：{{ next_project.project_name|truncatechars:10 }}">
+                        <i class="bi bi-arrow-right-circle" style="font-size: 16px;"></i>
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline-secondary" disabled style="padding: 5px 10px; font-size: 13px; min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="没有下一个项目">
+                        <i class="bi bi-arrow-right-circle" style="font-size: 16px;"></i>
+                    </button>
+                    {% endif %}
+                    
+                    <!-- 搜索框 -->
+                    <div class="project-search-box">
+                        <input type="text" 
+                               id="projectSearchInput" 
+                               class="project-search-input" 
+                               placeholder="搜索：项目编号/名称/地址/甲方/乙方..."
+                               autocomplete="off">
+                        <button class="btn btn-primary btn-sm project-search-btn" onclick="searchAndNavigate()">
+                            <i class="bi bi-search"></i> 搜索
+                        </button>
+                        <span id="searchResultInfo" class="search-result-info"></span>
+                        <span id="searchErrorInfo" class="search-error-info"></span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- 右侧：操作按钮组（自动靠右） -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                    <!-- 编辑按钮 - 仅超级管理员可见 -->
+                    {% if user.is_superuser %}
+                    <a href="{% url 'eims_app:project_ledger_edit' project_detail.pk %}" class="btn btn-warning" style="padding: 5px 10px; font-size: 13px; min-width: 30px; height: 30px;">
+                        <i class="bi bi-pencil me-1"></i>编辑
+                    </a>
+                    {% endif %}
+                    
+                    <!-- 打印按钮 - 所有用户可见 -->
+                    <button onclick="window.print()" class="btn btn-info" style="padding: 5px 10px; font-size: 13px; min-width: 30px; height: 30px;">
+                        <i class="bi bi-printer me-1"></i>打印
+                    </button>
+                    
+                    <!-- 返回按钮 - 所有用户可见 -->
+                    <a href="{% url 'eims_app:project_ledger_list' %}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 13px; min-width: 30px; height: 30px;">
+                        <i class="bi bi-list me-1"></i>项目台账
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 项目基本信息组 -->
+        <div class="field-group-container">
+            <h3 class="field-group-title">
+                <i class="bi bi-journal-text"></i>项目基本信息
+            </h3>
+            
+            <!-- 使用 8 列网格布局 -->
+            <div class="field-grid-main">
+                <!-- 字段项 1 -->
+                <div class="field-item">
+                    <span class="field-label">项目编号:</span>
+                    <span class="field-value"><code>{{ project_detail.project_code|default:"-" }}</code></span>
+                </div>
+                
+                <!-- 字段项 2 -->
+                <div class="field-item">
+                    <span class="field-label">合同编号:</span>
+                    <span class="field-value"><code>{{ project_detail.contract_code|default:"-" }}</code></span>
+                </div>
+                
+                <!-- 字段项 3 -->
+                <div class="field-item">
+                    <span class="field-label">签订日期:</span>
+                    <span class="field-value">{{ project_detail.signing_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 4 -->
+                <div class="field-item">
+                    <span class="field-label">合同类别:</span>
+                    <span class="field-value">{{ project_detail.get_contract_category_display|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 5 -->
+                <div class="field-item">
+                    <span class="field-label">项目状态:</span>
+                    <span class="field-value">
+                        <span class="status-badge status-{{ project_detail.project_status }}">
+                            {{ project_detail.get_project_status_display }}
+                        </span>
+                    </span>
+                </div>
+                
+                <!-- 字段项 6 -->
+                <div class="field-item">
+                    <span class="field-label">合同状态:</span>
+                    <span class="field-value">
+                        <span class="status-badge contract-{{ project_detail.contract_status }}">
+                            {{ project_detail.get_contract_status_display }}
+                        </span>
+                    </span>
+                </div>
+                
+                <!-- 字段项 7 -->
+                <div class="field-item long-text large">
+                    <span class="field-label">合同甲方:</span>
+                    <span class="field-value">{{ project_detail.contract_party_a|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 8 -->
+                <div class="field-item long-text large">
+                    <span class="field-label">合同乙方:</span>
+                    <span class="field-value">{{ project_detail.contract_party_b|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 资金与结算组 -->
+        <div class="field-group-container">
+            <h3 class="field-group-title">
+                <i class="bi bi-currency-yen"></i>资金与结算
+            </h3>
+            
+            <!-- 使用 12 列网格布局 -->
+            <div class="field-grid-sub">
+                <!-- 字段项 1 -->
+                <div class="field-item money-field">
+                    <span class="field-label">合同总价:</span>
+                    <span class="field-value text-success"><strong>¥{{ project_detail.contract_amount|floatformat:2 }}</strong></span>
+                </div>
+                
+                <!-- 字段项 2 -->
+                <div class="field-item money-field">
+                    <span class="field-label">累计回款:</span>
+                    <span class="field-value text-success">¥{{ project_detail.cumulative_payment|floatformat:2 }}</span>
+                </div>
+                
+                <!-- 字段项 3 -->
+                <div class="field-item money-field">
+                    <span class="field-label">合同余款:</span>
+                    <span class="field-value text-warning">¥{{ project_detail.contract_balance|floatformat:2 }}</span>
+                </div>
+                
+                <!-- 字段项 4 -->
+                <div class="field-item">
+                    <span class="field-label">结算情况:</span>
+                    <span class="field-value">
+                        <span class="status-badge settlement-{{ project_detail.settlement_status }}">
+                            {{ project_detail.get_settlement_status_display }}
+                        </span>
+                    </span>
+                </div>
+                
+                <!-- 字段项 5 -->
+                <div class="field-item long-text large">
+                    <span class="field-label">项目规模:</span>
+                    <span class="field-value">{{ project_detail.project_scale|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 6 -->
+                <div class="field-item long-text">
+                    <span class="field-label">项目总投资:</span>
+                    <span class="field-value">¥{{ project_detail.project_investment|floatformat:2 }} 万元</span>
+                </div>
+                
+                <!-- 字段项 7 -->
+                <div class="field-item long-text large">
+                    <span class="field-label">项目地址:</span>
+                    <span class="field-value">{{ project_detail.project_address|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 8 -->
+                <div class="field-item long-text large">
+                    <span class="field-label">备注:</span>
+                    <span class="field-value">{{ project_detail.remark|truncatechars:50|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 服务周期与进度组 -->
+        <div class="field-group-container">
+            <h3 class="field-group-title">
+                <i class="bi bi-clock-history"></i>服务周期与进度
+            </h3>
+            
+            <!-- 使用 12 列网格布局 -->
+            <div class="field-grid-sub">
+                <!-- 字段项 1 -->
+                <div class="field-item">
+                    <span class="field-label">服务开始时间:</span>
+                    <span class="field-value">{{ project_detail.service_start_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 2 -->
+                <div class="field-item">
+                    <span class="field-label">服务周期:</span>
+                    <span class="field-value">{{ project_detail.service_period_months }} 月</span>
+                </div>
+                
+                <!-- 字段项 3 -->
+                <div class="field-item">
+                    <span class="field-label">服务到期时间:</span>
+                    <span class="field-value">{{ project_detail.service_deadline|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 4 -->
+                <div class="field-item">
+                    <span class="field-label">进场通知:</span>
+                    <span class="field-value">{{ project_detail.get_entry_notice_display|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 5 -->
+                <div class="field-item">
+                    <span class="field-label">计划开工日期:</span>
+                    <span class="field-value">{{ project_detail.planned_start_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 6 -->
+                <div class="field-item">
+                    <span class="field-label">实际开工日期:</span>
+                    <span class="field-value">{{ project_detail.actual_start_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 7 -->
+                <div class="field-item">
+                    <span class="field-label">预计竣工日期:</span>
+                    <span class="field-value">{{ project_detail.estimated_completion_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 8 -->
+                <div class="field-item">
+                    <span class="field-label">延期约定:</span>
+                    <span class="field-value">{{ project_detail.extension_agreement|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 9 -->
+                <div class="field-item">
+                    <span class="field-label">实际延期情况:</span>
+                    <span class="field-value">{{ project_detail.actual_extension_status|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 10 -->
+                <div class="field-item">
+                    <span class="field-label">报建情况:</span>
+                    <span class="field-value">{{ project_detail.get_construction_permit_status_display|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 人员与文档组 -->
+        <div class="field-group-container">
+            <h3 class="field-group-title">
+                <i class="bi bi-people"></i>人员与文档
+            </h3>
+            
+            <!-- 使用 12 列网格布局 -->
+            <div class="field-grid-sub">
+                <!-- 字段项 1 -->
+                <div class="field-item">
+                    <span class="field-label">项目总监:</span>
+                    <span class="field-value">{{ project_detail.project_director|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 2 -->
+                <div class="field-item">
+                    <span class="field-label">现场负责人:</span>
+                    <span class="field-value">{{ project_detail.project_manager|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 3 -->
+                <div class="field-item">
+                    <span class="field-label">联系电话:</span>
+                    <span class="field-value">{{ project_detail.contact_phone|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 4 -->
+                <div class="field-item">
+                    <span class="field-label">约定人员配备:</span>
+                    <span class="field-value">{{ project_detail.agreed_staffing|default:"-" }}</span>
+                </div>
+                
+                <!-- 字段项 5 -->
+                <div class="field-item">
+                    <span class="field-label">合同文本:</span>
+                    <span class="field-value">
+                        {% if project_detail.contract_text %}
+                            <!-- DEBUG: {{ project_detail.contract_text }} -->
+                            {% if "http" in project_detail.contract_text|lower %}
+                                <!-- 外部链接 -->
+                                <a href="{{ project_detail.contract_text }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right"></i> 查看
+                                </a>
+                            {% else %}
+                                <!-- 本地文件 -->
+                                <a href="{{ MEDIA_URL }}{{ project_detail.contract_text }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i> 下载
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">未上传</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- 字段项 6 -->
+                <div class="field-item">
+                    <span class="field-label">施工许可证:</span>
+                    <span class="field-value">
+                        {% if project_detail.construction_permit %}
+                            {% if "http" in project_detail.construction_permit|lower %}
+                                <!-- 外部链接 -->
+                                <a href="{{ project_detail.construction_permit }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right"></i> 查看
+                                </a>
+                            {% else %}
+                                <!-- 本地文件 -->
+                                <a href="{{ MEDIA_URL }}{{ project_detail.construction_permit }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i> 下载
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">未上传</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- 字段项 7 -->
+                <div class="field-item">
+                    <span class="field-label">进场通知书:</span>
+                    <span class="field-value">
+                        {% if project_detail.entry_notice_document %}
+                            {% if "http" in project_detail.entry_notice_document|lower %}
+                                <!-- 外部链接 -->
+                                <a href="{{ project_detail.entry_notice_document }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right"></i> 查看
+                                </a>
+                            {% else %}
+                                <!-- 本地文件 -->
+                                <a href="{{ MEDIA_URL }}{{ project_detail.entry_notice_document }}" target="_blank" class="btn btn btn-outline-primary">
+                                    <i class="bi bi-download"></i> 下载
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">未上传</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 项目动态子窗体 -->
+    <div class="sub-panel">
+        <div class="sub-panel-header">
+            <h3 class="sub-panel-title">
+                <i class="bi bi-activity me-2"></i>项目动态
+            </h3>
+            <a href="{% url 'eims_app:add_dynamic' project_detail.pk %}" class="btn btn-sm btn-primary btn-sm-custom">
+                <i class="bi bi-plus-circle"></i> 新增
+            </a>
+        </div>
+        
+        {% if project_dynamics %}
+        <div class="table-responsive">
+            <table class="table sub-panel-table">
+                <thead>
+                    <tr>
+                        <th>更新时间</th>
+                        <th>项目进度</th>
+                        <th>项目状态</th>
+                        <th>通知进场</th>
+                        <th>计划开工</th>
+                        <th>实际开工</th>
+                        <th>预计竣工</th>
+                        <th>操作人</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dynamic in project_dynamics %}
+                    <tr>
+                        <td>{{ dynamic.update_time|date:"Y-m-d" }}</td>
+                        <td>{{ dynamic.project_progress|default:"-" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ dynamic.project_status }}">
+                                {{ dynamic.get_project_status_display|default:"-" }}
+                            </span>
+                        </td>
+                        <td>{{ dynamic.notice_entry|date:"Y-m-d"|default:"-" }}</td>
+                        <td>{{ dynamic.planned_start_time|date:"Y-m-d"|default:"-" }}</td>
+                        <td>{{ dynamic.actual_start_time|date:"Y-m-d"|default:"-" }}</td>
+                        <td>{{ dynamic.planned_completion|date:"Y-m-d"|default:"-" }}</td>
+                        <td>{{ dynamic.operator|default:"-" }}</td>
+                        <td>
+                            {% if user.is_superuser %}
+                            <a href="{% url 'eims_app:add_dynamic' project_detail.pk %}?edit_id={{ dynamic.pk }}&project_code={{ project_detail.project_code }}" class="btn btn-sm btn-info btn-sm-custom" title="编辑">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-disabled-custom" title="仅超级管理员可编辑" disabled>
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分页控件 -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                显示第 {{ project_dynamics.start_index }} - {{ project_dynamics.end_index }} 条，共 {{ project_dynamics.paginator.count }} 条
+            </div>
+            <nav aria-label="项目动态分页">
+                <ul class="pagination pagination-controls mb-0">
+                    {% if project_dynamics.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ project_dynamics.previous_page_number }}" aria-label="上一页">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in project_dynamics.paginator.page_range %}
+                        {% if project_dynamics.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > project_dynamics.number|add:'-3' and num < project_dynamics.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if project_dynamics.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ project_dynamics.next_page_number }}" aria-label="下一页">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        
+        {% else %}
+        <div class="empty-data">
+            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+            <p class="mt-2">暂无项目动态记录</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 产值回款子窗体 -->
+    <div class="sub-panel">
+        <div class="sub-panel-header">
+            <h3 class="sub-panel-title">
+                <i class="bi bi-currency-yen me-2"></i>产值回款
+            </h3>
+            <a href="{% url 'eims_app:add_output' project_detail.pk %}" class="btn btn-sm btn-primary btn-sm-custom">
+                <i class="bi bi-plus-circle"></i> 新增
+            </a>
+        </div>
+        
+        {% if output_payments %}
+        <div class="table-responsive">
+            <table class="table sub-panel-table">
+                <thead>
+                    <tr>
+                        <th>月份</th>
+                        <th>当月产值 (万元)</th>
+                        <th>累计产值 (万元)</th>
+                        <th>合同总额 (元)</th>
+                        <th>累计已收款 (元)</th>
+                        <th>合同应收款 (元)</th>
+                        <th>本月实际回款 (元)</th>
+                        <th>下月计划 (元)</th>
+                        <th>回款日期</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in output_payments %}
+                    <tr>
+                        <td>{{ payment.month }}</td>
+                        <td>{{ payment.monthly_output|floatformat:2 }}</td>
+                        <td>{{ payment.cumulative_output|floatformat:2 }}</td>
+                        <td>{{ payment.contract_total|floatformat:2 }}</td>
+                        <td>{{ payment.cumulative_received|floatformat:2 }}</td>
+                        <td>{{ payment.contract_receivable|floatformat:2 }}</td>
+                        <td>{{ payment.actual_payment|floatformat:2 }}</td>
+                        <td>{{ payment.next_month_plan|floatformat:2 }}</td>
+                        <td>{{ payment.payment_date|date:"Y-m-d"|default:"-" }}</td>
+                        <td>
+                            {% if user.is_superuser %}
+                            <a href="{% url 'eims_app:add_output' project_detail.pk %}?edit_id={{ payment.pk }}&project_code={{ project_detail.project_code }}" class="btn btn-sm btn-info btn-sm-custom" title="编辑">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-disabled-custom" title="仅超级管理员可编辑" disabled>
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分页控件 -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                显示第 {{ output_payments.start_index }} - {{ output_payments.end_index }} 条，共 {{ output_payments.paginator.count }} 条
+            </div>
+            <nav aria-label="产值回款分页">
+                <ul class="pagination pagination-controls mb-0">
+                    {% if output_payments.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ output_payments.previous_page_number }}" aria-label="上一页">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in output_payments.paginator.page_range %}
+                        {% if output_payments.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > output_payments.number|add:'-3' and num < output_payments.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if output_payments.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ output_payments.next_page_number }}" aria-label="下一页">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        
+        {% else %}
+        <div class="empty-data">
+            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+            <p class="mt-2">暂无产值回款记录</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 项目人员子窗体 -->
+    <div class="sub-panel">
+        <div class="sub-panel-header">
+            <h3 class="sub-panel-title">
+                <i class="bi bi-people me-2"></i>项目人员
+            </h3>
+                        <a href="{% url 'eims_app:add_personnel' project_detail.pk %}" class="btn btn-sm btn-primary btn-sm-custom">
+                <i class="bi bi-plus-circle"></i> 新增
+            </a>
+        </div>
+        
+        {% if personnel_list %}
+        <div class="table-responsive">
+            <table class="table sub-panel-table">
+                <thead>
+                    <tr>
+                        <th>人员编号</th>
+                        <th>姓名</th>
+                        <th>性别</th>
+                        <th>部门</th>
+                        <th>岗位</th>
+                        <th>手机号码</th>
+                        <th>邮箱</th>
+                        <th>入岗时间</th>
+                        <th>离岗时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for person in personnel_list %}
+                    <tr>
+                        <td><code>{{ person.personnel_code }}</code></td>
+                        <td>{{ person.name }}</td>
+                        <td>{{ person.get_gender_display }}</td>
+                        <td>{{ person.department|default:"-" }}</td>
+                        <td>{{ person.position|default:"-" }}</td>
+                        <td>{{ person.phone|default:"-" }}</td>
+                        <td>{{ person.email|default:"-" }}</td>
+                        <td>{{ person.entry_time|date:"Y-m-d"|default:"-" }}</td>
+                        <td>{{ person.leave_time|date:"Y-m-d"|default:"-" }}</td>
+                        <td>
+                            {% if user.is_superuser %}
+                            <a href="{% url 'eims_app:add_personnel' project_detail.pk %}?edit_id={{ person.pk }}&project_code={{ project_detail.project_code }}" class="btn btn-sm btn-info btn-sm-custom" title="编辑">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-disabled-custom" title="仅超级管理员可编辑" disabled>
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分页控件 -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                显示第 {{ personnel_list.start_index }} - {{ personnel_list.end_index }} 条，共 {{ personnel_list.paginator.count }} 条
+            </div>
+            <nav aria-label="项目人员分页">
+                <ul class="pagination pagination-controls mb-0">
+                    {% if personnel_list.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ personnel_list.previous_page_number }}" aria-label="上一页">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in personnel_list.paginator.page_range %}
+                        {% if personnel_list.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > personnel_list.number|add:'-3' and num < personnel_list.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if personnel_list.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ personnel_list.next_page_number }}" aria-label="下一页">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        
+        {% else %}
+        <div class="empty-data">
+            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+            <p class="mt-2">暂无项目人员记录</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 搜索功能 JavaScript -->
+<script>
+// 搜索并定位项目
+function searchAndNavigate() {
+    const searchInput = document.getElementById('projectSearchInput');
+    const resultInfo = document.getElementById('searchResultInfo');
+    const errorInfo = document.getElementById('searchErrorInfo');
+    const query = searchInput.value.trim();
+    
+    // 清空之前的提示信息
+    resultInfo.style.display = 'none';
+    errorInfo.style.display = 'none';
+    
+    if (!query) {
+        errorInfo.textContent = '请输入搜索关键词';
+        errorInfo.style.display = 'inline';
+        searchInput.focus();
+        return;
+    }
+    
+    // 发送 AJAX 请求
+    fetch(`/api/projects/search/?q=${encodeURIComponent(query)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('搜索失败：' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.match) {
+                // 找到匹配的项目
+                resultInfo.textContent = `找到：${data.match.project_name} (${data.match.project_code})`;
+                resultInfo.style.display = 'inline';
+                
+                // 延迟跳转，让用户看到提示信息
+                setTimeout(() => {
+                    window.location.href = `/project_ledger/${data.match.id}/`;
+                }, 500);
+            } else if (data.success && !data.match) {
+                // 未找到匹配的项目
+                errorInfo.textContent = '未找到匹配的项目';
+                errorInfo.style.display = 'inline';
+            } else {
+                // 其他错误
+                errorInfo.textContent = data.error || '搜索失败，请重试';
+                errorInfo.style.display = 'inline';
+            }
+        })
+        .catch(error => {
+            console.error('搜索错误:', error);
+            errorInfo.textContent = '网络错误：' + error.message;
+            errorInfo.style.display = 'inline';
+        });
+}
+
+// 支持回车键搜索
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('projectSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchAndNavigate();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

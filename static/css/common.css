@@ -1,0 +1,176 @@
+/* 全局样式重置，统一所有页面基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 返回按钮样式，对应base.html中的返回、主页按钮 */
+.header-btn-group {
+    margin: 20px;
+}
+.back-btn, .home-btn {
+    padding: 8px 16px;
+    margin-right: 10px;
+    background: #409eff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.back-btn:hover, .home-btn:hover {
+    background: #66b1ff;
+}
+
+/* 列表容器（带滚动条），对应list_mixin.html中的列表组件，所有模块列表共用 */
+.list-container {
+    width: 95%;
+    margin: 0 auto;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+}
+.list-header {
+    display: flex;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e6e6e6;
+    font-weight: bold;
+}
+.list-header > div {
+    padding: 12px;
+    border-right: 1px solid #e6e6e6;
+    /* 列宽可拖动基础样式，配合list_reuse.js实现拖动功能 */
+    resize: horizontal;
+    overflow: hidden;
+    min-width: 100px;
+}
+.list-body {
+    max-height: 600px;
+    overflow-y: auto; /* 纵向滚动条，避免列表过长 */
+}
+/* 列表行样式，所有模块列表行共用 */
+.list-row {
+    display: flex;
+    border-bottom: 1px solid #e6e6e6;
+}
+.list-row > div {
+    padding: 12px;
+    border-right: 1px solid #e6e6e6;
+    word-wrap: break-word; /* 自动换行，避免内容溢出 */
+    word-break: break-all;
+}
+/* 复选框样式，对应list_mixin.html中的全选、行选复选框 */
+.select-all {
+    width: 80px;
+    text-align: center;
+    border-right: 1px solid #e6e6e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.list-row .row-select {
+    width: 80px;
+    text-align: center;
+    border-right: 1px solid #e6e6e6;
+}
+
+/* 弹窗样式，对应list_mixin.html中的弹窗容器，所有模块弹窗共用 */
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    width: 600px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 4px;
+}
+.modal-form .form-item {
+    margin-bottom: 15px;
+}
+.modal-form label {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+    margin-right: 10px;
+}
+.modal-form input, .modal-form select, .modal-form textarea {
+    width: 400px;
+    padding: 6px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+}
+.modal-btn-group {
+    text-align: center;
+    margin-top: 20px;
+}
+.modal-btn-group button {
+    padding: 8px 20px;
+    margin: 0 10px;
+}
+
+/* 详情页样式，对应list_mixin.html中的详情容器，所有模块详情页共用 */
+.detail-container {
+    width: 95%;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+}
+.detail-item {
+    margin-bottom: 15px;
+}
+.detail-item label {
+    display: inline-block;
+    width: 150px;
+    font-weight: bold;
+}
+
+/* 新增：仪表盘样式（适配首页dashboard.html），与仪表盘模板结构对应 */
+.dashboard-container {
+    width: 95%;
+    margin: 20px auto;
+}
+.dashboard-title {
+    text-align: center;
+    margin: 30px 0;
+    font-size: 24px;
+    color: #333;
+}
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+.module-card {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.module-card:hover {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+}
+.module-card i {
+    font-size: 40px;
+    color: #409eff;
+    margin-bottom: 15px;
+}
+.module-card h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+.module-card p {
+    color: #666;
+    font-size: 14px;
+}

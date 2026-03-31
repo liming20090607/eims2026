@@ -1,0 +1,194 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}部门管理{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">部门管理</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-building"></i> 总部门数</h5>
+                    <h2>{{ page_obj.paginator.count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-check-circle"></i> 正常运营</h5>
+                    <h2>{{ active_count|default:0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作按钮和筛选 -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-building"></i> 部门信息</h5>
+                {% if user.is_superuser %}
+                <div>
+                    <a href="{% url 'eims_app:department_add' %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle"></i> 添加部门
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">关键词</label>
+                    <input type="text" class="form-control" name="keyword" value="{{ selected_keyword }}" placeholder="部门名称/编号/负责人">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">部门类型</label>
+                    <select name="department_type" class="form-control">
+                        <option value="">全部类型</option>
+                        <option value="functional" {% if selected_department_type == 'functional' %}selected{% endif %}>职能部门</option>
+                        <option value="project" {% if selected_department_type == 'project' %}selected{% endif %}>项目部门</option>
+                        <option value="temporary" {% if selected_department_type == 'temporary' %}selected{% endif %}>临时部门</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">状态</label>
+                    <select name="status" class="form-control">
+                        <option value="">全部状态</option>
+                        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>正常</option>
+                        <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>停用</option>
+                        <option value="merging" {% if selected_status == 'merging' %}selected{% endif %}>合并中</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> 搜索
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">序号</th>
+                            <th>部门编号</th>
+                            <th>部门名称</th>
+                            <th>部门类型</th>
+                            <th>负责人</th>
+                            <th>联系电话</th>
+                            <th>成立日期</th>
+                            <th>状态</th>
+                            <th>排序</th>
+                            {% if user.is_superuser %}
+                            <th width="180">操作</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dept in page_obj %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><strong>{{ dept.department_code }}</strong></td>
+                            <td>
+                                <a href="{% url 'eims_app:department_detail' dept.pk %}" class="text-decoration-none">
+                                    {{ dept.department_name }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge {% if dept.department_type == 'functional' %}bg-primary{% elif dept.department_type == 'project' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ dept.get_department_type_display }}
+                                </span>
+                            </td>
+                            <td>{{ dept.manager_name|default:"-" }}</td>
+                            <td>{{ dept.contact_phone|default:"-" }}</td>
+                            <td>{{ dept.established_date|date:"Y-m-d"|default:"-" }}</td>
+                            <td>
+                                <span class="badge {% if dept.status == 'active' %}bg-success{% elif dept.status == 'inactive' %}bg-secondary{% else %}bg-warning{% endif %}">
+                                    {{ dept.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ dept.order }}</td>
+                            {% if user.is_superuser %}
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'eims_app:department_edit' dept.pk %}" class="btn btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'eims_app:department_detail' dept.pk %}" class="btn btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <button onclick="deleteDept('{{ dept.pk }}', '{{ dept.department_name }}')" class="btn btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if user.is_superuser %}10{% else %}9{% endif %}" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox display-4"></i>
+                                <p class="mt-2">暂无部门数据</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">首页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">末页</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认脚本 -->
+<script>
+function deleteDept(pk, name) {
+    if (confirm(`确定要删除部门 "${name}" 吗？此操作不可恢复！`)) {
+        window.location.href = `/departments/${pk}/delete/`;
+    }
+}
+</script>
+{% endblock %}

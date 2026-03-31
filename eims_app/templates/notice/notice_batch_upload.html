@@ -1,0 +1,138 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}批量上传 - 通知公告{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>批量上传通知附件</h5>
+        <a href="{% url 'eims_app:notice_list' %}" class="btn btn-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>返回列表
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="batchUploadForm">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label"><strong>选择通知</strong></label>
+                <select class="form-select" name="notice_id" id="notice_id" required>
+                    <option value="">-- 请选择要上传附件的通知 --</option>
+                    {% for notice in notices %}
+                    <option value="{{ notice.id }}">{{ notice.notice_title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label"><strong>选择多个文件</strong></label>
+                <input type="file" class="form-control" name="files" id="files" multiple required
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.zip,.rar,.txt,.md">
+                <small class="text-muted">按住 Ctrl 键可选择多个文件</small>
+                <div id="file_count" class="text-info mt-2"></div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label"><strong>统一备注</strong></label>
+                <textarea class="form-control" name="remark" id="remark" rows="3" placeholder="请输入统一备注说明（可选）"></textarea>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>提示：</strong>
+                <ul class="mb-0 mt-2">
+                    <li>支持一次上传多个附件</li>
+                    <li>所有附件将使用相同的备注</li>
+                    <li>上传后可在通知详情页查看和管理附件</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="bi bi-cloud-upload me-1"></i>开始上传
+                </button>
+                <a href="{% url 'eims_app:notice_list' %}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+console.log('批量上传脚本开始加载');
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 加载完成');
+    const fileInput = document.getElementById('files');
+    console.log('文件输入框:', fileInput);
+    
+    if (!fileInput) {
+        console.error('未找到文件输入框！');
+        return;
+    }
+    
+    const fileCountDiv = document.getElementById('file_count');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    console.log('fileCountDiv:', fileCountDiv);
+    console.log('submitBtn:', submitBtn);
+    
+    // 显示选择的文件数量
+    fileInput.addEventListener('change', function() {
+        console.log('文件选择变化');
+        const count = this.files.length;
+        if (count > 0) {
+            fileCountDiv.textContent = `已选择 ${count} 个文件`;
+            let totalSize = 0;
+            for (let i = 0; i < this.files.length; i++) {
+                totalSize += this.files[i].size;
+            }
+            if (totalSize > 1024 * 1024) {
+                fileCountDiv.textContent += ` (总大小：${(totalSize / 1024 / 1024).toFixed(2)} MB)`;
+            } else {
+                fileCountDiv.textContent += ` (总大小：${(totalSize / 1024).toFixed(2)} KB)`;
+            }
+            console.log(`已选择 ${count} 个文件，总大小：${totalSize} bytes`);
+        } else {
+            fileCountDiv.textContent = '';
+        }
+    });
+    
+    // 提交前验证
+    const form = document.getElementById('batchUploadForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('表单提交事件触发');
+            const noticeId = document.getElementById('notice_id').value;
+            const files = fileInput.files;
+            
+            console.log('通知 ID:', noticeId);
+            console.log('文件数量:', files.length);
+            
+            if (!noticeId) {
+                e.preventDefault();
+                alert('请先选择一个通知！');
+                return false;
+            }
+            
+            if (files.length === 0) {
+                e.preventDefault();
+                alert('请至少选择一个文件！');
+                return false;
+            }
+            
+            console.log('提交表单：');
+            console.log('- 通知 ID:', noticeId);
+            console.log('- 文件数量:', files.length);
+            console.log('- 文件列表:', Array.from(files).map(f => f.name));
+            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 上传中...';
+            }
+        });
+    } else {
+        console.error('未找到表单！');
+    }
+});
+</script>
+{% endblock %}

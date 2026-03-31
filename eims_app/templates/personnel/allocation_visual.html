@@ -1,0 +1,2012 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}可视化人员分配{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 待分配人员表格列宽优化 */
+    #unassignedTable th:nth-child(2),
+    #unassignedTable td:nth-child(2) {
+        width: 60px; /* 编号 */
+        min-width: 60px;
+        max-width: 80px;
+    }
+    
+    /* Select2 搜索框样式优化 */
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + 0.75rem + 2px) !important;
+        padding: 0.375rem 0.75rem !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+    }
+    
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 1.5 !important;
+        padding-left: 0 !important;
+    }
+    
+    .select2-container .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + 0.75rem) !important;
+    }
+    
+    .select2-dropdown {
+        font-size: 1rem;
+    }
+    
+    .select2-search__field {
+        font-size: 1rem;
+        padding: 8px;
+    }
+    
+    /* Select2 搜索下拉库 CSS */
+    @import url('https://cdn.bootcdn.net/ajax/libs/select2/4.0.13/css/select2.min.css');
+    
+    /* 超小按钮样式 - 高宽调小一半 */
+    .btn-xs {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        border-radius: 0.15rem;
+    }
+    
+    .btn-xs i {
+        font-size: 0.75rem;
+    }
+    
+    /* 品字形布局优化 */
+    .row {
+        margin-right: -10px;
+        margin-left: -10px;
+    }
+    
+    .col-md-6 {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+    
+    /* 卡片紧凑化 */
+    .card {
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    /* 行间距消除 */
+    .row {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* 列间距消除 */
+    .col-md-6 {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* 待分配人员卡片下方不留空隙 */
+    #unassignedPersonnelCard,
+    #unassignedTable .card {
+        margin-bottom: 0 !important;
+    }
+    
+    /* 项目人员容器紧贴上方卡片 */
+    #projectPersonnelContainer {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* 待分配人员卡片高度 400px */
+    #unassignedTable .table-responsive {
+        max-height: 400px; /* 固定高度 400px */
+        overflow-y: auto;
+    }
+    
+    /* 部门人员卡片高度 800px */
+    #assignedTable .table-responsive {
+        max-height: 800px; /* 固定高度 800px */
+        overflow-y: auto;
+    }
+    
+    /* 项目人员卡片高度 400px */
+    #projectTable .table-responsive {
+        max-height: 400px; /* 固定高度 400px */
+        overflow-y: auto;
+    }
+    
+    /* 项目人员卡片容器 */
+    #projectPersonnelCard {
+        clear: none;
+    }
+    
+    /* 项目人员卡片使用绝对定位 */
+    #projectPersonnelContainer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 10;
+    }
+    
+    #projectPersonnelCard {
+        position: relative;
+        margin: 0;
+    }
+    
+    #unassignedTable th:nth-child(3),
+    #unassignedTable td:nth-child(3) {
+        width: 80px; /* 姓名 */
+        min-width: 80px;
+        max-width: 100px;
+    }
+    
+    #unassignedTable th:nth-child(4),
+    #unassignedTable td:nth-child(4) {
+        width: 100px; /* 部门 */
+        min-width: 80px;
+        max-width: 120px;
+    }
+    
+    #unassignedTable th:nth-child(5),
+    #unassignedTable td:nth-child(5) {
+        width: 80px; /* 岗位 */
+        min-width: 80px;
+        max-width: 100px;
+    }
+    
+    #unassignedTable th:nth-child(6),
+    #unassignedTable td:nth-child(6) {
+        width: 100px; /* 手机 */
+        min-width: 100px;
+        max-width: 120px;
+    }
+    
+    /* 已分配人员表格列宽优化 */
+    #assignedTable th:nth-child(2),
+    #assignedTable td:nth-child(2) {
+        width: 60px; /* 编号 */
+        min-width: 60px;
+    }
+    
+    #assignedTable th:nth-child(3),
+    #assignedTable td:nth-child(3) {
+        width: 80px; /* 姓名 */
+        min-width: 80px;
+    }
+    
+    #assignedTable th:nth-child(4),
+    #assignedTable td:nth-child(4) {
+        width: 100px; /* 部门 */
+        min-width: 80px;
+    }
+    
+    #assignedTable th:nth-child(5),
+    #assignedTable td:nth-child(5) {
+        width: auto; /* 项目 - 自动调整 */
+        min-width: 200px;
+    }
+    
+    #assignedTable th:nth-child(6),
+    #assignedTable td:nth-child(6) {
+        width: 80px; /* 岗位 */
+        min-width: 80px;
+        max-width: 100px;
+    }
+    
+    #assignedTable th:nth-child(7),
+    #assignedTable td:nth-child(7) {
+        width: 70px; /* 操作 */
+        min-width: 70px;
+    }
+    
+    /* 表格单元格内容不换行 */
+    #unassignedTable td,
+    #assignedTable td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* 已分配人员的项目徽章可以换行 */
+    #assignedTable td:nth-child(5) .badge {
+        white-space: normal;
+        display: inline-block;
+        margin: 2px;
+        font-size: 0.75rem;
+        padding: 0.25em 0.5em;
+    }
+    
+    /* 项目徽章容器 */
+    #assignedTable td:nth-child(5) > div {
+        line-height: 1.6;
+    }
+    
+    /* 表格紧凑显示 */
+    .table-sm th,
+    .table-sm td {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    /* 表头固定 */
+    .sticky-top {
+        top: 0;
+        z-index: 10;
+    }
+    
+    /* 编辑模态框表单字段统一高度 */
+    #editAllocationForm .form-control,
+    #editAllocationForm select.form-control {
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    
+    /* 项目分配模态框表单字段统一高度 */
+    #projectAllocationForm .form-control,
+    #projectAllocationForm select.form-control {
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">可视化人员分配</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 操作提示 -->
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle"></i> 
+        <strong>操作指南：</strong><br>
+        1. <strong>部门分配：</strong>在待分配人员卡片中勾选人员，点击“分配到部门”按钮（一人只能分到一个部门）<br>
+        2. <strong>项目分配：</strong>在部门人员卡片中勾选人员，点击“分配到项目”按钮，可分配到最多 5 个项目<br>
+        3. <strong>批量召回：</strong>在部门人员卡片中勾选人员，点击“批量召回”可召回为待分配状态<br>
+        4. <strong>双击选择：</strong>双击人员行快速选中/取消
+    </div>
+
+    <div class="row" style="margin-bottom: 0;">
+        <!-- 左上：待分配人员 -->
+        <div class="col-md-6" style="padding-bottom: 0;">
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> 待分配人员 ({{ unassigned_personnel.count }})</h5>
+                </div>
+                <div class="card-body">
+                    <!-- 筛选工具 -->
+                    <form method="get" class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control form-control-sm" name="keyword" value="{{ search_keyword }}" placeholder="姓名/编号/部门">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="department" class="form-control form-control-sm">
+                                <option value="">所有部门</option>
+                                {% for dept in all_departments %}
+                                    <option value="{{ dept }}" {% if selected_department == dept %}selected{% endif %}>{{ dept }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- 批量操作工具 -->
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleSelectAll('unassigned')">
+                            <i class="bi bi-check-all"></i> 全选
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="assignToDepartment()">
+                            <i class="bi bi-building"></i> 分配到部门
+                        </button>
+                    </div>
+
+                    <!-- 人员列表 -->
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-hover table-sm" id="unassignedTable">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th width="40">
+                                        <input type="checkbox" id="unassignedSelectAll" onchange="toggleSelectAll('unassigned')">
+                                    </th>
+                                    <th>编号</th>
+                                    <th>姓名</th>
+                                    <th>部门</th>
+                                    <th>岗位</th>
+                                    <th>手机</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in unassigned_personnel %}
+                                <tr class="personnel-row" data-id="{{ p.id }}" data-name="{{ p.name }}" data-code="{{ p.personnel_code }}" ondblclick="toggleRowSelection(this, 'unassigned')">
+                                    <td>
+                                        <input type="checkbox" name="unassigned_ids" value="{{ p.id }}" class="personnel-checkbox">
+                                    </td>
+                                    <td>{{ p.personnel_code }}</td>
+                                    <td><strong>{{ p.name }}</strong></td>
+                                    <td>{{ p.department|default:"-" }}</td>
+                                    <td>{{ p.position|default:"-" }}</td>
+                                    <td>{{ p.mobile|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">暂无待分配人员</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 项目人员容器（绝对定位在待分配人员卡片下方） -->
+            <div id="projectPersonnelContainer" style="position: relative; margin-top: 0; height: 400px;">
+                <div class="card" id="projectPersonnelCard" style="position: absolute; margin: 0; top: 0; left: 0; width: 100%;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-briefcase-fill"></i> 项目人员 ({{ project_personnel.count }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- 批量召回按钮 -->
+                        <div class="mb-3">
+                            <button class="btn btn-xs btn-outline-warning" id="batchRecallToDeptBtn" onclick="batchRecallToDepartment()" disabled>
+                                <i class="bi bi-arrow-return-left"></i> 批量召回部门
+                            </button>
+                        </div>
+
+                        <!-- 人员列表 -->
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover table-sm" id="projectTable">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th width="40">
+                                            <input type="checkbox" id="projectSelectAll" onchange="toggleSelectAll('project')">
+                                        </th>
+                                        <th>编号</th>
+                                        <th>姓名</th>
+                                        <th>部门</th>
+                                        <th>项目</th>
+                                        <th>岗位</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in project_personnel %}
+                                    <tr class="personnel-row" data-id="{{ p.id }}" data-name="{{ p.name }}" data-code="{{ p.personnel_code }}">
+                                        <td>
+                                            <input type="checkbox" name="project_ids" value="{{ p.id }}" class="personnel-checkbox">
+                                        </td>
+                                        <td>{{ p.personnel_code }}</td>
+                                        <td><strong>{{ p.name }}</strong></td>
+                                        <td>{{ p.department|default:"-" }}</td>
+                                        <td>
+                                            <!-- 显示所有项目 -->
+                                            <div style="max-height: 100px; overflow-y: auto;">
+                                                {% if p.project %}
+                                                    <span class="badge bg-primary mb-1">{{ p.project.project_name }}</span>
+                                                {% endif %}
+                                                {% if p.project2 %}
+                                                    <span class="badge bg-info mb-1">{{ p.project2.project_name }}</span>
+                                                {% endif %}
+                                                {% if p.project3 %}
+                                                    <span class="badge bg-success mb-1">{{ p.project3.project_name }}</span>
+                                                {% endif %}
+                                                {% if p.project4 %}
+                                                    <span class="badge bg-warning mb-1">{{ p.project4.project_name }}</span>
+                                                {% endif %}
+                                                {% if p.project5 %}
+                                                    <span class="badge bg-secondary mb-1">{{ p.project5.project_name }}</span>
+                                                {% endif %}
+                                                {% if not p.project and not p.project2 and not p.project3 and not p.project4 and not p.project5 %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>{{ p.position|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-xs btn-outline-warning" onclick="recallToDepartment({{ p.id }}, '{{ p.name }}')">
+                                                    <i class="bi bi-arrow-return-left"></i> 召回部门
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">暂无项目人员</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右上：部门人员 -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-people-fill"></i> 部门人员 ({{ assigned_personnel.count }})</h5>
+                </div>
+                <div class="card-body">
+                    <!-- 批量操作按钮 -->
+                    <div class="mb-3">
+                        <button class="btn btn-xs btn-outline-primary" id="allocateToProjectBtn" onclick="showProjectAllocationModal()" disabled>
+                            <i class="bi bi-briefcase"></i> 分配到项目
+                        </button>
+                        <button class="btn btn-xs btn-outline-danger" id="batchRecallBtn" onclick="batchRecall()" disabled>
+                            <i class="bi bi-arrow-return-left"></i> 批量召回
+                        </button>
+                    </div>
+
+                    <!-- 人员列表 -->
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-hover table-sm" id="assignedTable">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th width="40">
+                                        <input type="checkbox" id="assignedSelectAll" onchange="toggleSelectAll('assigned')">
+                                    </th>
+                                    <th>编号</th>
+                                    <th>姓名</th>
+                                    <th>部门</th>
+                                    <th>项目</th>
+                                    <th>岗位</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in assigned_personnel %}
+                                <tr class="personnel-row" data-id="{{ p.id }}" data-name="{{ p.name }}" data-code="{{ p.personnel_code }}">
+                                    <td>
+                                        <input type="checkbox" name="assigned_ids" value="{{ p.id }}" class="personnel-checkbox">
+                                    </td>
+                                    <td>{{ p.personnel_code }}</td>
+                                    <td><strong>{{ p.name }}</strong></td>
+                                    <td>{{ p.department|default:"-" }}</td>
+                                    <td>
+                                        <!-- 显示所有项目 -->
+                                        <div style="max-height: 100px; overflow-y: auto;">
+                                            {% if p.project %}
+                                                <span class="badge bg-primary mb-1">{{ p.project.project_name }}</span>
+                                            {% endif %}
+                                            {% if p.project2 %}
+                                                <span class="badge bg-info mb-1">{{ p.project2.project_name }}</span>
+                                            {% endif %}
+                                            {% if p.project3 %}
+                                                <span class="badge bg-success mb-1">{{ p.project3.project_name }}</span>
+                                            {% endif %}
+                                            {% if p.project4 %}
+                                                <span class="badge bg-warning mb-1">{{ p.project4.project_name }}</span>
+                                            {% endif %}
+                                            {% if p.project5 %}
+                                                <span class="badge bg-secondary mb-1">{{ p.project5.project_name }}</span>
+                                            {% endif %}
+                                            {% if not p.project and not p.project2 and not p.project3 and not p.project4 and not p.project5 %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>{{ p.position|default:"-" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-xs btn-outline-primary" onclick="editPersonnelAllocation({{ p.id }}, '{{ p.name }}')">
+                                                <i class="bi bi-pencil"></i> 编辑
+                                            </button>
+                                            <button class="btn btn-xs btn-outline-danger" onclick="recallPersonnel({{ p.id }}, '{{ p.name }}')">
+                                                <i class="bi bi-arrow-return-left"></i> 召回
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">暂无部门人员</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+<!-- End container-fluid -->
+
+<div class="modal fade" id="projectAllocationModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-briefcase"></i> 分配到项目（支持一人多项目）</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="projectAllocationForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>说明：</strong>每个项目可设置独立的岗位和到岗时间，未选择的项目无需填写
+                    </div>
+                    
+                    <!-- 项目 1 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 1 <span class="text-danger">*</span></h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称 <span class="text-danger">*</span></label>
+                                    <select name="project1_code" id="project1Code" class="form-control" required>
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="position1" id="position1" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="allocation_date1" id="allocationDate1" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="arrival_date1" id="arrivalDate1" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 2 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 2（可选）</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="project2_code" id="project2Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="position2" id="position2" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="allocation_date2" id="allocationDate2" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="arrival_date2" id="arrivalDate2" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 3 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 3（可选）</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="project3_code" id="project3Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="position3" id="position3" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="allocation_date3" id="allocationDate3" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="arrival_date3" id="arrivalDate3" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 添加更多项目按钮 -->
+                    <div class="card mb-3" id="addMoreProjectsCard">
+                        <div class="card-body text-center">
+                            <button type="button" class="btn btn-outline-primary" onclick="showAddProjectsTip()">
+                                <i class="bi bi-plus-circle me-2"></i>添加更多项目
+                            </button>
+                            <small class="text-muted d-block mt-2">最多可分配 4 个项目</small>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 4（默认隐藏） -->
+                    <div class="card mb-3" id="project4Card" style="display: none;">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 4（可选） 
+                                <button type="button" class="btn btn-sm btn-outline-danger float-end" onclick="hideProject4()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="project4_code" id="project4Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="position4" id="position4" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="allocation_date4" id="allocationDate4" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="arrival_date4" id="arrivalDate4" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 5（默认隐藏） -->
+                    <div class="card mb-3" id="project5Card" style="display: none;">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 5（可选） 
+                                <button type="button" class="btn btn-sm btn-outline-danger float-end" onclick="hideProject5()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="project5_code" id="project5Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="position5" id="position5" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="allocation_date5" id="allocationDate5" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="arrival_date5" id="arrivalDate5" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="submitProjectAllocation()">
+                        <i class="bi bi-check-circle"></i> 确认分配
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 分配到部门模态框 -->
+<div class="modal fade" id="departmentAllocationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-building"></i> 分配到部门</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="departmentAllocationForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">选择部门 <span class="text-danger">*</span></label>
+                        <select name="department" id="departmentSelect" class="form-control" required>
+                            <option value="">请选择部门</option>
+                            {% for dept in all_departments %}
+                            <option value="{{ dept.department_name }}">{{ dept.department_code }} - {{ dept.department_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        将选中 <strong id="deptSelectedCount">0</strong> 名人员分配到选定部门
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-info" onclick="submitDepartmentAllocation()">
+                        <i class="bi bi-check-circle"></i> 确认分配
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑项目分配模态框 -->
+<div class="modal fade" id="editAllocationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> 编辑项目分配 - <span id="editPersonName"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editAllocationForm">
+                <input type="hidden" id="editPersonnelId">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        修改该人员的项目分配信息（最多 4 个项目）
+                    </div>
+                    
+                    <!-- 项目 1（必填） -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 1（必填）</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称 <span class="text-danger">*</span></label>
+                                    <select name="edit_project1_code" id="editProject1Code" class="form-control" required>
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="edit_position1" id="editPosition1" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="edit_allocation_date1" id="editAllocationDate1" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="edit_arrival_date1" id="editArrivalDate1" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 2（可选） -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 2（可选）</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="edit_project2_code" id="editProject2Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="edit_position2" id="editPosition2" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="edit_allocation_date2" id="editAllocationDate2" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="edit_arrival_date2" id="editArrivalDate2" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 3（可选） -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 3（可选）</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="edit_project3_code" id="editProject3Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="edit_position3" id="editPosition3" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="edit_allocation_date3" id="editAllocationDate3" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="edit_arrival_date3" id="editArrivalDate3" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 添加更多项目按钮 -->
+                    <div class="card mb-3" id="editAddMoreProjectsCard">
+                        <div class="card-body text-center">
+                            <button type="button" class="btn btn-outline-primary" onclick="showEditAddProjectsTip()">
+                                <i class="bi bi-plus-circle me-2"></i>添加更多项目
+                            </button>
+                            <small class="text-muted d-block mt-2">最多可分配 4 个项目</small>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 4（默认隐藏） -->
+                    <div class="card mb-3" id="editProject4Card" style="display: none;">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 4（可选） 
+                                <button type="button" class="btn btn-sm btn-outline-danger float-end" onclick="hideEditProject4()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="edit_project4_code" id="editProject4Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="edit_position4" id="editPosition4" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="edit_allocation_date4" id="editAllocationDate4" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="edit_arrival_date4" id="editArrivalDate4" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目 5（默认隐藏） -->
+                    <div class="card mb-3" id="editProject5Card" style="display: none;">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> 项目 5（可选） 
+                                <button type="button" class="btn btn-sm btn-outline-danger float-end" onclick="hideEditProject5()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">项目名称</label>
+                                    <select name="edit_project5_code" id="editProject5Code" class="form-control">
+                                        <option value="">请选择项目</option>
+                                        {% for project in all_projects %}
+                                        <option value="{{ project.project_code }}">{{ project.project_code }} - {{ project.project_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">岗位</label>
+                                    <input type="text" name="edit_position5" id="editPosition5" class="form-control" placeholder="如：技术员、施工员等">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">分配时间</label>
+                                    <input type="date" name="edit_allocation_date5" id="editAllocationDate5" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">到岗时间</label>
+                                    <input type="date" name="edit_arrival_date5" id="editArrivalDate5" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger me-2" onclick="deleteAllAllocations()">
+                        <i class="bi bi-trash"></i> 删除全部分配
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="submitEditAllocation()">
+                        <i class="bi bi-check-circle"></i> 保存修改
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Select2 搜索下拉库 -->
+<link href="https://cdn.bootcdn.net/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.bootcdn.net/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+// 切换全选
+function toggleSelectAll(type) {
+    const selectAll = document.getElementById(type + 'SelectAll');
+    const checkboxes = document.querySelectorAll(`input[name="${type}_ids"]`);
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateSelectedCount();
+}
+
+// 切换单行选择
+function toggleRowSelection(row, type) {
+    const checkbox = row.querySelector('.personnel-checkbox');
+    checkbox.checked = !checkbox.checked;
+    updateSelectedCount();
+}
+
+// 更新选中数量显示并切换按钮状态
+function updateSelectedCount() {
+    const unassignedChecked = document.querySelectorAll('input[name="unassigned_ids"]:checked').length;
+    const assignedChecked = document.querySelectorAll('input[name="assigned_ids"]:checked').length;
+    const projectChecked = document.querySelectorAll('input[name="project_ids"]:checked').length;
+    
+    // 安全更新元素内容
+    const selectedCountEl = document.getElementById('selectedCount');
+    const deptSelectedCountEl = document.getElementById('deptSelectedCount');
+    
+    if (selectedCountEl) {
+        selectedCountEl.textContent = unassignedChecked;
+    }
+    if (deptSelectedCountEl) {
+        deptSelectedCountEl.textContent = assignedChecked;
+    }
+    
+    console.log('待分配选中:', unassignedChecked, '部门选中:', assignedChecked, '项目选中:', projectChecked);
+    
+    // 切换部门人员卡片按钮状态
+    const allocateToProjectBtn = document.getElementById('allocateToProjectBtn');
+    const batchRecallBtn = document.getElementById('batchRecallBtn');
+    
+    if (allocateToProjectBtn && batchRecallBtn) {
+        console.log('找到部门按钮元素');
+        
+        if (assignedChecked > 0) {
+            // 部门人员卡片：选中人员后高亮按钮
+            allocateToProjectBtn.classList.remove('btn-outline-primary');
+            allocateToProjectBtn.classList.add('btn-primary');
+            allocateToProjectBtn.disabled = false;
+            
+            batchRecallBtn.classList.remove('btn-outline-danger');
+            batchRecallBtn.classList.add('btn-danger');
+            batchRecallBtn.disabled = false;
+            
+            console.log('部门按钮已高亮');
+        } else {
+            // 未选中人员：恢复默认样式
+            allocateToProjectBtn.classList.add('btn-outline-primary');
+            allocateToProjectBtn.classList.remove('btn-primary');
+            allocateToProjectBtn.disabled = true;
+            
+            batchRecallBtn.classList.add('btn-outline-danger');
+            batchRecallBtn.classList.remove('btn-danger');
+            batchRecallBtn.disabled = true;
+            
+            console.log('部门按钮已禁用');
+        }
+    } else {
+        console.log('未找到部门按钮元素');
+    }
+    
+    // 切换项目人员卡片按钮状态
+    const batchRecallToDeptBtn = document.getElementById('batchRecallToDeptBtn');
+    
+    if (batchRecallToDeptBtn) {
+        console.log('找到项目按钮元素');
+        
+        if (projectChecked > 0) {
+            // 项目人员卡片：选中人员后高亮按钮
+            batchRecallToDeptBtn.classList.remove('btn-outline-warning');
+            batchRecallToDeptBtn.classList.add('btn-warning');
+            batchRecallToDeptBtn.disabled = false;
+            
+            console.log('项目按钮已高亮');
+        } else {
+            // 未选中人员：恢复默认样式
+            batchRecallToDeptBtn.classList.add('btn-outline-warning');
+            batchRecallToDeptBtn.classList.remove('btn-warning');
+            batchRecallToDeptBtn.disabled = true;
+            
+            console.log('项目按钮已禁用');
+        }
+    } else {
+        console.log('未找到项目按钮元素');
+    }
+}
+
+// 为所有复选框添加事件监听
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.personnel-checkbox');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+    
+    // 页面加载时立即检查一次按钮状态
+    updateSelectedCount();
+    
+    // 检查是否从人员去向页面跳转而来
+    const returnToDestination = sessionStorage.getItem('returnToDestination');
+    if (returnToDestination) {
+        // 显示提示消息
+        setTimeout(() => {
+            alert('您已从人员去向页面跳转至此，可以在此分配或修改人员的项目/部门分配信息。\n\n保存后将自动返回人员去向页面并刷新数据。');
+        }, 500);
+    }
+});
+
+// 显示项目分配模态框
+function showProjectAllocationModal() {
+    // 检查部门人员卡片中选中的复选框
+    const selectedCount = document.querySelectorAll('input[name="assigned_ids"]:checked').length;
+    if (selectedCount === 0) {
+        alert('请至少选择 1 名人员');
+        return;
+    }
+    const modal = new bootstrap.Modal(document.getElementById('projectAllocationModal'));
+    modal.show();
+}
+
+// 提交项目分配
+function submitProjectAllocation() {
+    console.log('开始提交分配...');
+    
+    // 检查是否是编辑模式
+    const editModePersonnelId = document.getElementById('editModePersonnelId')?.value;
+    
+    let selectedIds = [];
+    
+    if (editModePersonnelId) {
+        // 编辑模式：使用隐藏字段中的人员 ID
+        console.log('编辑模式，人员 ID:', editModePersonnelId);
+        selectedIds = [editModePersonnelId];
+    } else {
+        // 批量分配模式：获取部门人员卡片中选中的 IDs
+        selectedIds = Array.from(document.querySelectorAll('input[name="assigned_ids"]:checked')).map(cb => cb.value);
+        console.log('批量分配模式，选中的人员 IDs:', selectedIds);
+        
+        if (selectedIds.length === 0) {
+            alert('请至少选择 1 名人员');
+            return;
+        }
+    }
+    
+    console.log('选中的人员 IDs:', selectedIds);
+    
+    // 获取所有项目及其对应的岗位和时间
+    const projects = [];
+    
+    // 项目 1（必填）
+    const project1Code = $('#project1Code').val(); // 使用 jQuery 的 val() 方法获取 Select2 的值
+    const position1 = document.getElementById('position1').value;
+    const allocationDate1 = document.getElementById('allocationDate1').value;
+    const arrivalDate1 = document.getElementById('arrivalDate1').value;
+    
+    console.log('项目 1:', { project1Code, position1, allocationDate1, arrivalDate1 });
+    
+    if (!project1Code) {
+        alert('请选择项目 1（必填）');
+        return;
+    }
+    
+    projects.push({
+        project_code: project1Code,
+        position: position1,
+        allocation_date: allocationDate1,
+        arrival_date: arrivalDate1
+    });
+    
+    // 项目 2（可选）
+    const project2Code = $('#project2Code').val();
+    if (project2Code) {
+        projects.push({
+            project_code: project2Code,
+            position: document.getElementById('position2').value,
+            allocation_date: document.getElementById('allocationDate2').value,
+            arrival_date: document.getElementById('arrivalDate2').value
+        });
+    }
+    
+    // 项目 3（可选）
+    const project3Code = $('#project3Code').val();
+    if (project3Code) {
+        projects.push({
+            project_code: project3Code,
+            position: document.getElementById('position3').value,
+            allocation_date: document.getElementById('allocationDate3').value,
+            arrival_date: document.getElementById('arrivalDate3').value
+        });
+    }
+    
+    // 项目 4（可选）
+    const project4Code = $('#project4Code').val();
+    if (project4Code) {
+        projects.push({
+            project_code: project4Code,
+            position: document.getElementById('position4').value,
+            allocation_date: document.getElementById('allocationDate4').value,
+            arrival_date: document.getElementById('arrivalDate4').value
+        });
+    }
+    
+    // 项目 5（可选）
+    const project5Code = $('#project5Code').val();
+    if (project5Code) {
+        projects.push({
+            project_code: project5Code,
+            position: document.getElementById('position5').value,
+            allocation_date: document.getElementById('allocationDate5').value,
+            arrival_date: document.getElementById('arrivalDate5').value
+        });
+    }
+    
+    console.log('所有项目:', projects);
+    
+    if (projects.length === 0) {
+        alert('请至少选择一个项目');
+        return;
+    }
+    
+    // 获取项目名称用于显示
+    const project1Name = $('#project1Code option:selected').text();
+    const project2Name = $('#project2Code option:selected').text();
+    const project3Name = $('#project3Code option:selected').text();
+    const project4Name = $('#project4Code option:selected').text();
+    const project5Name = $('#project5Code option:selected').text();
+    
+    // 构建确认提示信息
+    let confirmMessage = `确认分配信息：\n\n`;
+    confirmMessage += `👥 人员数量：${selectedIds.length} 名\n`;
+    confirmMessage += `📦 分配项目数：${projects.length} 个\n\n`;
+    
+    confirmMessage += `项目详情：\n`;
+    confirmMessage += `1️⃣ ${project1Name}\n`;
+    if (position1) confirmMessage += `   岗位：${position1}\n`;
+    if (allocationDate1) confirmMessage += `   分配时间：${allocationDate1}\n`;
+    if (arrivalDate1) confirmMessage += `   到岗时间：${arrivalDate1}\n`;
+    
+    if (projects.length > 1) {
+        if (project2Code) {
+            confirmMessage += `\n2️⃣ ${project2Name}\n`;
+            const position2 = document.getElementById('position2').value;
+            const allocationDate2 = document.getElementById('allocationDate2').value;
+            const arrivalDate2 = document.getElementById('arrivalDate2').value;
+            if (position2) confirmMessage += `   岗位：${position2}\n`;
+            if (allocationDate2) confirmMessage += `   分配时间：${allocationDate2}\n`;
+            if (arrivalDate2) confirmMessage += `   到岗时间：${arrivalDate2}\n`;
+        }
+        if (project3Code) {
+            confirmMessage += `\n3️⃣ ${project3Name}\n`;
+            const position3 = document.getElementById('position3').value;
+            const allocationDate3 = document.getElementById('allocationDate3').value;
+            const arrivalDate3 = document.getElementById('arrivalDate3').value;
+            if (position3) confirmMessage += `   岗位：${position3}\n`;
+            if (allocationDate3) confirmMessage += `   分配时间：${allocationDate3}\n`;
+            if (arrivalDate3) confirmMessage += `   到岗时间：${arrivalDate3}\n`;
+        }
+        if (project4Code) {
+            confirmMessage += `\n4️⃣ ${project4Name}\n`;
+            const position4 = document.getElementById('position4').value;
+            const allocationDate4 = document.getElementById('allocationDate4').value;
+            const arrivalDate4 = document.getElementById('arrivalDate4').value;
+            if (position4) confirmMessage += `   岗位：${position4}\n`;
+            if (allocationDate4) confirmMessage += `   分配时间：${allocationDate4}\n`;
+            if (arrivalDate4) confirmMessage += `   到岗时间：${arrivalDate4}\n`;
+        }
+        if (project5Code) {
+            confirmMessage += `\n5️⃣ ${project5Name}\n`;
+            const position5 = document.getElementById('position5').value;
+            const allocationDate5 = document.getElementById('allocationDate5').value;
+            const arrivalDate5 = document.getElementById('arrivalDate5').value;
+            if (position5) confirmMessage += `   岗位：${position5}\n`;
+            if (allocationDate5) confirmMessage += `   分配时间：${allocationDate5}\n`;
+            if (arrivalDate5) confirmMessage += `   到岗时间：${arrivalDate5}\n`;
+        }
+    }
+    
+    confirmMessage += `\n确定要执行分配吗？`;
+    
+    // 弹出确认框
+    if (!confirm(confirmMessage)) {
+        return; // 用户取消
+    }
+    
+    // 禁用按钮防止重复提交
+    const submitBtn = event.target;
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 处理中...';
+    
+    console.log('发送请求到后端...');
+    
+    fetch("{% url 'eims_app:allocate_personnel_ajax' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            personnel_ids: selectedIds,
+            projects: projects  // 项目数组，每个项目包含：project_code, position, arrival_date
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('后端响应:', data);
+        if (data.success) {
+            alert(data.message);
+            // 检查是否从人员去向页面跳转而来
+            const returnToDestination = sessionStorage.getItem('returnToDestination');
+            if (returnToDestination) {
+                // 清除存储的 URL
+                sessionStorage.removeItem('returnToDestination');
+                // 跳转回人员去向页面并带刷新参数
+                window.location.href = returnToDestination + (returnToDestination.includes('?') ? '&' : '?') + 'refreshed=1';
+            } else {
+                location.reload();
+            }
+        } else {
+            alert('分配失败：' + data.message);
+            // 恢复按钮
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('请求错误:', error);
+        alert('请求失败：' + error);
+        // 恢复按钮
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
+// 分配部门
+function assignToDepartment() {
+    const selectedCount = document.querySelectorAll('input[name="unassigned_ids"]:checked').length;
+    if (selectedCount === 0) {
+        alert('请至少选择 1 名人员');
+        return;
+    }
+    const modal = new bootstrap.Modal(document.getElementById('departmentAllocationModal'));
+    modal.show();
+}
+
+// 提交部门分配
+function submitDepartmentAllocation() {
+    const selectedIds = Array.from(document.querySelectorAll('input[name="unassigned_ids"]:checked')).map(cb => cb.value);
+    const department = document.getElementById('departmentSelect').value;
+    
+    if (!department) {
+        alert('请选择部门');
+        return;
+    }
+    
+    fetch("{% url 'eims_app:assign_to_department_ajax' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            personnel_ids: selectedIds,
+            department: department
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // 检查是否从人员去向页面跳转而来
+            const returnToDestination = sessionStorage.getItem('returnToDestination');
+            if (returnToDestination) {
+                // 清除存储的 URL
+                sessionStorage.removeItem('returnToDestination');
+                // 跳转回人员去向页面并带刷新参数
+                window.location.href = returnToDestination + (returnToDestination.includes('?') ? '&' : '?') + 'refreshed=1';
+            } else {
+                location.reload();
+            }
+        } else {
+            alert('分配失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('请求失败：' + error);
+    });
+}
+
+// 召回人员
+function recallPersonnel(personnelId, personnelName) {
+    if (!confirm(`确定要召回人员"${personnelName}"吗？`)) {
+        return;
+    }
+    
+    fetch(`/personnel/allocations/recall/${personnelId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('召回失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('请求失败：' + error);
+    });
+}
+
+// 批量召回
+function batchRecall() {
+    const selectedIds = Array.from(document.querySelectorAll('input[name="assigned_ids"]:checked')).map(cb => cb.value);
+    if (selectedIds.length === 0) {
+        alert('请至少选择 1 名人员');
+        return;
+    }
+    
+    if (!confirm(`确定要召回选中的 ${selectedIds.length} 名人员吗？`)) {
+        return;
+    }
+    
+    // 逐个召回
+    let completed = 0;
+    selectedIds.forEach(id => {
+        fetch(`/personnel/allocations/recall/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            completed++;
+            if (completed === selectedIds.length) {
+                location.reload();
+            }
+        });
+    });
+}
+
+// 显示添加更多项目提示
+function showAddProjectsTip() {
+    const project4Card = document.getElementById('project4Card');
+    if (project4Card.style.display === 'none') {
+        // 显示项目 4
+        project4Card.style.display = 'block';
+        // 隐藏添加按钮
+        document.getElementById('addMoreProjectsCard').style.display = 'none';
+        
+        // 如果项目 4 已填写，自动显示项目 5 的添加提示
+        setTimeout(() => {
+            checkAndShowProject5Button();
+        }, 500);
+    } else {
+        alert('请先填写项目 4 的信息');
+    }
+}
+
+// 检查并显示项目 5 的添加按钮
+function checkAndShowProject5Button() {
+    const project4Code = document.getElementById('project4Code').value;
+    if (project4Code) {
+        // 显示项目 5 的添加按钮（在项目 4 下方）
+        const addProject5Btn = document.createElement('div');
+        addProject5Btn.id = 'addProject5Btn';
+        addProject5Btn.className = 'text-center mb-3';
+        addProject5Btn.innerHTML = `
+            <button type="button" class="btn btn-outline-primary" onclick="showProject5()">
+                <i class="bi bi-plus-circle me-2"></i>继续添加项目 5
+            </button>
+        `;
+        
+        const project4Card = document.getElementById('project4Card');
+        project4Card.parentNode.insertBefore(addProject5Btn, project4Card.nextSibling);
+    }
+}
+
+// 显示项目 5
+function showProject5() {
+    document.getElementById('project5Card').style.display = 'block';
+    const addProject5Btn = document.getElementById('addProject5Btn');
+    if (addProject5Btn) {
+        addProject5Btn.remove();
+    }
+}
+
+// 隐藏项目 4
+function hideProject4() {
+    document.getElementById('project4Card').style.display = 'none';
+    // 清空项目 4 的值
+    document.getElementById('project4Code').value = '';
+    document.getElementById('position4').value = '';
+    document.getElementById('allocationDate4').value = '';
+    document.getElementById('arrivalDate4').value = '';
+    
+    // 隐藏项目 5
+    document.getElementById('project5Card').style.display = 'none';
+    document.getElementById('project5Code').value = '';
+    document.getElementById('position5').value = '';
+    document.getElementById('allocationDate5').value = '';
+    document.getElementById('arrivalDate5').value = '';
+    
+    // 移除项目 5 的添加按钮
+    const addProject5Btn = document.getElementById('addProject5Btn');
+    if (addProject5Btn) {
+        addProject5Btn.remove();
+    }
+    
+    // 显示添加更多项目按钮
+    document.getElementById('addMoreProjectsCard').style.display = 'block';
+}
+
+// 隐藏项目 5
+function hideProject5() {
+    document.getElementById('project5Card').style.display = 'none';
+    // 清空项目 5 的值
+    document.getElementById('project5Code').value = '';
+    document.getElementById('position5').value = '';
+    document.getElementById('allocationDate5').value = '';
+    document.getElementById('arrivalDate5').value = '';
+}
+
+// 获取 CSRF Token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// 编辑人员项目分配
+// 编辑人员分配 - 打开分配到项目窗体
+function editPersonnelAllocation(personnelId, personnelName) {
+    console.log('编辑人员分配:', personnelId, personnelName);
+    
+    // 获取该人员的当前分配信息
+    fetch(`/personnel/allocations/get-personnel-projects/${personnelId}/`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('获取到人员项目数据:', data);
+            
+            if (data.success) {
+                // 填充项目 1（必填）
+                const project1Select = document.getElementById('project1Code');
+                if (project1Select) {
+                    project1Select.value = data.projects[0]?.project_code || '';
+                    $(project1Select).trigger('change');
+                }
+                const position1Input = document.getElementById('position1');
+                if (position1Input) position1Input.value = data.projects[0]?.position || '';
+                const allocDate1Input = document.getElementById('allocationDate1');
+                if (allocDate1Input) allocDate1Input.value = data.projects[0]?.allocation_date || '';
+                const arrivalDate1Input = document.getElementById('arrivalDate1');
+                if (arrivalDate1Input) arrivalDate1Input.value = data.projects[0]?.arrival_date || '';
+                
+                // 填充项目 2（可选）
+                if (data.projects[1]) {
+                    const project2Select = document.getElementById('project2Code');
+                    if (project2Select) {
+                        project2Select.value = data.projects[1].project_code;
+                        $(project2Select).trigger('change');
+                    }
+                    const position2Input = document.getElementById('position2');
+                    if (position2Input) position2Input.value = data.projects[1].position || '';
+                    const allocDate2Input = document.getElementById('allocationDate2');
+                    if (allocDate2Input) allocDate2Input.value = data.projects[1].allocation_date || '';
+                    const arrivalDate2Input = document.getElementById('arrivalDate2');
+                    if (arrivalDate2Input) arrivalDate2Input.value = data.projects[1].arrival_date || '';
+                }
+                
+                // 填充项目 3（可选）
+                if (data.projects[2]) {
+                    const project3Select = document.getElementById('project3Code');
+                    if (project3Select) {
+                        project3Select.value = data.projects[2].project_code;
+                        $(project3Select).trigger('change');
+                    }
+                    const position3Input = document.getElementById('position3');
+                    if (position3Input) position3Input.value = data.projects[2].position || '';
+                    const allocDate3Input = document.getElementById('allocationDate3');
+                    if (allocDate3Input) allocDate3Input.value = data.projects[2].allocation_date || '';
+                    const arrivalDate3Input = document.getElementById('arrivalDate3');
+                    if (arrivalDate3Input) arrivalDate3Input.value = data.projects[2].arrival_date || '';
+                }
+                
+                // 填充项目 4（可选）
+                if (data.projects[3]) {
+                    const project4Card = document.getElementById('project4Card');
+                    if (project4Card) project4Card.style.display = 'block';
+                    
+                    const project4Select = document.getElementById('project4Code');
+                    if (project4Select) {
+                        project4Select.value = data.projects[3].project_code;
+                        $(project4Select).trigger('change');
+                    }
+                    const position4Input = document.getElementById('position4');
+                    if (position4Input) position4Input.value = data.projects[3].position || '';
+                    const allocDate4Input = document.getElementById('allocationDate4');
+                    if (allocDate4Input) allocDate4Input.value = data.projects[3].allocation_date || '';
+                    const arrivalDate4Input = document.getElementById('arrivalDate4');
+                    if (arrivalDate4Input) arrivalDate4Input.value = data.projects[3].arrival_date || '';
+                }
+                
+                // 填充项目 5（可选）
+                if (data.projects[4]) {
+                    const project5Card = document.getElementById('project5Card');
+                    if (project5Card) project5Card.style.display = 'block';
+                    
+                    const project5Select = document.getElementById('project5Code');
+                    if (project5Select) {
+                        project5Select.value = data.projects[4].project_code;
+                        $(project5Select).trigger('change');
+                    }
+                    const position5Input = document.getElementById('position5');
+                    if (position5Input) position5Input.value = data.projects[4].position || '';
+                    const allocDate5Input = document.getElementById('allocationDate5');
+                    if (allocDate5Input) allocDate5Input.value = data.projects[4].allocation_date || '';
+                    const arrivalDate5Input = document.getElementById('arrivalDate5');
+                    if (arrivalDate5Input) arrivalDate5Input.value = data.projects[4].arrival_date || '';
+                }
+                
+                // 设置隐藏字段，标记为编辑模式
+                const editModeInput = document.getElementById('editModePersonnelId');
+                if (editModeInput) {
+                    editModeInput.value = personnelId;
+                } else {
+                    // 如果没有隐藏字段，创建一个
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.id = 'editModePersonnelId';
+                    hiddenInput.name = 'editModePersonnelId';
+                    hiddenInput.value = personnelId;
+                    document.querySelector('#projectAllocationModal .modal-body').appendChild(hiddenInput);
+                }
+                
+                // 打开分配到项目窗体
+                const modal = new bootstrap.Modal(document.getElementById('projectAllocationModal'));
+                modal.show();
+            } else {
+                alert('获取人员项目信息失败');
+            }
+        })
+        .catch(error => {
+            console.error('获取人员项目信息失败:', error);
+            alert('获取人员项目信息失败，请稍后重试');
+        });
+}
+
+// 提交编辑分配
+function submitEditAllocation() {
+    const personnelId = document.getElementById('editPersonnelId').value;
+    
+    // 收集项目数据
+    const projects = [];
+    
+    // 项目 1（必填）
+    const project1Code = document.getElementById('editProject1Code').value;
+    if (!project1Code) {
+        alert('请选择项目 1（必填）');
+        return;
+    }
+    projects.push({
+        project_code: project1Code,
+        position: document.getElementById('editPosition1').value,
+        allocation_date: document.getElementById('editAllocationDate1').value,
+        arrival_date: document.getElementById('editArrivalDate1').value
+    });
+    
+    // 项目 2（可选）
+    const project2Code = document.getElementById('editProject2Code').value;
+    if (project2Code) {
+        projects.push({
+            project_code: project2Code,
+            position: document.getElementById('editPosition2').value,
+            allocation_date: document.getElementById('editAllocationDate2').value,
+            arrival_date: document.getElementById('editArrivalDate2').value
+        });
+    }
+    
+    // 项目 3（可选）
+    const project3Code = document.getElementById('editProject3Code').value;
+    if (project3Code) {
+        projects.push({
+            project_code: project3Code,
+            position: document.getElementById('editPosition3').value,
+            allocation_date: document.getElementById('editAllocationDate3').value,
+            arrival_date: document.getElementById('editArrivalDate3').value
+        });
+    }
+    
+    // 项目 4（可选）
+    const project4Code = document.getElementById('editProject4Code').value;
+    if (project4Code) {
+        projects.push({
+            project_code: project4Code,
+            position: document.getElementById('editPosition4').value,
+            allocation_date: document.getElementById('editAllocationDate4').value,
+            arrival_date: document.getElementById('editArrivalDate4').value
+        });
+    }
+    
+    if (projects.length === 0) {
+        alert('请至少选择一个项目');
+        return;
+    }
+    
+    // 发送 AJAX 请求更新分配
+    fetch(`/personnel/allocations/update/${personnelId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            projects: projects
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('修改成功！');
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editAllocationModal'));
+            modal.hide();
+            // 刷新页面
+            location.reload();
+        } else {
+            alert('修改失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('请求失败：' + error);
+    });
+}
+
+// 删除全部分配
+function deleteAllAllocations() {
+    const personnelId = document.getElementById('editPersonnelId').value;
+    const personnelName = document.getElementById('editPersonName').textContent;
+    
+    if (!confirm(`确定要删除 ${personnelName} 的所有项目分配吗？`)) {
+        return;
+    }
+    
+    fetch(`/personnel/allocations/delete-all/${personnelId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('已删除所有分配');
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editAllocationModal'));
+            modal.hide();
+            // 刷新页面
+            location.reload();
+        } else {
+            alert('删除失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('请求失败：' + error);
+    });
+}
+
+// 编辑模态框 - 显示添加更多项目提示
+function showEditAddProjectsTip() {
+    const project4Card = document.getElementById('editProject4Card');
+    if (project4Card.style.display === 'none') {
+        project4Card.style.display = 'block';
+        document.getElementById('editAddMoreProjectsCard').style.display = 'none';
+    }
+}
+
+// 编辑模态框 - 隐藏项目 4
+function hideEditProject4() {
+    document.getElementById('editProject4Card').style.display = 'none';
+    document.getElementById('editProject4Code').value = '';
+    document.getElementById('editPosition4').value = '';
+    document.getElementById('editAllocationDate4').value = '';
+    document.getElementById('editArrivalDate4').value = '';
+    
+    // 显示添加更多项目按钮
+    document.getElementById('editAddMoreProjectsCard').style.display = 'block';
+}
+
+// 隐藏编辑模态框的项目 5
+function hideEditProject5() {
+    document.getElementById('editProject5Card').style.display = 'none';
+    document.getElementById('editProject5Code').value = '';
+    document.getElementById('editPosition5').value = '';
+    document.getElementById('editAllocationDate5').value = '';
+    document.getElementById('editArrivalDate5').value = '';
+}
+
+// 初始化 Select2 搜索下拉
+// 注意：模态框中的元素需要在模态框显示时初始化
+function initSelect2() {
+    console.log('开始初始化 Select2...');
+    
+    // 项目分配模态框 - 所有项目下拉框（包括项目 5）
+    $('#project1Code, #project2Code, #project3Code, #project4Code, #project5Code').select2({
+        placeholder: '请选择项目',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "未找到相关项目";
+            },
+            searching: function() {
+                return "搜索中...";
+            }
+        },
+        width: '100%',
+        dropdownParent: $('#projectAllocationModal') // 关键：设置下拉框的父容器为模态框
+    });
+    
+    console.log('项目分配模态框 Select2 初始化完成');
+    
+    // 编辑模态框 - 所有项目下拉框（包括项目 5）
+    $('#editProject1Code, #editProject2Code, #editProject3Code, #editProject4Code, #editProject5Code').select2({
+        placeholder: '请选择项目',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "未找到相关项目";
+            },
+            searching: function() {
+                return "搜索中...";
+            }
+        },
+        width: '100%',
+        dropdownParent: $('#editAllocationModal') // 关键：设置下拉框的父容器为模态框
+    });
+    
+    console.log('编辑模态框 Select2 初始化完成');
+}
+
+// 页面加载时初始化（如果元素已存在）
+$(document).ready(function() {
+    console.log('DOM 加载完成，检查 Select2 初始化...');
+    console.log('jQuery 版本:', $.fn.jquery);
+    console.log('Select2 是否已加载:', typeof $.fn.select2 !== 'undefined');
+    
+    // 检查元素是否存在，存在则初始化
+    if ($('#project1Code').length > 0) {
+        console.log('项目 1 下拉框存在，准备初始化');
+        initSelect2();
+    } else {
+        console.log('项目 1 下拉框不存在，等待模态框打开时初始化');
+    }
+    
+    // 监听模态框打开事件，动态初始化 Select2
+    $('#projectAllocationModal').on('shown.bs.modal', function() {
+        console.log('项目分配模态框已打开');
+        // 如果还没有初始化，则初始化
+        if (!$('#project1Code').hasClass('select2-hidden-accessible')) {
+            console.log('开始初始化项目分配模态框的 Select2');
+            initSelect2();
+        } else {
+            console.log('项目分配模态框的 Select2 已经初始化');
+        }
+    });
+    
+    $('#editAllocationModal').on('shown.bs.modal', function() {
+        console.log('编辑模态框已打开');
+        // 如果还没有初始化，则初始化
+        if (!$('#editProject1Code').hasClass('select2-hidden-accessible')) {
+            console.log('开始初始化编辑模态框的 Select2');
+            initSelect2();
+        } else {
+            console.log('编辑模态框的 Select2 已经初始化');
+        }
+    });
+});
+
+// ==================== 项目人员相关功能 ====================
+
+// 批量召回部门
+function batchRecallToDepartment() {
+    const selectedIds = getSelectedProjectIds();
+    if (selectedIds.length === 0) {
+        alert('请至少选择一名人员');
+        return;
+    }
+    
+    if (!confirm(`确定要将选中的 ${selectedIds.length} 名人员从项目召回部门吗？`)) {
+        return;
+    }
+    
+    fetch('{% url "eims_app:recall_to_department_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            personnel_ids: selectedIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('召回失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('召回失败，请重试');
+    });
+}
+
+// 召回部门（单个）
+function recallToDepartment(personnelId, personnelName) {
+    if (!confirm(`确定要将 ${personnelName} 从项目召回部门吗？`)) {
+        return;
+    }
+    
+    fetch('{% url "eims_app:recall_to_department_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            personnel_ids: [personnelId]
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('召回失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('召回失败，请重试');
+    });
+}
+
+// 获取项目人员选中的 ID 列表
+function getSelectedProjectIds() {
+    const checkboxes = document.querySelectorAll('input[name="project_ids"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// ==================== 动态布局调整 ====================
+
+// 动态调整项目人员卡片位置和宽度，使其紧挨待分配人员卡片下方
+function adjustProjectCardPosition() {
+    const unassignedCard = document.querySelector('#unassignedTable').closest('.card');
+    const container = document.getElementById('projectPersonnelContainer');
+    
+    if (unassignedCard && container) {
+        // 获取待分配人员卡片相对于其父容器的位置
+        const parent = unassignedCard.parentElement;
+        const cardOffsetTop = unassignedCard.offsetTop;
+        const cardOffsetHeight = unassignedCard.offsetHeight;
+        
+        // 计算项目人员卡片应该放置的位置（待分配人员卡片底部）
+        const containerTop = cardOffsetTop + cardOffsetHeight;
+        
+        // 设置项目人员容器的位置
+        container.style.top = containerTop + 'px';
+        container.style.width = unassignedCard.offsetWidth + 'px';
+        
+        console.log('待分配人员卡片位置:', cardOffsetTop, 'px');
+        console.log('待分配人员卡片高度:', cardOffsetHeight, 'px');
+        console.log('项目人员容器位置:', containerTop, 'px');
+        console.log('项目人员容器宽度:', unassignedCard.offsetWidth, 'px');
+    }
+}
+
+// 页面加载时和窗口大小改变时调整
+$(document).ready(function() {
+    // 延迟执行，确保 DOM 已完全渲染
+    setTimeout(adjustProjectCardPosition, 100);
+    console.log('Page loaded, adjusting project card position...');
+});
+
+$(window).on('resize', function() {
+    adjustProjectCardPosition();
+    console.log('Window resized, adjusting project card position...');
+});
+
+// 监听表格内容变化
+const observer = new MutationObserver(function(mutations) {
+    adjustProjectCardPosition();
+    console.log('Table content changed, adjusting project card position...');
+});
+
+// 观察待分配人员表格的变化
+setTimeout(function() {
+    const unassignedTable = document.getElementById('unassignedTable');
+    if (unassignedTable) {
+        observer.observe(unassignedTable, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
+    // 初始调整
+    adjustProjectCardPosition();
+    console.log('Observer set up, initial adjustment complete');
+}, 1000);
+</script>
+{% endblock %}

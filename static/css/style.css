@@ -1,0 +1,365 @@
+/*
+=========================================
+ 协同 AI 办公系统 (AOS) - 全局样式表
+ 作者：Qwen | 日期：2026 年 2 月 12 日
+ 功能：美化合同表单、列表页及通用 UI
+=========================================
+*/
+
+/* ===== 全局重置与基础设置 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px; /* 基准字体大小，确保 1rem = 16px */
+}
+
+body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333333;
+    background-color: #f8f9fa;
+    padding: 20px;
+}
+
+/* ===== 容器布局 ===== */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== 标题样式 ===== */
+h1 {
+    font-size: 1.875rem; /* 30px */
+    margin-bottom: 24px;
+    color: #2c3e50;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.5rem; /* 24px */
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+/* ===== 表单通用样式 ===== */
+form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 1rem;
+}
+
+/* ===== 输入控件统一风格 ===== */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background-color: #ffffff;
+    transition: all 0.2s ease-in-out;
+    appearance: none; /* 移除浏览器默认样式（如 select 箭头） */
+}
+
+/* 聚焦状态 */
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="email"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+/* 下拉框特殊处理（确保箭头可见且美观） */
+select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px; /* 为自定义箭头留空间 */
+    cursor: pointer;
+}
+
+select:focus {
+    cursor: default;
+}
+
+/* 文本域 */
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* ===== 按钮样式 ===== */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* ===== 表格样式（用于合同列表页） ===== */
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+th, td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* 操作列按钮 */
+.action-buttons .btn {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+    margin-right: 8px;
+}
+
+/* ===== 错误提示样式 ===== */
+ul.errorlist {
+    margin: 8px 0;
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    color: #721c24;
+    list-style: none;
+    font-size: 0.9rem;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+        font-size: 1.125rem; /* 防止 iOS Safari 自动缩放 */
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* ===== 打印优化（可选） ===== */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    .container {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+
+/* ========== 合同搜索栏样式已简化 ========== */
+
+#contract-search-input:focus,
+#contract-status-select:focus,
+#contract-type-select:focus {
+    border-color: #3498db !important;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25) !important;
+}
+/* ========== 筛选按钮精准微调（按需修改数值） ========== */
+#contract-search-btn {
+    /* 🔹 高度调整 */
+    height: 46px !important;          /* 原42px → 改为45px（按需修改） */
+    
+    /* 🔹 宽度控制（三选一） */
+    /* 选项1：固定宽度（适合按钮文字短） */
+    /* width: 110px !important; */
+    
+    /* 选项2：最小宽度（推荐！保持响应式） */
+    min-width: 115px !important;      /* 防止在窄屏时过小 */
+    
+    /* 选项3：占满父容器（与重置按钮等宽） */
+    /* width: 100% !important; */
+    
+    /* 🔹 位置微调（关键！用relative不破坏布局） */
+    position: relative !important;    /* 启用相对定位 */
+    top: -2px !important;             /* 向上微调1px（负值=上，正值=下） */
+    left: 2px !important;             /* 向右微调2px（负值=左，正值=右） */
+    box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3) !important; /* 添加投影 */
+    transform: scale(1.03) !important; /* 轻微放大（悬停时恢复1.0） */
+    transition: all 0.3s ease !important;    
+    /* 🔹 内边距优化（影响文字位置） */
+    padding: 0.7rem 1.3rem !important; /* 上下0.7rem，左右1.3rem */
+    
+    /* 🔹 额外安全：确保垂直居中 */
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* 🔹 悬停增强（可选） */
+    transition: all 0.2s ease !important;
+}
+#contract-search-btn:hover {
+    transform: scale(1.05) !important;
+    top: -3px !important;             /* 悬停时再上移1px（微动效） */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important;
+}
+/* 统一所有控件基准线 */
+.contract-search-container .form-control,
+.contract-search-container .form-select,
+.contract-search-container .btn {
+    position: relative !important;
+    top: 0 !important; /* 先归零 */
+}
+/* 仅微调下拉框 */
+#contract-status-select,
+#contract-type-select {
+    top: 0.5px !important; /* 下拉框因箭头需微调 */
+}
+/* =================================================================== */
+/* 合同搜索栏样式已简化 */
+/* =================================================================== */
+
+/* 仅当悬停/聚焦时微调边框（保持Bootstrap原生交互） */
+#contract-search-input:focus,
+#contract-status-select:focus,
+#contract-type-select:focus {
+    border-color: #3498db !important;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25) !important;
+}
+
+/* 按钮悬停效果增强 */
+#contract-search-btn:hover {
+    background-color: #2980b9 !important;
+    border-color: #2980b9 !important;
+}
+
+/* ========== 筛选按钮精准微调（按需修改数值） ========== */
+#contract-search-btn {
+    /* 🔹 高度调整 */
+    height: 46px !important; /* 原42px → 改为45px（按需修改） */
+    /* 🔹 宽度控制（三选一） */
+    /* 选项1：固定宽度（适合按钮文字短） */
+    /* width: 110px !important; */
+    /* 选项2：最小宽度（推荐！保持响应式） */
+    min-width: 115px !important; /* 防止在窄屏时过小 */
+    /* 选项3：占满父容器（与重置按钮等宽） */
+    /* width: 100% !important; */
+    /* 🔹 位置微调（关键！用relative不破坏布局） */
+    position: relative !important; /* 启用相对定位 */
+    top: -2px !important; /* 向上微调1px（负值=上，正值=下） */
+    left: 2px !important; /* 向右微调2px（负值=左，正值=右） */
+    box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3) !important; /* 添加投影 */
+    transform: scale(1.03) !important; /* 轻微放大（悬停时恢复1.0） */
+    transition: all 0.3s ease !important;
+    /* 🔹 内边距优化（影响文字位置） */
+    padding: 0.7rem 1.3rem !important; /* 上下0.7rem，左右1.3rem */
+    /* 🔹 额外安全：确保垂直居中 */
+    align-items: center !important;
+    justify-content: center !important;
+    /* 🔹 悬停增强（可选） */
+    transition: all 0.2s ease !important;
+}
+#contract-search-btn:hover {
+    transform: scale(1.05) !important;
+    top: -3px !important; /* 悬停时再上移1px（微动效） */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important;
+}
+
+/* 统一所有控件基准线 */
+.contract-search-container .form-control,
+.contract-search-container .form-select,
+.contract-search-container .btn {
+    position: relative !important;
+    top: 0 !important; /* 先归零 */
+}
+
+/* 仅微调下拉框 */
+#contract-status-select,
+#contract-type-select {
+    top: 0.5px !important; /* 下拉框因箭头需微调 */
+}
