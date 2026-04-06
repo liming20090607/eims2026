@@ -12,11 +12,41 @@ from .models.model_dynamic_choice import DynamicChoice
 # 导入自定义的用户管理配置
 from .admin_user import UserAdmin, UserProfileAdmin
 
+# 导入导入导出功能
+try:
+    from import_export.admin import ImportExportModelAdmin
+    from import_export import resources
+    IMPORT_EXPORT_AVAILABLE = True
+    
+    # 创建 Resource 类
+    class ProjectResource(resources.ModelResource):
+        class Meta:
+            model = Project
+            import_id_fields = ('id',)
+    
+    class EmployeeResource(resources.ModelResource):
+        class Meta:
+            model = Employee
+            import_id_fields = ('id',)
+    
+    class ContractResource(resources.ModelResource):
+        class Meta:
+            model = Contract
+            import_id_fields = ('id',)
+    
+except ImportError:
+    IMPORT_EXPORT_AVAILABLE = False
+    print("提示：安装 django-import-export 以启用导入导出功能")
+    print("命令：pip install django-import-export")
+
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(ImportExportModelAdmin if IMPORT_EXPORT_AVAILABLE else admin.ModelAdmin):
     list_display = ('project_code', 'project_name', 'project_category', 'project_status', 'contract_count')
     search_fields = ('project_code', 'project_name', 'project_director')
     list_filter = ('project_category', 'project_status')
+    if IMPORT_EXPORT_AVAILABLE:
+        resource_classes = [ProjectResource]
+        # Django 4.x 不需要手动指定模板
 
 @admin.register(OutputPayment)
 class OutputPaymentAdmin(admin.ModelAdmin):
@@ -25,10 +55,12 @@ class OutputPaymentAdmin(admin.ModelAdmin):
     list_filter = ('month', 'project')
 
 @admin.register(Employee)
-class EmployeeAdmin(admin.ModelAdmin):
+class EmployeeAdmin(ImportExportModelAdmin if IMPORT_EXPORT_AVAILABLE else admin.ModelAdmin):
     list_display = ('employee_code', 'name', 'gender', 'mobile', 'education', 'ethnic', 'entry_time')
     search_fields = ('employee_code', 'name', 'mobile', 'id_card')
     list_filter = ('gender', 'education', 'ethnic')
+    if IMPORT_EXPORT_AVAILABLE:
+        resource_classes = [EmployeeResource]
 
 @admin.register(Personnel)
 class PersonnelAdmin(admin.ModelAdmin):
@@ -43,17 +75,15 @@ class ProjectDynamicAdmin(admin.ModelAdmin):
     list_filter = ('project_status', 'project')
 
 @admin.register(Contract)
-class ContractAdmin(admin.ModelAdmin):
+class ContractAdmin(ImportExportModelAdmin if IMPORT_EXPORT_AVAILABLE else admin.ModelAdmin):
     list_display = (
         'id', 'contract_type', 'project_code', 'contract_code', 'contract_name',
         'party_a', 'contract_amount', 'signing_time', 'status'
     )
-    list_filter = (
-        'contract_type', 'status', 'signing_time'
-    )
-    search_fields = (
-        'project_code', 'contract_code', 'contract_name', 'party_a'
-    )
+    search_fields = ('contract_name', 'party_a', 'contract_code')
+    list_filter = ('contract_type', 'status')
+    if IMPORT_EXPORT_AVAILABLE:
+        resource_classes = [ContractResource]
 
 @admin.register(DynamicChoice)
 class DynamicChoiceAdmin(admin.ModelAdmin):

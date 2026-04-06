@@ -311,6 +311,16 @@ class ContractApprovalRecord(models.Model):
     comment = models.TextField("审批意见", blank=True)
     created_at = models.DateTimeField("操作时间", auto_now_add=True)
     
+    # 转发相关字段
+    next_approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="下一步审批人",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='next_approval_records'
+    )
+    
     class Meta:
         ordering = ['created_at']
         verbose_name = "合同审批记录"

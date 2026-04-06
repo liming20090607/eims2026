@@ -17,6 +17,8 @@ from .model_contract_approval import ContractApproval, ContractAttachment, Contr
 from .model_approval_flow import DepartmentManager, ApprovalFlowConfig
 from .model_dynamic_choice import DynamicChoice
 from .model_sms import SMSVerificationRecord
+from .model_qr_login import QRCodeLoginSession
+from .model_wechat_binding import WechatUserBinding, WechatQRCodeSession
 
 
 __all__ = [
@@ -52,4 +54,7 @@ __all__ = [
     'ApprovalFlowConfig',
     'DynamicChoice',
     'SMSVerificationRecord',
+    'QRCodeLoginSession',
+    'WechatUserBinding',
+    'WechatQRCodeSession',
 ]

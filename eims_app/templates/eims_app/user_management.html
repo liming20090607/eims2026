@@ -1,0 +1,321 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}用户账号管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 页面标题 -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2 class="h3 text-gray-800">
+                <i class="fas fa-users-cog"></i> 用户账号管理
+            </h2>
+            <p class="text-muted">批量创建和管理用户账号，快速重置密码</p>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                总员工数</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_employees }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                已创建账号</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ has_accounts }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                未创建账号</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ no_accounts }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                覆盖率</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if total_employees > 0 %}
+                                    {{ has_accounts|floatformat:0|add:"0"|multiply:"100"|divide:total_employees }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量创建表单 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">批量创建账号</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" id="batch-create-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="batch_create">
+                
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">默认密码</label>
+                    <div class="col-sm-4">
+                        {{ form.default_password }}
+                        <small class="form-text text-muted">新创建用户的初始密码，建议通知用户首次登录后修改</small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">选择员工</label>
+                    <div class="col-sm-10">
+                        <div class="form-check">
+                            {{ form.select_all }}
+                            <label class="form-check-label" for="select-all-users">
+                                全选/全不选
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-sm-10 offset-sm-2">
+                        <button type="submit" class="btn btn-primary" onclick="return confirm('确定要批量创建选中的账号吗？')">
+                            <i class="fas fa-plus-circle"></i> 批量创建选中的账号
+                        </button>
+                        <span class="text-muted ml-2">
+                            已选择 <span id="selected-count">0</span> 人
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 员工列表表格 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">员工账号状态</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <form method="post" id="password-reset-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reset_password">
+                    {{ password_reset_form.user_id }}
+                    
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th width="50">
+                                    <input type="checkbox" class="select-all" id="select-all">
+                                </th>
+                                <th>员工编号</th>
+                                <th>姓名</th>
+                                <th>手机号</th>
+                                <th>部门</th>
+                                <th>职位</th>
+                                <th>账号状态</th>
+                                <th>用户名</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in employee_account_status %}
+                            <tr>
+                                <td>
+                                    {% if not item.has_account %}
+                                    <input type="checkbox" name="selected_employees" value="{{ item.employee.id }}" class="employee-checkbox">
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.employee.employee_code }}</td>
+                                <td>{{ item.employee.name }}</td>
+                                <td>{{ item.employee.mobile|default:"-" }}</td>
+                                <td>{{ item.employee.department.name|default:"-" }}</td>
+                                <td>{{ item.employee.admin_position|default:"-" }}</td>
+                                <td>
+                                    {% if item.has_account %}
+                                    <span class="badge badge-success">已创建</span>
+                                    {% else %}
+                                    <span class="badge badge-warning">未创建</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.has_account and item.user %}
+                                    <span class="text-primary">{{ item.user.username }}</span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.has_account and item.user %}
+                                    <button type="button" class="btn btn-sm btn-info" 
+                                            onclick="showResetPasswordModal({{ item.user.id }}, '{{ item.user.username }}')">
+                                        <i class="fas fa-key"></i> 重置密码
+                                    </button>
+                                    {% else %}
+                                    <a href="{% url 'eims_app:sync_user_from_employee' item.employee.id %}" 
+                                       class="btn btn-sm btn-success"
+                                       onclick="return confirm('确定要为该员工创建账号吗？')">
+                                        <i class="fas fa-plus"></i> 创建账号
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>暂无员工数据</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 重置密码模态框 -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetPasswordModalLabel">
+                    <i class="fas fa-key"></i> 重置密码
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="modal-reset-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reset_password">
+                    <input type="hidden" name="user_id" id="modal-user-id">
+                    
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" class="form-control" id="modal-username" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="modal-new-password">新密码</label>
+                        {{ password_reset_form.new_password }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="modal-confirm-password">确认密码</label>
+                        {{ password_reset_form.confirm_password }}
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 确认重置
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 全选/全不选
+    $('#select-all').change(function() {
+        $('.employee-checkbox').prop('checked', $(this).prop('checked'));
+        updateSelectedCount();
+    });
+    
+    // 单个复选框变化时更新计数
+    $('.employee-checkbox').change(function() {
+        updateSelectedCount();
+    });
+    
+    // 更新选中数量
+    function updateSelectedCount() {
+        var count = $('.employee-checkbox:checked').length;
+        $('#selected-count').text(count);
+    }
+    
+    // 显示重置密码模态框
+    window.showResetPasswordModal = function(userId, username) {
+        $('#modal-user-id').val(userId);
+        $('#modal-username').val(username);
+        $('#resetPasswordModal').modal('show');
+    };
+    
+    // 表单验证
+    $('#modal-reset-form').submit(function(e) {
+        var newPwd = $('#modal-new-password').val();
+        var confirmPwd = $('#modal-confirm-password').val();
+        
+        if (newPwd !== confirmPwd) {
+            e.preventDefault();
+            alert('两次输入的密码不一致！');
+            return false;
+        }
+        
+        if (newPwd.length < 6) {
+            e.preventDefault();
+            alert('密码长度不能少于 6 位！');
+            return false;
+        }
+        
+        return confirm('确定要重置该用户的密码吗？');
+    });
+});
+</script>
+{% endblock %}

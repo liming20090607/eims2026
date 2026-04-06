@@ -1,0 +1,4 @@
+[OK] Applied Python 3.14 compatibility patch for Django Context
+Fixed Python path: ['e:\\', 'e:\\EIMS2026\\venv', 'e:\\EIMS2026', 'C:\\Python314\\python314.zip', 'C:\\Python314\\DLLs', 'C:\\Python314\\Lib', 'C:\\Python314', 'C:\\Python314\\Lib\\site-packages']
+提示：安装 django-import-export 以启用导入导出功能
+命令：pip install django-import-export

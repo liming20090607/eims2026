@@ -208,12 +208,26 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">提交时间</span>
-                    <span class="info-value">{{ approval.submitted_at|date:"Y-m-d H:i"|default:"-" }}</span>
+                    <span class="info-value">{{ approval.submitted_at|date:"Y-m-d H:i:s"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">当前审批人</span>
+                    <span class="info-value">
+                        {% if approval.current_approver %}
+                            {{ approval.current_approver.username }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">审批级别</span>
+                    <span class="info-value">第 {{ approval.approval_level }} 级 / 共 {{ approval.max_approval_level }} 级</span>
                 </div>
                 {% if approval.approved_at %}
                 <div class="info-item">
                     <span class="info-label">审批通过时间</span>
-                    <span class="info-value">{{ approval.approved_at|date:"Y-m-d H:i" }}</span>
+                    <span class="info-value">{{ approval.approved_at|date:"Y-m-d H:i:s" }}</span>
                 </div>
                 {% endif %}
             </div>
@@ -289,14 +303,19 @@
                         {% endif %}
                     </div>
                     <div class="timeline-content">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between align-items-center">
                             <strong>{{ record.operator.username }}</strong>
-                            <small class="text-muted">{{ record.created_at|date:"Y-m-d H:i" }}</small>
+                            <small class="text-muted">{{ record.created_at|date:"Y-m-d H:i:s" }}</small>
                         </div>
                         <div class="mt-1">
                             <span class="badge bg-primary">{{ record.get_action_display }}</span>
+                            {% if record.next_approver %}
+                            <span class="badge bg-info ms-1">
+                                <i class="bi bi-arrow-right me-1"></i>下一步：{{ record.next_approver.username }}
+                            </span>
+                            {% endif %}
                             {% if record.comment %}
-                            <p class="mb-0 mt-2">{{ record.comment }}</p>
+                            <p class="mb-0 mt-2 text-secondary" style="white-space: pre-wrap;">{{ record.comment }}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -330,23 +349,19 @@
             </form>
             {% endif %}
             
-            {% if approval.status == 'pending' and request.user.is_superuser %}
-            <div class="btn-group">
-                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+            {% if approval.status in 'pending,reviewing' and approval.current_approver == request.user %}
+            <div class="dropdown">
+                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-check-circle me-1"></i>审批操作
                 </button>
                 <ul class="dropdown-menu">
                     <li>
-                        <form method="post" action="{% url 'eims_app:contract_approval_approve' approval.pk %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="comment" value="同意">
-                            <button type="submit" class="dropdown-item" onclick="return confirm('确定同意该审批？')">
-                                <i class="bi bi-check-circle me-1"></i>同意
-                            </button>
-                        </form>
+                        <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#approveModal">
+                            <i class="bi bi-check-circle me-1"></i>同意
+                        </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#rejectModal">
                             <i class="bi bi-x-circle me-1"></i>退回
                         </a>
                     </li>
@@ -357,6 +372,64 @@
             <a href="{% url 'eims_app:contract_approval_chain' %}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i>返回列表
             </a>
+        </div>
+    </div>
+</div>
+
+<!-- 同意审批模态框 -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="{% url 'eims_app:contract_approval_approve' approval.pk %}">
+                {% csrf_token %}
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">同意审批</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">审批意见/建议 <small class="text-muted">(非必填)</small></label>
+                        <textarea name="submit_comment" class="form-control" rows="3" placeholder="请输入您的意见或建议..."></textarea>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">选择操作类型</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="action_type" id="actionFinalize" value="finalize" checked onchange="toggleApproverSelect()">
+                            <label class="form-check-label" for="actionFinalize">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                <strong>终结审批</strong> - 审批通过并生成合同台账
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="action_type" id="actionForward" value="forward" onchange="toggleApproverSelect()">
+                            <label class="form-check-label" for="actionForward">
+                                <i class="bi bi-arrow-right-circle-fill text-primary me-1"></i>
+                                <strong>转发到下一步</strong> - 指定下一位审批人继续审批
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="nextApproverSection" style="display: none;">
+                        <label class="form-label fw-bold">选择下一步审批人</label>
+                        <select name="next_approver" class="form-select" id="nextApproverSelect">
+                            <option value="">-- 请选择审批人 --</option>
+                            {% for user in available_approvers %}
+                            <option value="{{ user.pk }}">{{ user.username }} ({{ user.get_full_name|default:'未设置姓名' }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">提示：可选择其他部门主管或上级领导进行多级审批</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success" onclick="return validateApproveForm()">
+                        <i class="bi bi-check-circle me-1"></i>确认
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -383,4 +456,33 @@
         </div>
     </div>
 </div>
+
+<script>
+// 切换审批人选择区域显示
+function toggleApproverSelect() {
+    const actionForward = document.getElementById('actionForward');
+    const nextApproverSection = document.getElementById('nextApproverSection');
+    
+    if (actionForward.checked) {
+        nextApproverSection.style.display = 'block';
+    } else {
+        nextApproverSection.style.display = 'none';
+    }
+}
+
+// 验证同意表单
+function validateApproveForm() {
+    const actionForward = document.getElementById('actionForward');
+    
+    if (actionForward.checked) {
+        const nextApproverSelect = document.getElementById('nextApproverSelect');
+        if (!nextApproverSelect.value) {
+            alert('⚠️ 请选择下一步审批人');
+            return false;
+        }
+    }
+    
+    return confirm('确定执行此操作吗？');
+}
+</script>
 {% endblock %}

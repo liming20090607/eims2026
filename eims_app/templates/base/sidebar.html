@@ -7,6 +7,7 @@ EIMS 菜单生成标签
 from django import template
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from eims_app.models.model_contract_approval import ContractApproval
 
 register = template.Library()
 
@@ -33,7 +34,14 @@ def render_sidebar_menu(context):
             'url': reverse('contract_list'),
             'text': '合同管理',
             'icon': 'bi-file-earmark-text',
-            'permission': 'eims_app.view_contract'
+            'permission': 'eims_app.view_contract',
+            'has_submenu': True,
+            'submenu_items': [
+                {'url': reverse('contract_list'), 'text': '合同台账', 'icon': 'bi-journal-text'},
+                {'url': reverse('contract_approval_chain'), 'text': '审批流程', 'icon': 'bi-diagram-3'},
+                {'url': reverse('my_pending_approvals'), 'text': '我的待审批', 'icon': 'bi-bell-fill', 'badge': True},
+                {'url': reverse('my_initiated_approvals'), 'text': '我发起的', 'icon': 'bi-send'},
+            ]
         },
         {
             'id': 'project',
@@ -108,6 +116,14 @@ def render_sidebar_menu(context):
         elif user.has_perm(item['permission']):
             visible_items.append(item)
     
+    # 获取当前用户的待审批数量（用于显示徽章）
+    pending_count = 0
+    if user.is_authenticated:
+        pending_count = ContractApproval.objects.filter(
+            current_approver=user,
+            status__in=['pending', 'reviewing']
+        ).count()
+    
     # 生成 HTML
     html = '<ul id="sidebar-menu" class="nav flex-column">'
         
@@ -143,10 +159,17 @@ def render_sidebar_menu(context):
             for subitem in item['submenu_items']:
                 sub_is_active = request.path.startswith(subitem.get('url', '')) if subitem.get('url') != '#' else False
                 onclick_attr = f" onclick=\"{subitem['onclick']}\"" if 'onclick' in subitem else ''
+                
+                # 如果是“我的待审批”菜单项且有待审批数量，显示徽章
+                badge_html = ''
+                if subitem.get('badge') and pending_count > 0:
+                    badge_html = f'<span class="badge bg-danger ms-auto">{pending_count}</span>'
+                
                 html += f'''
                   <li class="nav-item">
                     <a href="{subitem['url']}" class="nav-link {'active' if sub_is_active else ''}"{onclick_attr}>
                       <i class="bi {subitem['icon']}"></i> {subitem['text']}
+                      {badge_html}
                     </a>
                   </li>
                 '''

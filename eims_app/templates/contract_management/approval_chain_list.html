@@ -118,6 +118,7 @@
                         <th>申请部门</th>
                         <th>申请人</th>
                         <th>状态</th>
+                        <th>审批人</th>
                         <th style="width: 150px;">操作</th>
                     </tr>
                 </thead>
@@ -137,13 +138,30 @@
                             </span>
                         </td>
                         <td>
+                            {% if item.current_approver %}
+                            <span class="badge bg-primary">
+                                <i class="bi bi-person-circle"></i> {{ item.current_approver.get_full_name|default:item.current_approver.username }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <a href="{% url 'eims_app:contract_approval_detail' item.pk %}" class="btn btn-info btn-action" title="查看详情">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            {% if item.status == 'draft' or item.status == 'rejected' %}
+                            {% if item.applicant == request.user and item.status in 'draft,rejected,cancelled' %}
                             <a href="{% url 'eims_app:contract_approval_edit' item.pk %}" class="btn btn-warning btn-action" title="编辑">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            {% endif %}
+                            {% if item.applicant == request.user and item.status in 'pending,reviewing' %}
+                            <form method="post" action="{% url 'eims_app:contract_approval_cancel' item.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-action" title="撤回审批" onclick="return confirm('确定要撤回该审批吗？')">
+                                    <i class="bi bi-arrow-return-left"></i>
+                                </button>
+                            </form>
                             {% endif %}
                         </td>
                     </tr>

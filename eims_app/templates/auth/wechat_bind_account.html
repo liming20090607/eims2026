@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绑定账号 - 协同 AI 办公系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .bind-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            max-width: 450px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .bind-header {
+            background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .bind-body {
+            padding: 30px;
+        }
+        .wechat-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .wechat-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 3px solid #07c160;
+        }
+        .btn-bind {
+            background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+        }
+        .btn-bind:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="bind-card">
+        <div class="bind-header">
+            <h4 class="mb-0"><i class="bi bi-link-45deg me-2"></i>绑定账号</h4>
+            <p class="mb-0 mt-2"><small>首次使用需要绑定系统账号</small></p>
+        </div>
+        <div class="bind-body">
+            <!-- 微信信息 -->
+            <div class="wechat-info">
+                {% if headimgurl %}
+                <img src="{{ headimgurl }}" alt="微信头像" class="wechat-avatar">
+                {% else %}
+                <div class="wechat-avatar bg-success d-flex align-items-center justify-content-center text-white">
+                    <i class="bi bi-wechat" style="font-size: 40px;"></i>
+                </div>
+                {% endif %}
+                <h5 class="mb-1">{{ nickname }}</h5>
+                <p class="text-muted small mb-0">微信用户</p>
+            </div>
+            
+            <!-- 提示信息 -->
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                请输入您的系统账号和密码进行绑定
+            </div>
+            
+            <!-- 绑定表单 -->
+            <form id="bindForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">用户名/姓名</label>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           placeholder="请输入用户名或真实姓名" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="请输入密码" required>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-bind">
+                        <i class="bi bi-check-circle me-2"></i>确认绑定
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-3">
+                <a href="/login/" class="text-muted small">
+                    <i class="bi bi-arrow-left me-1"></i>返回登录
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('bindForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            // 禁用按钮
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>绑定中...';
+            
+            fetch('/wechat-login/bind/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 绑定成功，跳转
+                    window.location.href = data.redirect_url || '/';
+                } else {
+                    // 显示错误
+                    alert(data.message || '绑定失败，请重试');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>确认绑定';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('网络错误，请重试');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>确认绑定';
+            });
+        });
+        
+        // 获取CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

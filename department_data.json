@@ -1,0 +1,201 @@
+﻿Fixed Python path: ['E:\\', 'E:\\EIMS2026\\venv', 'E:\\EIMS2026', 'C:\\Python314\\python314.zip', 'C:\\Python314\\DLLs', 'C:\\Python314\\Lib', 'C:\\Python314', 'C:\\Python314\\Lib\\site-packages']
+[
+{
+  "model": "eims_app.department",
+  "pk": 1,
+  "fields": {
+    "is_deleted": false,
+    "create_time": "2026-03-21T09:27:10.826Z",
+    "update_time": "2026-03-21T10:47:45.618Z",
+    "department_code": "DEPT001",
+    "department_name": "监理部",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "王敏志",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责公司工程项目的管理和实施",
+    "responsibilities": "负责工程部相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 1
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 2,
+  "fields": {
+    "is_deleted": false,
+    "create_time": "2026-03-21T09:27:10.833Z",
+    "update_time": "2026-03-21T10:49:01.959Z",
+    "department_code": "DEPT002",
+    "department_name": "检测部",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "宋弦弦",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责技术支持和研发工作",
+    "responsibilities": "负责技术部相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 2
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 3,
+  "fields": {
+    "is_deleted": false,
+    "create_time": "2026-03-21T09:27:10.836Z",
+    "update_time": "2026-03-21T10:49:58.420Z",
+    "department_code": "DEPT003",
+    "department_name": "造价部",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "黄建波",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责质量管理和监督",
+    "responsibilities": "负责质量部相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 3
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 4,
+  "fields": {
+    "is_deleted": false,
+    "create_time": "2026-03-21T09:27:10.841Z",
+    "update_time": "2026-03-21T10:50:39.865Z",
+    "department_code": "DEPT004",
+    "department_name": "经营部",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "唐薇薇",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责安全生产管理",
+    "responsibilities": "负责安全部相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 4
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 5,
+  "fields": {
+    "is_deleted": false,
+    "create_time": "2026-03-21T09:27:10.846Z",
+    "update_time": "2026-03-21T10:51:08.450Z",
+    "department_code": "DEPT005",
+    "department_name": "财务部",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "廖志红",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责物资采购和管理",
+    "responsibilities": "负责物资部相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 5
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 6,
+  "fields": {
+    "is_deleted": false,
+    "create_time": "2026-03-21T09:27:10.851Z",
+    "update_time": "2026-03-21T10:51:31.333Z",
+    "department_code": "DEPT006",
+    "department_name": "总经办",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "银雪",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责财务管理和会计核算",
+    "responsibilities": "负责财务部相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 6
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 7,
+  "fields": {
+    "is_deleted": true,
+    "create_time": "2026-03-21T09:27:10.856Z",
+    "update_time": "2026-03-21T09:27:10.856Z",
+    "department_code": "DEPT007",
+    "department_name": "综合办",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "吴九",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责行政和人力资源工作",
+    "responsibilities": "负责综合办相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 7
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 8,
+  "fields": {
+    "is_deleted": true,
+    "create_time": "2026-03-21T09:27:10.860Z",
+    "update_time": "2026-03-21T09:27:10.860Z",
+    "department_code": "DEPT008",
+    "department_name": "市场部",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": null,
+    "manager_name": "郑十",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "负责市场开拓和客户关系",
+    "responsibilities": "负责市场部相关工作",
+    "status": "active",
+    "established_date": null,
+    "order": 8
+  }
+},
+{
+  "model": "eims_app.department",
+  "pk": 9,
+  "fields": {
+    "is_deleted": false,
+    "create_time": "2026-03-25T14:11:21.645Z",
+    "update_time": "2026-03-25T14:11:21.645Z",
+    "department_code": "DEPT009",
+    "department_name": "前期部",
+    "department_type": "functional",
+    "parent_department": null,
+    "manager": 24,
+    "manager_name": "程慧慧",
+    "contact_phone": "",
+    "contact_email": "",
+    "description": "",
+    "responsibilities": "",
+    "status": "active",
+    "established_date": null,
+    "order": 0
+  }
+}
+]

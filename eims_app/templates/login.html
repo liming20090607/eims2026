@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>登录 - 协同 AI 办公系统 (AOS)</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -88,6 +91,31 @@
                     </a>
                 </div>
             </form>
+            
+            <!-- 分隔线 -->
+            <div class="my-4 d-flex align-items-center">
+                <hr class="flex-grow-1">
+                <span class="mx-3 text-muted small">或</span>
+                <hr class="flex-grow-1">
+            </div>
+            
+            <!-- 扫码登录按钮 -->
+            <div class="text-center">
+                <a href="/qr-login/" class="btn btn-outline-primary w-100 mb-2" style="padding: 12px;">
+                    <i class="bi bi-qr-code-scan me-2"></i>扫码登录
+                </a>
+                <small class="text-muted d-block mb-3">
+                    <i class="bi bi-phone me-1"></i>使用手机扫描二维码快速登录
+                </small>
+                
+                <!-- 微信扫码登录按钮 -->
+                <a href="/wechat-login/" class="btn btn-success w-100" style="padding: 12px; background: linear-gradient(135deg, #07c160 0%, #06ad56 100%); border: none;">
+                    <i class="bi bi-wechat me-2"></i>微信扫码登录
+                </a>
+                <small class="text-muted d-block mt-2">
+                    <i class="bi bi-wechat me-1"></i>使用微信扫描，首次需绑定账号
+                </small>
+            </div>
         </div>
     </div>
 </body>

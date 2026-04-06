@@ -110,25 +110,53 @@ class SMSService:
         daily_count = cache.get(daily_count_key, 0)
         cache.set(daily_count_key, daily_count + 1, 86400)  # 24 小时
         
-        # TODO: 调用真实的短信服务商 API 发送短信
-        # 示例代码（以阿里云为例）：
-        # from aliyunsdkcore.client import AcsClient
-        # from aliyunsdkdysmsapi.request.v20170525 import SendSmsRequest
-        # 
-        # client = AcsClient(settings.ALIYUN_ACCESS_KEY_ID, settings.ALIYUN_ACCESS_KEY_SECRET, 'cn-hangzhou')
-        # request = SendSmsRequest()
-        # request.set_PhoneNumbers(phone)
-        # request.set_SignName('您的签名')
-        # request.set_TemplateCode('您的模板代码')
-        # request.set_TemplateParam(f'{{"code":"{code}"}}')
-        # response = client.do_action_with_exception(request)
-        
-        # 开发环境打印验证码（方便测试）
-        print(f"\n{'='*60}")
-        print(f"【短信验证码】手机号：{phone}, 类型：{code_type}, 验证码：{code}")
-        print(f"{'='*60}\n")
-        
-        return True, '验证码已发送'
+        # 尝试使用阿里云短信服务
+        try:
+            from django.conf import settings
+            from aliyunsdkcore.client import AcsClient
+            from aliyunsdkdysmsapi.request.v20170525 import SendSmsRequest
+            
+            # 检查是否配置了阿里云 AccessKey
+            if settings.ALIYUN_ACCESS_KEY_ID and settings.ALIYUN_ACCESS_KEY_SECRET:
+                # 创建客户端
+                client = AcsClient(
+                    settings.ALIYUN_ACCESS_KEY_ID,
+                    settings.ALIYUN_ACCESS_KEY_SECRET,
+                    settings.ALIYUN_SMS_REGION
+                )
+                
+                # 创建请求
+                request = SendSmsRequest()
+                request.set_PhoneNumbers(phone)
+                request.set_SignName(settings.ALIYUN_SMS_SIGN_NAME)
+                request.set_TemplateCode(settings.ALIYUN_SMS_TEMPLATE_CODE)
+                request.set_TemplateParam('{"code":"' + code + '"}')
+                
+                # 发送短信
+                response = client.do_action_with_exception(request)
+                
+                # 检查响应
+                import json
+                result = json.loads(response.decode('utf-8'))
+                if result.get('Code') == 'OK':
+                    return True, '验证码已发送'
+                else:
+                    # 发送失败，回退到开发模式
+                    print(f"\n阿里云短信发送失败: {result}")
+                    raise Exception(result.get('Message', 'Unknown error'))
+            else:
+                # 未配置 AccessKey，使用开发模式
+                raise Exception('未配置阿里云 AccessKey')
+                
+        except Exception as e:
+            # 开发环境打印验证码（方便测试）
+            print(f"\n{'='*60}")
+            print(f"【短信验证码】手机号：{phone}, 类型：{code_type}, 验证码：{code}")
+            print(f"{'='*60}\n")
+            print(f"⚠️  提示：{str(e)}")
+            print(f"如需发送真实短信，请在 .env 文件中配置 ALIYUN_ACCESS_KEY_ID 和 ALIYUN_ACCESS_KEY_SECRET\n")
+            
+            return True, '验证码已发送（开发模式）'
     
     @classmethod
     def verify_code(cls, phone, code_type, code):

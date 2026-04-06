@@ -408,7 +408,7 @@ def contract_approval_chain(request):
     keyword = request.GET.get('keyword', '')
     
     # 基础查询集
-    queryset = ContractApproval.objects.select_related('applicant', 'department').all()
+    queryset = ContractApproval.objects.select_related('applicant', 'department', 'current_approver').all()
     
     # 筛选
     if status:
@@ -447,7 +447,7 @@ def contract_approval_add(request):
         form = ContractApprovalForm(request.POST)
         
         # 检查是否上传了附件（新增时必须上传）
-        files = request.FILES.getlist('attachments')
+        files = request.FILES.getlist('new_attachments')
         if not files or len(files) == 0:
             messages.error(request, '⚠️ 请至少上传一个附件才能提交')
             return render(request, 'contract_management/approval_form.html', {
@@ -463,7 +463,7 @@ def contract_approval_add(request):
             approval.save()
             
             # 处理文件上传
-            file_types = request.POST.getlist('file_types')
+            file_types = request.POST.getlist('new_file_types')
             
             for i, file in enumerate(files):
                 attachment = ContractAttachment(
@@ -490,15 +490,21 @@ def contract_approval_add(request):
 def contract_approval_detail(request, pk):
     """合同审批详情"""
     from eims_app.models.model_contract_approval import ContractApproval, ContractApprovalRecord
+    from django.contrib.auth import get_user_model
     
     approval = get_object_or_404(ContractApproval, pk=pk)
     
     # 获取审批历史记录
     records = approval.approval_records.select_related('operator').all()
     
+    # 获取可用的审批人列表（用于转发功能）
+    User = get_user_model()
+    available_approvers = User.objects.filter(is_active=True).exclude(pk=request.user.pk)
+    
     context = {
         'approval': approval,
         'records': records,
+        'available_approvers': available_approvers,
         'title': '合同审批详情',
     }
     
@@ -507,22 +513,101 @@ def contract_approval_detail(request, pk):
 
 @login_required
 def contract_approval_edit(request, pk):
-    """编辑合同审批（仅草稿状态可编辑）"""
+    """编辑合同审批（草稿、已退回或已撤回状态可编辑，且仅申请人可编辑）"""
     from eims_app.models.model_contract_approval import ContractApproval, ContractAttachment
-    from eims_app.forms.form_contract_approval import ContractApprovalForm
+    from eims_app.forms.form_contract_approval import ContractApprovalForm, ContractAttachmentForm
     
     approval = get_object_or_404(ContractApproval, pk=pk)
     
-    # 只有草稿状态可以编辑
-    if approval.status != 'draft':
-        messages.error(request, '只有草稿状态的审批可以编辑')
+    # 只有申请人可以编辑
+    if approval.applicant != request.user:
+        messages.error(request, '只有发起人可以编辑该审批')
         return redirect('eims_app:contract_approval_detail', pk=approval.pk)
+    
+    # 草稿、已退回或已撤回状态可以编辑
+    if approval.status not in ['draft', 'rejected', 'cancelled']:
+        messages.error(request, '只有草稿、已退回或已撤回状态的审批可以编辑')
+        return redirect('eims_app:contract_approval_detail', pk=approval.pk)
+    
+    # 获取已有附件
+    existing_attachments = approval.attachments.filter(is_deleted=False)
     
     if request.method == 'POST':
         form = ContractApprovalForm(request.POST, instance=approval)
         if form.is_valid():
-            form.save()
-            messages.success(request, '合同审批修改成功！')
+            approval = form.save()
+            
+            # 处理附件：删除旧附件（如果用户勾选了删除），添加新附件
+            # 删除操作
+            delete_ids = request.POST.getlist('delete_attachments')
+            if delete_ids:
+                ContractAttachment.objects.filter(
+                    id__in=delete_ids, 
+                    approval=approval
+                ).update(is_deleted=True)
+            
+            # 上传新附件
+            new_files = request.FILES.getlist('new_attachments')
+            new_file_types = request.POST.getlist('new_file_types')
+            
+            if new_files:
+                for i, file in enumerate(new_files):
+                    file_type = new_file_types[i] if i < len(new_file_types) else 'contract'
+                    ContractAttachment.objects.create(
+                        approval=approval,
+                        file=file,
+                        file_type=file_type,
+                        uploaded_by=request.user
+                    )
+            
+            # 根据操作类型处理
+            action = request.POST.get('action', 'save')
+            submit_comment = request.POST.get('submit_comment', '')
+            
+            if action == 'submit':
+                # 保存并提交审批
+                from eims_app.models.model_contract_approval import ContractApprovalRecord
+                from django.utils import timezone
+                
+                # 自动填充发起人、发起时间和申请部门（如果是首次提交）
+                if not approval.initiator:
+                    approval.initiator = request.user
+                    approval.initiation_time = timezone.now()
+                    
+                    # 如果申请部门为空，使用用户所在部门
+                    if not approval.department and hasattr(request.user, 'department') and request.user.department:
+                        approval.department = request.user.department
+                
+                # 根据审批流程类型指派审批人
+                try:
+                    assigned_approver = approval.assign_current_approver()
+                    if assigned_approver:
+                        approval.save()
+                    else:
+                        messages.warning(request, '未找到合适的审批人，请手动选择或联系管理员配置')
+                        return redirect('eims_app:contract_approval_edit', pk=approval.pk)
+                except Exception as e:
+                    messages.error(request, f'指派审批人失败：{str(e)}')
+                    return redirect('eims_app:contract_approval_edit', pk=approval.pk)
+                
+                # 更新状态
+                approval.status = 'pending'
+                approval.submitted_at = timezone.now()
+                approval.save()
+                
+                # 记录操作
+                ContractApprovalRecord.objects.create(
+                    approval=approval,
+                    action='submit',
+                    operator=request.user,
+                    comment=submit_comment or '提交审批'
+                )
+                
+                messages.success(request, '合同审批已提交，等待审核')
+            else:
+                # 仅保存
+                messages.success(request, '合同审批修改成功！')
+            
             return redirect('eims_app:contract_approval_detail', pk=approval.pk)
     else:
         form = ContractApprovalForm(instance=approval)
@@ -530,6 +615,7 @@ def contract_approval_edit(request, pk):
     context = {
         'form': form,
         'approval': approval,
+        'existing_attachments': existing_attachments,
         'title': '编辑合同审批',
     }
     
@@ -589,54 +675,26 @@ def contract_approval_submit(request, pk):
 
 @login_required
 def contract_approval_approve(request, pk):
-    """批准合同审批"""
+    """批准合同审批 - 可选择转发到下一步或终结审批"""
     from eims_app.models.model_contract_approval import ContractApproval, ContractApprovalRecord
     from eims_app.models.model_project_detail import ProjectDetail
+    from eims_app.models.model_employee import Employee
     from django.utils import timezone
     import uuid
     
     approval = get_object_or_404(ContractApproval, pk=pk)
     
-    # 检查权限（这里简化处理，实际应该根据角色判断）
-    if not request.user.is_superuser:
-        messages.error(request, '您没有审批权限')
+    # 检查权限：当前审批人才能审批
+    if approval.current_approver != request.user:
+        messages.error(request, '您不是当前审批人，无法进行审批操作')
         return redirect('eims_app:contract_approval_detail', pk=approval.pk)
     
     if request.method == 'POST':
         comment = request.POST.get('comment', '')
+        submit_comment = request.POST.get('submit_comment', '')  # 转发时的意见
+        action_type = request.POST.get('action_type', 'finalize')  # 'forward' 或 'finalize'
         
-        # 更新审批状态
-        approval.status = 'approved'
-        approval.approved_at = timezone.now()
-        approval.approval_result = 'pending'  # 待签订
-        approval.save()
-        
-        # 自动生成合同台账记录
-        project_code = f"HT{timezone.now().strftime('%Y%m%d%H%M%S')}"
-        contract_code = f"HT-{timezone.now().strftime('%Y%m%d')}-{approval.pk}"
-        
-        project_detail = ProjectDetail.objects.create(
-            project_code=project_code,
-            contract_code=contract_code,
-            project_name=approval.contract_name,
-            contract_category=approval.contract_category,
-            contract_amount=approval.contract_amount,
-            contract_party_a=approval.party_a,
-            contract_party_b=approval.party_b,
-            service_period_months=approval.service_period_months,
-            service_deadline=approval.service_deadline,
-            signing_date=None,  # 未签订
-            project_status='not_started',
-            contract_status='pending_review',
-            settlement_status='unsettled',
-            remark=f"来自审批：{approval.title}. {approval.remark or ''}",
-        )
-        
-        # 关联审批和台账
-        approval.generated_contract = project_detail
-        approval.save()
-        
-        # 记录操作
+        # 记录审批操作
         ContractApprovalRecord.objects.create(
             approval=approval,
             action='approve',
@@ -644,7 +702,77 @@ def contract_approval_approve(request, pk):
             comment=comment or '同意'
         )
         
-        messages.success(request, '合同审批已通过，已自动生成合同台账记录')
+        if action_type == 'forward':
+            # 转发到下一步审批人
+            next_approver_id = request.POST.get('next_approver')
+            if next_approver_id:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                try:
+                    next_approver = User.objects.get(pk=next_approver_id)
+                    # 升级审批级别
+                    approval.approval_level += 1
+                    approval.current_approver = next_approver
+                    approval.status = 'reviewing'  # 保持审核中状态
+                    approval.save()
+                    
+                    # 记录操作并保存下一步审批人
+                    record = ContractApprovalRecord.objects.create(
+                        approval=approval,
+                        action='approve',
+                        operator=request.user,
+                        comment=submit_comment or comment or '同意并转发',
+                        next_approver=next_approver
+                    )
+                    
+                    messages.success(request, f'已转发给 {next_approver.username} 进行下一步审批')
+                except User.DoesNotExist:
+                    messages.error(request, '选择的审批人不存在')
+                    return redirect('eims_app:contract_approval_detail', pk=approval.pk)
+            else:
+                messages.error(request, '请选择下一步审批人')
+                return redirect('eims_app:contract_approval_detail', pk=approval.pk)
+        else:
+            # 终结审批，生成合同台账
+            approval.status = 'approved'
+            approval.approved_at = timezone.now()
+            approval.approval_result = 'pending'  # 待签订
+            approval.save()
+            
+            # 记录操作
+            ContractApprovalRecord.objects.create(
+                approval=approval,
+                action='approve',
+                operator=request.user,
+                comment=submit_comment or comment or '同意'
+            )
+            
+            # 自动生成合同台账记录
+            project_code = f"HT{timezone.now().strftime('%Y%m%d%H%M%S')}"
+            contract_code = f"HT-{timezone.now().strftime('%Y%m%d')}-{approval.pk}"
+            
+            project_detail = ProjectDetail.objects.create(
+                project_code=project_code,
+                contract_code=contract_code,
+                project_name=approval.contract_name,
+                contract_category=approval.contract_category,
+                contract_amount=approval.contract_amount,
+                contract_party_a=approval.party_a,
+                contract_party_b=approval.party_b,
+                service_period_months=approval.service_period_months,
+                service_deadline=approval.service_deadline,
+                signing_date=None,  # 未签订
+                project_status='not_started',
+                contract_status='pending_review',
+                settlement_status='unsettled',
+                remark=f"来自审批：{approval.title}. {approval.remark or ''}",
+            )
+            
+            # 关联审批和台账
+            approval.generated_contract = project_detail
+            approval.save()
+            
+            messages.success(request, '合同审批已通过，已自动生成合同台账记录')
     
     return redirect('eims_app:contract_approval_detail', pk=approval.pk)
 
@@ -656,9 +784,9 @@ def contract_approval_reject(request, pk):
     
     approval = get_object_or_404(ContractApproval, pk=pk)
     
-    # 检查权限
-    if not request.user.is_superuser:
-        messages.error(request, '您没有审批权限')
+    # 检查权限：当前审批人才能退回
+    if approval.current_approver != request.user:
+        messages.error(request, '您不是当前审批人，无法进行退回操作')
         return redirect('eims_app:contract_approval_detail', pk=approval.pk)
     
     if request.method == 'POST':

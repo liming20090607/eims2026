@@ -22,7 +22,9 @@ from .views.views_contract import (
     contract_approval_edit, contract_approval_submit, contract_approval_approve,
     contract_approval_reject, contract_approval_cancel
 )
+from .views.views_my_approvals import my_pending_approvals, my_initiated_approvals
 from .views.views_profile import profile_view
+from .views.views_my_account import my_account_view
 from .views import views_personnel
 from .views.views_employee import (
     employee_list, employee_add, employee_detail, 
@@ -73,6 +75,21 @@ from .views.views_dynamic_choice import (
 from .views import views_project_ledger, views_contract_management
 from .views.views_sms_auth import (
     send_sms_code, sms_login, change_phone, reset_password_by_sms
+)
+from .views.views_forgot_password import (
+    forgot_password_page, send_forgot_password_code, verify_and_reset_password
+)
+from .views.views_user_management import (
+    user_management, sync_user_from_employee
+)
+from .views.views_qr_login import (
+    qr_login_page, qr_login_scan, qr_login_confirm,
+    qr_login_status, qr_login_complete, qr_login_cancel
+)
+from .views.views_wechat_login import (
+    wechat_qr_login_page, wechat_login_callback,
+    wechat_bind_account, wechat_check_status,
+    wechat_unbind, wechat_my_bindings
 )
 from django.views.generic import RedirectView
 
@@ -135,11 +152,14 @@ urlpatterns = [
     path('contract-approval/<int:pk>/approve/', contract_approval_approve, name='contract_approval_approve'),
     path('contract-approval/<int:pk>/reject/', contract_approval_reject, name='contract_approval_reject'),
     path('contract-approval/<int:pk>/cancel/', contract_approval_cancel, name='contract_approval_cancel'),
+    path('my-pending-approvals/', my_pending_approvals, name='my_pending_approvals'),
+    path('my-initiated-approvals/', my_initiated_approvals, name='my_initiated_approvals'),
     path('contract/import/template/', contract_import_template, name='contract_import_template'),
     path('contract/export/', contract_export, name='contract_export'),
     
     # 个人设置路由
     path('profile/', profile_view, name='profile'),
+    path('my-account/', my_account_view, name='my_account'),
     
     # 人员管理路由
     path('employee/', employee_list, name='employee_list'),
@@ -319,7 +339,31 @@ urlpatterns = [
     path('api/sms/login/', sms_login, name='sms_login'),
     path('api/sms/change-phone/', change_phone, name='change_phone'),
     path('api/sms/reset-password/', reset_password_by_sms, name='reset_password_by_sms'),
-    path('forgot-password/', views_contract_management.forgot_password, name='forgot_password'),
+    
+    # 忘记密码相关路由
+    path('forgot-password/', forgot_password_page, name='forgot_password'),
+    path('api/forgot-password/send-code/', send_forgot_password_code, name='send_forgot_password_code'),
+    path('api/forgot-password/verify-reset/', verify_and_reset_password, name='verify_and_reset_password'),
+    
+    # 用户账号管理路由
+    path('user-management/', user_management, name='user_management'),
+    path('user-management/sync/<int:employee_id>/', sync_user_from_employee, name='sync_user_from_employee'),
+    
+    # 二维码登录路由
+    path('qr-login/', qr_login_page, name='qr_login_page'),
+    path('qr-login/scan/<uuid:session_id>/', qr_login_scan, name='qr_login_scan'),
+    path('qr-login/confirm/', qr_login_confirm, name='qr_login_confirm'),
+    path('qr-login/status/<uuid:session_id>/', qr_login_status, name='qr_login_status'),
+    path('qr-login/complete/<uuid:session_id>/', qr_login_complete, name='qr_login_complete'),
+    path('qr-login/cancel/', qr_login_cancel, name='qr_login_cancel'),
+    
+    # 微信扫码登录路由（真正的微信开放平台集成）
+    path('wechat-login/', wechat_qr_login_page, name='wechat_qr_login'),
+    path('wechat-login/callback/', wechat_login_callback, name='wechat_login_callback'),
+    path('wechat-login/bind/', wechat_bind_account, name='wechat_bind_account'),
+    path('wechat-login/status/<uuid:session_id>/', wechat_check_status, name='wechat_check_status'),
+    path('wechat-login/unbind/', wechat_unbind, name='wechat_unbind'),
+    path('wechat-login/my-bindings/', wechat_my_bindings, name='wechat_my_bindings'),
 ]
 
 # 调试工具路由（仅在开发环境使用）

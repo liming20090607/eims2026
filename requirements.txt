@@ -16,6 +16,8 @@ logging==0.4.9.6
 conda-pack==0.6.0
 # 新增：加载.env文件依赖（必装，解决当前dotenv模块找不到报错）
 python-dotenv==1.0.0
+# 二维码生成库（用于扫码登录功能）
+qrcode[pil]==7.4.2
 
 #以上就是：
 #Django==4.2.7

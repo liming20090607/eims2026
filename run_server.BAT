@@ -1,23 +1,19 @@
 @echo off
-chcp 65001 > nul
-echo ============== Æô¶¯EIMSÏµÍ³ ==============
+chcp 65001 >nul
+title EIMS2026 æœåŠ¡å™¨
+cls
+echo ========================================
+echo   EIMS2026 æœåŠ¡å™¨å¯åŠ¨
+echo ========================================
+echo.
+echo ğŸ“ å·¥ä½œç›®å½•ï¼š%CD%
+echo ğŸš€ æ­£åœ¨å¯åŠ¨ Django å¼€å‘æœåŠ¡å™¨...
+echo.
 
-:: ¼¤»îconda»·¾³
-call conda activate eims_env
+REM åˆ‡æ¢åˆ°é¡¹ç›®æ ¹ç›®å½•æ‰§è¡Œ
+cd /d "%~dp0"
 
-:: Êı¾İ¿âÇ¨ÒÆ
-python manage.py makemigrations eims_app
-python manage.py migrate
-
-:: µ¼Èë³õÊ¼²âÊÔÊı¾İ
-echo ÕıÔÚµ¼Èë³õÊ¼²âÊÔÊı¾İ...
-python manage.py loaddata eims_app\fixtures\initial_data.json
-
-:: ´´½¨³¬¼¶ÓÃ»§£¨Ê×´ÎÔËĞĞ£©
-echo Çë´´½¨³¬¼¶ÓÃ»§£¨ÓÃÓÚºóÌ¨¹ÜÀí£©£º
-python manage.py createsuperuser
-
-:: Æô¶¯¿ª·¢·şÎñÆ÷
+REM å¯åŠ¨æœåŠ¡å™¨
 python manage.py runserver 0.0.0.0:8000
 
 pause

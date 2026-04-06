@@ -7,6 +7,11 @@ def login_required_middleware(get_response):
             '/admin/login/',
             '/accounts/login/',
             '/login/',
+            '/forgot-password/',
+            '/qr-login/',
+            '/wechat-login/',
+            '/api/sms/',
+            '/api/forgot-password/',
             '/static/',
             '/media/',
         ]

@@ -3,6 +3,12 @@
 import os
 import sys
 
+# Apply Python 3.14 compatibility patch before Django loads
+try:
+    import python314_patch
+except ImportError:
+    pass
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')

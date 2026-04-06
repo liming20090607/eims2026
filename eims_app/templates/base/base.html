@@ -4,7 +4,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>协同 AI 办公系统 - XietongAI</title>
     <!-- Bootstrap CSS (国内 CDN) -->
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
@@ -534,20 +534,133 @@
 
         /* 响应式调整 */
         @media (max-width: 768px) {
+            /* 整体缩小字体 - 统一缩小两号 */
+            body {
+                font-size: 12px; /* 从 14px 降到 12px */
+            }
+            
             .header {
                 flex-direction: column;
                 height: auto;
-                padding: 15px;
+                padding: 12px;
             }
 
             .search-box {
                 width: 100%;
                 max-width: 100%;
-                margin-top: 10px;
+                margin-top: 8px;
             }
 
             .breadcrumb {
+                margin-bottom: 8px;
+            }
+            
+            /* 侧边栏调整 - 改为抽屉式，默认隐藏，点击汉堡菜单展开 */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px; /* 默认隐藏在屏幕左侧 */
+                width: 280px;
+                height: 100vh;
+                z-index: 1001;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            }
+            
+            /* 当侧边栏激活时显示 */
+            .sidebar.active {
+                left: 0;
+            }
+            
+            /* 添加遮罩层 */
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .main-content {
+                margin-left: 0 !important; /* 移除左边距，占满全屏 */
+                width: 100%; /* 确保占满全屏 */
+                padding: 10px; /* 添加内边距 */
+                transition: all 0.3s ease;
+            }
+            
+            /* 当侧边栏展开时，主内容向右移动 */
+            .main-content.sidebar-open {
+                margin-left: 280px !important;
+            }
+            
+            /* 标题缩小 - 统一缩小两号 */
+            h1 {
+                font-size: 1.3rem; /* 约 15.6px */
+            }
+            
+            h2 {
+                font-size: 1.1rem; /* 约 13.2px */
+            }
+            
+            h3 {
+                font-size: 1rem; /* 约 12px */
+            }
+            
+            h4, h5, h6 {
+                font-size: 0.9rem; /* 约 10.8px */
+            }
+            
+            /* 卡片调整 */
+            .card {
+                padding: 10px;
                 margin-bottom: 10px;
+            }
+            
+            /* 统计卡片 - 统一缩小两号 */
+            .stat-card {
+                padding: 12px;
+                margin-bottom: 10px;
+            }
+            
+            .stat-card h3 {
+                font-size: 0.875rem; /* 约 10.5px */
+            }
+            
+            .stat-card .stat-number {
+                font-size: 1.5rem; /* 约 18px */
+            }
+            
+            /* 表格字体缩小 */
+            table {
+                font-size: 0.875rem; /* 约 10.5px */
+            }
+            
+            /* 按钮缩小 */
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.875rem;
+            }
+            
+            /* 表单元素缩小 */
+            input[type="text"],
+            input[type="number"],
+            input[type="date"],
+            input[type="email"],
+            input[type="password"],
+            select,
+            textarea {
+                font-size: 0.875rem;
+                padding: 6px 10px;
             }
         }
 
@@ -754,10 +867,48 @@
                    data-bs-toggle="tooltip" data-bs-placement="right" title="人证管理（仅超级管理员）">
                     <span class="menu-icon"><i class="bi bi-people text-muted"></i></span>
                     <span class="menu-text text-muted">人证管理</span>
-                    <span class="badge bg-secondary ms-auto">3</span>
+                    <span class="badge bg-secondary ms-auto">4</span>
                 </a>
             </li>
             {% endif %}
+            
+            <!-- 审批流程（带子菜单） -->
+            <li class="nav-item">
+                <a href="#approvalSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'contract-approval' in request.path or 'seal-approval' in request.path or 'archive-approval' in request.path or 'my-pending-approvals' in request.path %}true{% else %}false{% endif %}" 
+                   class="nav-link {% if 'contract-approval' in request.path or 'seal-approval' in request.path or 'archive-approval' in request.path or 'my-pending-approvals' in request.path %}active{% endif %}"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="审批流程">
+                    <span class="menu-icon"><i class="bi bi-diagram-3"></i></span>
+                    <span class="menu-text">审批流程</span>
+                    <span class="badge bg-warning ms-auto">4</span>
+                </a>
+                <div class="collapse {% if 'contract-approval' in request.path or 'seal-approval' in request.path or 'archive-approval' in request.path or 'my-pending-approvals' in request.path %}show{% endif %}" id="approvalSubmenu">
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:my_pending_approvals' %}" class="nav-link {% if 'my-pending-approvals' in request.path %}active{% endif %}">
+                                <i class="bi bi-bell-fill"></i> 我的待审批
+                                {% if pending_count > 0 %}
+                                <span class="badge bg-danger ms-auto">{{ pending_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:contract_approval_chain' %}" class="nav-link {% if '/contract-approval' in request.path %}active{% endif %}">
+                                <i class="bi bi-file-earmark-check"></i> 合同审批
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="javascript:void(0);" onclick="alert('用印审批（盖章审批）功能开发中'); return false;" class="nav-link">
+                                <i class="bi bi-circle-fill text-danger me-1" style="font-size: 0.6rem; vertical-align: middle;"></i><i class="bi bi-stamp-fill text-danger"></i> 用印审批
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="javascript:void(0);" onclick="alert('归档审批功能开发中'); return false;" class="nav-link">
+                                <i class="bi bi-archive"></i> 归档审批
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
             
             <!-- 合同管理（带子菜单） -->
             <li class="nav-item">
@@ -772,11 +923,11 @@
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
                             <a href="{% url 'eims_app:contract_approval_chain' %}" class="nav-link {% if '/contract-approval' in request.path %}active{% endif %}">
-                                <i class="bi bi-diagram-3"></i> 审批流程
+                                <i class="bi bi-diagram-3"></i> 合同审批
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if '/contracts/' in request.path and 'approval' not in request.path %}active{% endif %}">
+                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if '/contracts/' in request.path and 'approval' not in request.path and 'my-' not in request.path %}active{% endif %}">
                                 <i class="bi bi-journal-text"></i> 合同台账
                             </a>
                         </li>
@@ -896,11 +1047,28 @@
             <!-- 后台管理（仅超级管理员可见） -->
             {% if user.is_authenticated and user.is_superuser %}
             <li class="nav-item">
-                <a href="{% url 'admin:index' %}" class="nav-link" 
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="后台管理">
+                <a href="#adminSubmenu" class="nav-link" 
+                   data-bs-toggle="collapse" aria-expanded="false">
                     <span class="menu-icon"><i class="bi bi-gear-fill text-warning"></i></span>
                     <span class="menu-text fw-bold">后台管理</span>
+                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem;"></i>
                 </a>
+                <div class="collapse" id="adminSubmenu">
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a href="{% url 'admin:index' %}" class="nav-link">
+                                <span class="menu-icon"><i class="bi bi-speedometer2"></i></span>
+                                <span class="menu-text">Django 后台</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:user_management' %}" class="nav-link">
+                                <span class="menu-icon"><i class="bi bi-people"></i></span>
+                                <span class="menu-text">用户账号管理</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
             {% endif %}
             
@@ -915,6 +1083,12 @@
                 <div class="collapse" id="userSubmenu">
                     <ul class="nav flex-column ms-3">
                         {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:my_account' %}" class="nav-link">
+                                <span class="menu-icon"><i class="bi bi-person-circle"></i></span>
+                                <span class="menu-text">我的账号</span>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="{% url 'eims_app:profile' %}" class="nav-link">
                                 <span class="menu-icon"><i class="bi bi-person"></i></span>
@@ -974,6 +1148,7 @@
                         <span class="d-none d-md-block ms-2">{{ request.user.username|default:"管理员" }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{% url 'eims_app:my_account' %}"><i class="bi bi-person-circle me-2"></i>我的账号</a></li>
                         <li><a class="dropdown-item" href="{% url 'eims_app:profile' %}"><i class="bi bi-person me-2"></i>个人设置</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>退出登录</a></li>
@@ -1011,6 +1186,9 @@
         </footer>
     </div>
 
+    <!-- 遮罩层 -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- jQuery (国内 CDN) -->
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- Select2 JS (国内 CDN) -->
@@ -1022,10 +1200,90 @@
     <!-- Custom JS -->
     <script>
         $(document).ready(function() {
-            // 侧边栏切换
-            $('#sidebarToggle').on('click', function() {
-                $('.sidebar').toggleClass('active');
-                $('.main-content').toggleClass('sidebar-active');
+            // 侧边栏切换（移动端抽屉式）
+            function toggleSidebar() {
+                const isOpen = $('.sidebar').hasClass('active');
+                
+                if (isOpen) {
+                    // 关闭侧边栏
+                    closeSidebar();
+                } else {
+                    // 打开侧边栏
+                    openSidebar();
+                }
+            }
+            
+            // 打开侧边栏
+            function openSidebar() {
+                $('.sidebar').addClass('active');
+                $('.sidebar-overlay').addClass('active');
+                $('.main-content').addClass('sidebar-open');
+                $('body').css('overflow', 'hidden');
+            }
+            
+            // 关闭侧边栏
+            function closeSidebar() {
+                $('.sidebar').removeClass('active');
+                $('.sidebar-overlay').removeClass('active');
+                $('.main-content').removeClass('sidebar-open');
+                $('body').css('overflow', 'auto');
+            }
+            
+            // 汉堡菜单按钮点击事件
+            $('#sidebarToggle').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSidebar();
+            });
+            
+            // 点击遮罩层关闭侧边栏
+            $('#sidebarOverlay').on('click', function() {
+                closeSidebar();
+            });
+            
+            // 点击内容区域关闭侧边栏
+            $('.main-content').on('click', function() {
+                if ($('.sidebar').hasClass('active')) {
+                    closeSidebar();
+                }
+            });
+            
+            // 滑动页面时关闭侧边栏
+            let lastScrollTop = 0;
+            let scrollTimeout;
+            
+            $(window).on('scroll', function() {
+                if ($('.sidebar').hasClass('active')) {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(function() {
+                        const st = $(this).scrollTop();
+                        if (st !== lastScrollTop) {
+                            closeSidebar();
+                        }
+                        lastScrollTop = st;
+                    }.bind(this), 100);
+                }
+            });
+            
+            // 点击侧边栏内的菜单项后，2 秒再关闭侧边栏
+            let sidebarCloseTimeout;
+            $('.sidebar .nav-link').on('click', function() {
+                // 清除之前的定时器
+                if (sidebarCloseTimeout) {
+                    clearTimeout(sidebarCloseTimeout);
+                }
+                
+                // 2 秒后关闭侧边栏
+                sidebarCloseTimeout = setTimeout(function() {
+                    closeSidebar();
+                }, 2000);
+            });
+            
+            // 如果用户再次点击侧边栏，取消自动关闭
+            $('.sidebar').on('click', function() {
+                if (sidebarCloseTimeout) {
+                    clearTimeout(sidebarCloseTimeout);
+                }
             });
 
             // 初始化工具提示

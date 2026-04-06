@@ -197,19 +197,55 @@
                 </div>
             </div>
             
-            <!-- 附件上传（仅新增时显示） -->
-            {% if not approval %}
+            <!-- 审批意见/建议 -->
             <div class="form-section">
-                <div class="section-title">附件上传 <span class="text-danger">*</span></div>
-                <small class="text-danger d-block mb-2"><i class="bi bi-exclamation-triangle"></i> 必须至少上传一个附件才能提交</small>
+                <div class="section-title">审批意见/建议 <small class="text-muted fw-normal">(非必填)</small></div>
+                <textarea name="submit_comment" class="form-control" rows="3" placeholder="请输入您的审批意见或建议..."></textarea>
+            </div>
+            
+            <!-- 附件管理 -->
+            <div class="form-section">
+                <div class="section-title">附件管理 {% if not approval %}<span class="text-danger">*</span>{% endif %}</div>
+                {% if not approval %}
+                <small class="text-danger d-block mb-2"><i class="bi bi-exclamation-triangle"></i> 新增时必须至少上传一个附件</small>
+                {% else %}
+                <small class="text-muted d-block mb-2"><i class="bi bi-info-circle"></i> 您可以删除已有附件或上传新附件</small>
+                {% endif %}
+                
+                <!-- 已有附件列表（仅编辑模式显示） -->
+                {% if approval and existing_attachments %}
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">已有附件：</h6>
+                    {% for attachment in existing_attachments %}
+                    <div class="attachment-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-file-earmark me-2"></i>
+                            <strong>{{ attachment.file_name }}</strong>
+                            <span class="badge bg-secondary ms-2">{{ attachment.get_file_type_display }}</span>
+                            <small class="text-muted ms-2">({{ attachment.file_size|filesizeformat }})</small>
+                        </div>
+                        <div>
+                            <a href="{{ attachment.file.url }}" target="_blank" class="btn btn-sm btn-outline-info me-1">
+                                <i class="bi bi-eye"></i> 预览
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger delete-attachment-btn mb-0" data-id="{{ attachment.id }}">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- 上传新附件 -->
                 <div id="attachments-container">
                     <div class="attachment-item">
                         <div class="row">
                             <div class="col-md-8">
-                                <input type="file" name="attachments" class="form-control file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" required>
+                                <input type="file" name="new_attachments" class="form-control file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" {% if not approval %}required{% endif %}>
                             </div>
                             <div class="col-md-4">
-                                <select name="file_types" class="form-select">
+                                <select name="new_file_types" class="form-select">
                                     <option value="contract">合同文件</option>
                                     <option value="attachment">附件材料</option>
                                     <option value="other">其他资料</option>
@@ -222,7 +258,6 @@
                     <i class="bi bi-plus-circle me-1"></i>添加更多附件
                 </button>
             </div>
-            {% endif %}
             
             <!-- 操作按钮 -->
             <div class="d-flex justify-content-between mt-4 pt-3 border-top">
@@ -230,8 +265,11 @@
                     <i class="bi bi-arrow-left me-1"></i>返回列表
                 </a>
                 <div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>{% if approval %}保存修改{% else %}立即提交{% endif %}
+                    <button type="submit" name="action" value="save" class="btn btn-primary me-2">
+                        <i class="bi bi-save me-1"></i>仅保存
+                    </button>
+                    <button type="submit" name="action" value="submit" class="btn btn-success">
+                        <i class="bi bi-send me-1"></i>保存并提交审批
                     </button>
                 </div>
             </div>
@@ -243,13 +281,13 @@
 function addAttachment() {
     const container = document.getElementById('attachments-container');
     const html = `
-        <div class="attachment-item">
+        <div class="attachment-item mt-2">
             <div class="row">
                 <div class="col-md-8">
-                    <input type="file" name="attachments" class="form-control file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" required>
+                    <input type="file" name="new_attachments" class="form-control file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
                 </div>
                 <div class="col-md-4">
-                    <select name="file_types" class="form-select">
+                    <select name="new_file_types" class="form-select">
                         <option value="contract">合同文件</option>
                         <option value="attachment">附件材料</option>
                         <option value="other">其他资料</option>
@@ -262,7 +300,38 @@ function addAttachment() {
 }
 
 // 提交前验证附件是否已上传
+// （已移至下方 DOMContentLoaded 中）
+
 document.addEventListener('DOMContentLoaded', function() {
+    // 附件删除按钮点击事件
+    const deleteButtons = document.querySelectorAll('.delete-attachment-btn');
+    deleteButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const attachmentId = this.getAttribute('data-id');
+            if (confirm('确定要删除该附件吗？')) {
+                // 视觉反馈
+                this.classList.toggle('btn-outline-danger');
+                this.classList.toggle('btn-danger');
+                this.classList.toggle('text-white');
+                
+                // 创建或更新隐藏的输入字段
+                let hiddenInput = document.getElementById('delete_' + attachmentId);
+                if (!hiddenInput) {
+                    hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.id = 'delete_' + attachmentId;
+                    hiddenInput.name = 'delete_attachments';
+                    hiddenInput.value = attachmentId;
+                    this.form.appendChild(hiddenInput);
+                } else {
+                    // 如果已经标记删除，则取消删除
+                    this.form.removeChild(hiddenInput);
+                }
+            }
+        });
+    });
+    
+    // 表单提交验证
     const form = document.querySelector('form');
     if (form) {
         form.addEventListener('submit', function(e) {
@@ -275,7 +344,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            if (!hasFile) {
+            // 新增模式必须上传附件，编辑模式可选
+            const isNewMode = {% if not approval %}true{% else %}false{% endif %};
+            if (isNewMode && !hasFile) {
                 e.preventDefault();
                 alert('⚠️ 请至少上传一个附件才能提交');
                 return false;

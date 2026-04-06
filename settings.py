@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',  # 支持 runserver_plus（HTTPS）
     'eims_app',
     'widget_tweaks',
 ]
@@ -135,7 +136,7 @@ TEMPLATES = [
     },
 ]
 
-# -------------------------- 日志配置（可选） --------------------------
+# -------------------------- 日志配置（可选）--------------------------
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -148,6 +149,7 @@ LOGGING = {
         'handlers': ['console'],
     },
 }
+
 # EIMS/settings.py -> AOS/settings.py
 if DEBUG:
     # 开发环境使用详细错误页面
@@ -157,3 +159,23 @@ else:
     # 生产环境使用自定义错误页面
     handler404 = 'eims_app.views.views_errors.custom_404'
     handler500 = 'eims_app.views.views_errors.custom_500'
+
+# -------------------------- Django Admin 配置 --------------------------
+# 注意：USE_DARK_THEME 仅在 Django 5.2+ 中可用，当前使用 Django 4.2.7
+# 如需自定义 Admin 外观，请使用自定义模板
+ADMIN_SITE_HEADER = '协同 AI 办公系统'
+ADMIN_SITE_TITLE = '协同 AI 办公系统 - 后台管理'
+
+# -------------------------- 微信开放平台配置 --------------------------
+# 需要在微信开放平台注册网站应用后获取
+# 注册地址：https://open.weixin.qq.com/
+WECHAT_OPEN_APP_ID = os.getenv('WECHAT_OPEN_APP_ID', '')  # 微信开放平台AppID
+WECHAT_OPEN_APP_SECRET = os.getenv('WECHAT_OPEN_APP_SECRET', '')  # 微信开放平台AppSecret
+WECHAT_OPEN_REDIRECT_URI = os.getenv('WECHAT_OPEN_REDIRECT_URI', 'http://127.0.0.1:8000/wechat-login/callback/')  # 授权回调地址
+
+# -------------------------- 阿里云短信配置 --------------------------
+ALIYUN_ACCESS_KEY_ID = os.getenv('ALIYUN_ACCESS_KEY_ID', '')  # 阿里云AccessKey ID
+ALIYUN_ACCESS_KEY_SECRET = os.getenv('ALIYUN_ACCESS_KEY_SECRET', '')  # 阿里云AccessKey Secret
+ALIYUN_SMS_REGION = os.getenv('ALIYUN_SMS_REGION', 'cn-hangzhou')  # 短信服务区域
+ALIYUN_SMS_SIGN_NAME = os.getenv('ALIYUN_SMS_SIGN_NAME', '')  # 短信签名
+ALIYUN_SMS_TEMPLATE_CODE = os.getenv('ALIYUN_SMS_TEMPLATE_CODE', '')  # 短信模板代码

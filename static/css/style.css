@@ -209,25 +209,148 @@ ul.errorlist {
 
 /* ===== 响应式设计 ===== */
 @media (max-width: 768px) {
+    /* 页面元素保持 100% 大小 */
+    html {
+        font-size: 14px; /* 基准字体，不缩小整体布局 */
+    }
+    
+    body {
+        font-size: 0.857rem; /* 字体统一缩小两号：14px * 12/14 = 12px */
+        padding: 8px;
+    }
+    
     .container {
-        padding: 20px;
+        padding: 10px;
+        max-width: 100%;
+        width: 100%; /* 确保占满全屏 */
     }
 
+    /* 标题字号 - 统一缩小两号 */
     h1 {
-        font-size: 1.5rem;
+        font-size: 1.3rem; /* 约 15.6px */
+        margin-bottom: 12px;
+    }
+    
+    h2 {
+        font-size: 1.1rem; /* 约 13.2px */
+    }
+    
+    h3 {
+        font-size: 1rem; /* 约 12px */
+    }
+    
+    h4, h5, h6 {
+        font-size: 0.9rem; /* 约 10.8px */
     }
 
+    /* 表单元素 - 统一缩小两号 */
     input[type="text"],
     input[type="number"],
     input[type="date"],
+    input[type="email"],
+    input[type="password"],
     select,
     textarea {
-        font-size: 1.125rem; /* 防止 iOS Safari 自动缩放 */
+        font-size: 0.875rem; /* 防止 iOS Safari 自动缩放 */
+        padding: 6px 10px;
     }
-
+    
+    /* 按钮 - 统一缩小两号 */
     .btn {
-        width: 100%;
+        padding: 6px 12px;
+        font-size: 0.875rem;
+        margin-bottom: 6px;
+    }
+    
+    /* 卡片调整 */
+    .card {
+        padding: 10px;
         margin-bottom: 10px;
+        width: 100%; /* 卡片占满全屏 */
+    }
+    
+    /* 表格优化 - 统一缩小两号 */
+    table {
+        font-size: 0.875rem; /* 约 12.25px */
+        width: 100%; /* 表格占满全屏 */
+    }
+    
+    table thead th,
+    table tbody td {
+        padding: 6px 8px;
+    }
+    
+    /* 统计卡片调整 - 统一缩小两号 */
+    .stat-card {
+        padding: 12px;
+        margin-bottom: 10px;
+        width: 100%; /* 统计卡片占满全屏 */
+    }
+    
+    .stat-card h3 {
+        font-size: 0.875rem; /* 约 10.5px */
+    }
+    
+    .stat-card .stat-number {
+        font-size: 1.5rem; /* 约 18px */
+    }
+    
+    /* 移动端抽屉式侧边栏 */
+    .sidebar {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* 手机端额外优化 - 超小屏幕 */
+@media (max-width: 576px) {
+    html {
+        font-size: 13px; /* 保持相对较大的基准 */
+    }
+    
+    body {
+        font-size: 0.846rem; /* 约 11px */
+    }
+    
+    .container {
+        padding: 8px;
+    }
+    
+    h1 {
+        font-size: 1.2rem; /* 约 13.2px */
+    }
+    
+    h2 {
+        font-size: 1rem; /* 约 11.7px */
+    }
+    
+    h3 {
+        font-size: 0.9rem; /* 约 10.5px */
+    }
+    
+    .stat-card h3 {
+        font-size: 0.8rem; /* 约 9.4px */
+    }
+    
+    .stat-card .stat-number {
+        font-size: 1.3rem; /* 约 15.2px */
     }
 }
 

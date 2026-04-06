@@ -1,0 +1,66 @@
+﻿Fixed Python path: ['E:\\', 'E:\\EIMS2026\\venv', 'E:\\EIMS2026', 'C:\\Python314\\python314.zip', 'C:\\Python314\\DLLs', 'C:\\Python314\\Lib', 'C:\\Python314', 'C:\\Python314\\Lib\\site-packages']
+[
+{
+  "model": "eims_app.role",
+  "pk": 1,
+  "fields": {
+    "name": "super_admin",
+    "description": "拥有系统所有权限",
+    "permissions": "view,edit,submit"
+  }
+},
+{
+  "model": "eims_app.role",
+  "pk": 2,
+  "fields": {
+    "name": "system_admin",
+    "description": "拥有系统管理权限",
+    "permissions": "view,edit,submit"
+  }
+},
+{
+  "model": "eims_app.role",
+  "pk": 3,
+  "fields": {
+    "name": "project_director",
+    "description": "负责项目整体管理和最终审核",
+    "permissions": "view,edit,submit"
+  }
+},
+{
+  "model": "eims_app.role",
+  "pk": 4,
+  "fields": {
+    "name": "director_rep",
+    "description": "协助总监工作，可初审",
+    "permissions": "view,edit,submit"
+  }
+},
+{
+  "model": "eims_app.role",
+  "pk": 5,
+  "fields": {
+    "name": "supervisor",
+    "description": "现场监理，发起填报",
+    "permissions": "view,edit,submit"
+  }
+},
+{
+  "model": "eims_app.role",
+  "pk": 6,
+  "fields": {
+    "name": "data_clerk",
+    "description": "负责资料管理，发起填报",
+    "permissions": "view,edit,submit"
+  }
+},
+{
+  "model": "eims_app.role",
+  "pk": 7,
+  "fields": {
+    "name": "initiator",
+    "description": "普通发起人员",
+    "permissions": "view,edit,submit"
+  }
+}
+]

@@ -1,0 +1,4258 @@
+[
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "超级管理员",
+      "permissions": [
+        [
+          "add_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "change_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "delete_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "view_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "add_group",
+          "auth",
+          "group"
+        ],
+        [
+          "change_group",
+          "auth",
+          "group"
+        ],
+        [
+          "delete_group",
+          "auth",
+          "group"
+        ],
+        [
+          "view_group",
+          "auth",
+          "group"
+        ],
+        [
+          "add_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "change_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "delete_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "view_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "add_user",
+          "auth",
+          "user"
+        ],
+        [
+          "change_user",
+          "auth",
+          "user"
+        ],
+        [
+          "delete_user",
+          "auth",
+          "user"
+        ],
+        [
+          "view_user",
+          "auth",
+          "user"
+        ],
+        [
+          "add_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "change_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "delete_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "view_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "add_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "change_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "delete_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "view_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "add_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "change_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "delete_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "view_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "add_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "change_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "delete_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "view_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "add_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "change_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "delete_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "view_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "add_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "change_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "delete_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "view_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "add_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "change_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "delete_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "view_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "add_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "change_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "delete_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "view_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "add_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "change_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "delete_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "view_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "add_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "change_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "delete_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "view_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "add_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "change_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "delete_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "view_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "add_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "change_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "delete_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "view_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "add_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "change_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "delete_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "view_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "add_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "change_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "delete_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "view_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "add_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "change_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "delete_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "view_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "add_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "change_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "delete_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "view_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "add_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "change_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "delete_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "view_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "add_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "change_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "delete_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "view_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "add_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "change_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "delete_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "view_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "add_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "change_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "delete_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "view_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "add_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "change_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "delete_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "view_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "add_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "change_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "delete_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "view_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "add_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "change_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "delete_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "view_session",
+          "sessions",
+          "session"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "管理员",
+      "permissions": [
+        [
+          "add_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "change_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "delete_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "view_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "add_group",
+          "auth",
+          "group"
+        ],
+        [
+          "change_group",
+          "auth",
+          "group"
+        ],
+        [
+          "delete_group",
+          "auth",
+          "group"
+        ],
+        [
+          "view_group",
+          "auth",
+          "group"
+        ],
+        [
+          "add_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "change_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "delete_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "view_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "add_user",
+          "auth",
+          "user"
+        ],
+        [
+          "change_user",
+          "auth",
+          "user"
+        ],
+        [
+          "delete_user",
+          "auth",
+          "user"
+        ],
+        [
+          "view_user",
+          "auth",
+          "user"
+        ],
+        [
+          "add_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "change_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "delete_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "view_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "add_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "change_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "delete_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "view_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "add_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "change_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "delete_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "view_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "add_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "change_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "delete_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "view_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "add_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "change_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "delete_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "view_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "add_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "change_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "delete_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "view_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "add_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "change_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "delete_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "view_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "add_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "change_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "delete_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "view_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "add_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "change_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "delete_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "view_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "add_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "change_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "delete_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "view_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "add_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "change_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "delete_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "view_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "add_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "change_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "delete_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "view_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "add_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "change_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "delete_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "view_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "add_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "change_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "delete_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "view_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "add_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "change_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "delete_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "view_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "add_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "change_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "delete_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "view_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "add_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "change_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "delete_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "view_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "add_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "change_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "delete_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "view_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "add_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "change_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "delete_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "view_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "add_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "change_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "delete_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "view_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "add_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "change_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "delete_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "view_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "add_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "change_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "delete_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "view_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "add_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "change_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "delete_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "view_session",
+          "sessions",
+          "session"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "一般用户",
+      "permissions": [
+        [
+          "view_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "view_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "view_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "view_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "view_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "view_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "view_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "view_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "view_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "view_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "view_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "view_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "view_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "view_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "view_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "view_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "view_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "view_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "view_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "view_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "view_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "view_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "view_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "view_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "view_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "view_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "view_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "view_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "view_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "view_userprofile",
+          "eims_app",
+          "userprofile"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "游客",
+      "permissions": [
+        [
+          "view_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "view_group",
+          "auth",
+          "group"
+        ],
+        [
+          "view_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "view_user",
+          "auth",
+          "user"
+        ],
+        [
+          "view_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "view_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "view_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "view_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "view_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "view_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "view_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "view_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "view_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "view_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "view_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "view_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "view_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "view_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "view_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "view_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "view_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "view_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "view_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "view_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "view_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "view_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "view_session",
+          "sessions",
+          "session"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "总经理",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "副总经理",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "主任",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "副主任",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "总监",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "总监代表",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "专监",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "监理员",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "资料员",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "主管",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "干事",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "fields": {
+      "name": "一般员工",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$5ixZlSNfd926693YMylRrR$ATgRE0gMA7AiyZJ/qdBBv1/fzmByjv22JLiwIYNS4sA=",
+      "last_login": "2026-03-31T05:24:37.440437+00:00",
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "黎绍昆",
+      "last_name": "",
+      "email": "51610143@qq.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T02:27:00+00:00",
+      "groups": [
+        [
+          "超级管理员"
+        ],
+        [
+          "管理员"
+        ],
+        [
+          "一般用户"
+        ],
+        [
+          "游客"
+        ]
+      ],
+      "user_permissions": [
+        [
+          "add_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "change_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "delete_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "view_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "add_group",
+          "auth",
+          "group"
+        ],
+        [
+          "change_group",
+          "auth",
+          "group"
+        ],
+        [
+          "delete_group",
+          "auth",
+          "group"
+        ],
+        [
+          "view_group",
+          "auth",
+          "group"
+        ],
+        [
+          "add_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "change_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "delete_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "view_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "add_user",
+          "auth",
+          "user"
+        ],
+        [
+          "change_user",
+          "auth",
+          "user"
+        ],
+        [
+          "delete_user",
+          "auth",
+          "user"
+        ],
+        [
+          "view_user",
+          "auth",
+          "user"
+        ],
+        [
+          "add_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "change_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "delete_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "view_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "add_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "change_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "delete_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "view_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "add_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "change_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "delete_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "view_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "add_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "change_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "delete_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "view_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "add_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "change_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "delete_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "view_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "add_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "change_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "delete_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "view_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "add_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "change_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "delete_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "view_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "add_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "change_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "delete_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "view_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "add_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "change_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "delete_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "view_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "add_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "change_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "delete_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "view_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "add_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "change_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "delete_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "view_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "add_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "change_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "delete_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "view_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "add_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "change_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "delete_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "view_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "add_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "change_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "delete_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "view_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "add_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "change_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "delete_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "view_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "add_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "change_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "delete_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "view_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "add_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "change_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "delete_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "view_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "add_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "change_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "delete_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "view_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "add_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "change_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "delete_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "view_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "add_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "change_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "delete_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "view_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "add_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "change_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "delete_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "view_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "add_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "change_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "delete_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "view_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "add_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "change_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "delete_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "view_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "add_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "change_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "delete_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "view_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "add_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "change_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "delete_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "view_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "add_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "change_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "delete_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "view_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "add_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "change_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "delete_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "view_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "add_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "change_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "delete_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "view_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "add_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "change_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "delete_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "view_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "add_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "change_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "delete_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "view_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "add_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "change_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "delete_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "view_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "add_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "change_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "delete_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "view_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "add_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "change_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "delete_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "view_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "add_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "change_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "delete_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "view_session",
+          "sessions",
+          "session"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$MjIdObVXzZM53EByxVy4wa$Kt1kNYEzIBR2SpqT9PfkH+AM22FLlwDN25UA42xoYmI=",
+      "last_login": "2026-04-05T14:01:41.661915+00:00",
+      "is_superuser": false,
+      "username": "秦方玉",
+      "first_name": "秦方玉",
+      "last_name": "",
+      "email": "zhangsan@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$Cs6yTRGz0MP9dOqc2ceWyL$yNeBP4OCNCmx8nxPffZvoJ9WZzRhadOI1kDGezAHzQM=",
+      "last_login": "2026-03-21T05:54:00+00:00",
+      "is_superuser": false,
+      "username": "王璐",
+      "first_name": "王璐",
+      "last_name": "",
+      "email": "lisi@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$cbekf2eQnfHqI9T8gxNWQ5$LudS1hDBmDJ23xmhoroTF237OMTRmhHhJ3C6KHvKv84=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "汪勇",
+      "first_name": "汪勇",
+      "last_name": "",
+      "email": "wangwu@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$DpWQ5NPv7koHkV7wb2l52R$t2UeNn2oOrFT4+eHf0tr3Uxi2EX0YOo0hwtWdDcsKOY=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "唐昌成",
+      "first_name": "唐昌成",
+      "last_name": "",
+      "email": "zhaoliu@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$TYZMGRParZhH7HYN91stUt$F/c1/8l6iqYuMIJLn30aHoTTmVlkPHJQ+1Mq9pYEUwA=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "唐昌罗",
+      "first_name": "唐昌罗",
+      "last_name": "",
+      "email": "sunqi@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$qOQukUK2akM39N2HHdhEnK$trkLNjvSXhwLlLGWOg6zoY8ZqXRTSYFuufXWbTjs2T4=",
+      "last_login": "2026-03-29T23:59:14.144830+00:00",
+      "is_superuser": false,
+      "username": "秦养付",
+      "first_name": "秦养付",
+      "last_name": "",
+      "email": "zhouba@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$StSy1qgrOcYCCDpTf34Vnx$Nwo6dco8GswaDlOT5GFf01rPjo/Rrt7xl/AH92TheAE=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "王立明",
+      "first_name": "王立明",
+      "last_name": "",
+      "email": "wujiu@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$OU4QomYokGCIHuwEBTRnsZ$/860l5ZGofSm4PmtiaLGXtpe9Abn+igoYeIWIoZA+OI=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "李闰",
+      "first_name": "李闰",
+      "last_name": "",
+      "email": "zhengshi@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T04:55:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$KDPPBNMsP7ivUiRu8rO7GP$/FIxT1rj+oOlGQ9m5SVwDyeXqcwswprjtZx7x3SF9BY=",
+      "last_login": "2026-03-23T02:39:00+00:00",
+      "is_superuser": false,
+      "username": "gxsc",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T10:17:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": [
+        [
+          "add_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "change_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "delete_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "view_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "add_group",
+          "auth",
+          "group"
+        ],
+        [
+          "change_group",
+          "auth",
+          "group"
+        ],
+        [
+          "delete_group",
+          "auth",
+          "group"
+        ],
+        [
+          "view_group",
+          "auth",
+          "group"
+        ],
+        [
+          "add_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "change_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "delete_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "view_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "add_user",
+          "auth",
+          "user"
+        ],
+        [
+          "change_user",
+          "auth",
+          "user"
+        ],
+        [
+          "delete_user",
+          "auth",
+          "user"
+        ],
+        [
+          "view_user",
+          "auth",
+          "user"
+        ],
+        [
+          "add_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "change_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "delete_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "view_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "add_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "change_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "delete_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "view_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "add_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "change_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "delete_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "view_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "add_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "change_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "delete_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "view_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "add_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "change_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "delete_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "view_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "add_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "change_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "delete_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "view_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "add_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "change_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "delete_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "view_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "add_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "change_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "delete_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "view_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "add_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "change_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "delete_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "view_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "add_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "change_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "delete_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "view_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "add_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "change_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "delete_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "view_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "add_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "change_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "delete_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "view_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "add_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "change_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "delete_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "view_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "add_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "change_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "delete_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "view_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "add_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "change_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "delete_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "view_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "add_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "change_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "delete_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "view_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "add_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "change_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "delete_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "view_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "add_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "change_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "delete_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "view_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "add_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "change_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "delete_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "view_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "add_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "change_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "delete_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "view_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "add_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "change_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "delete_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "view_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "add_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "change_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "delete_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "view_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "add_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "change_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "delete_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "view_session",
+          "sessions",
+          "session"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$7ziLOF2iz1kufXmnQnShgu$7BvDWAqVEL2AzUJNU2IKMkcPptsd+khZcEai8K6sWF0=",
+      "last_login": "2026-04-05T14:41:48.240243+00:00",
+      "is_superuser": false,
+      "username": "王敏志",
+      "first_name": "王敏志",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T15:51:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$EOLdwydPAWb4zVECBwbg4D$bH4BUGDdAW2koO8bF1E6SIJ4oZPZizY4PKkvcyRNZB0=",
+      "last_login": "2026-04-05T23:27:35.129816+00:00",
+      "is_superuser": true,
+      "username": "黎绍昆",
+      "first_name": "黎绍昆",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T15:51:00+00:00",
+      "groups": [
+        [
+          "超级管理员"
+        ]
+      ],
+      "user_permissions": [
+        [
+          "add_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "change_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "delete_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "view_logentry",
+          "admin",
+          "logentry"
+        ],
+        [
+          "add_group",
+          "auth",
+          "group"
+        ],
+        [
+          "change_group",
+          "auth",
+          "group"
+        ],
+        [
+          "delete_group",
+          "auth",
+          "group"
+        ],
+        [
+          "view_group",
+          "auth",
+          "group"
+        ],
+        [
+          "add_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "change_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "delete_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "view_permission",
+          "auth",
+          "permission"
+        ],
+        [
+          "add_user",
+          "auth",
+          "user"
+        ],
+        [
+          "change_user",
+          "auth",
+          "user"
+        ],
+        [
+          "delete_user",
+          "auth",
+          "user"
+        ],
+        [
+          "view_user",
+          "auth",
+          "user"
+        ],
+        [
+          "add_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "change_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "delete_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "view_contenttype",
+          "contenttypes",
+          "contenttype"
+        ],
+        [
+          "add_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "change_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "delete_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "view_approvalchain",
+          "eims_app",
+          "approvalchain"
+        ],
+        [
+          "add_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "change_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "delete_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "view_approvalflow",
+          "eims_app",
+          "approvalflow"
+        ],
+        [
+          "add_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "change_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "delete_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "view_approvalflowconfig",
+          "eims_app",
+          "approvalflowconfig"
+        ],
+        [
+          "add_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "change_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "delete_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "view_approvalrecord",
+          "eims_app",
+          "approvalrecord"
+        ],
+        [
+          "add_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "change_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "delete_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "view_contract",
+          "eims_app",
+          "contract"
+        ],
+        [
+          "add_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "change_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "delete_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "view_contractapproval",
+          "eims_app",
+          "contractapproval"
+        ],
+        [
+          "add_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "change_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "delete_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "view_contractapprovalrecord",
+          "eims_app",
+          "contractapprovalrecord"
+        ],
+        [
+          "add_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "change_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "delete_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "view_contractattachment",
+          "eims_app",
+          "contractattachment"
+        ],
+        [
+          "add_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "change_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "delete_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "view_department",
+          "eims_app",
+          "department"
+        ],
+        [
+          "add_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "change_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "delete_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "view_departmentmanager",
+          "eims_app",
+          "departmentmanager"
+        ],
+        [
+          "add_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "change_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "delete_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "view_departmentrole",
+          "eims_app",
+          "departmentrole"
+        ],
+        [
+          "add_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "change_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "delete_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "view_dynamicchoice",
+          "eims_app",
+          "dynamicchoice"
+        ],
+        [
+          "add_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "change_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "delete_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "view_employee",
+          "eims_app",
+          "employee"
+        ],
+        [
+          "add_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "change_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "delete_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "view_fileaccesspermission",
+          "eims_app",
+          "fileaccesspermission"
+        ],
+        [
+          "add_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "change_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "delete_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "view_filemanage",
+          "eims_app",
+          "filemanage"
+        ],
+        [
+          "add_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "change_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "delete_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "view_filemanageversion",
+          "eims_app",
+          "filemanageversion"
+        ],
+        [
+          "add_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "change_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "delete_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "view_infocollect",
+          "eims_app",
+          "infocollect"
+        ],
+        [
+          "add_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "change_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "delete_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "view_inspection",
+          "eims_app",
+          "inspection"
+        ],
+        [
+          "add_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "change_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "delete_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "view_monthlyreport",
+          "eims_app",
+          "monthlyreport"
+        ],
+        [
+          "add_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "change_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "delete_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "view_notice",
+          "eims_app",
+          "notice"
+        ],
+        [
+          "add_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "change_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "delete_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "view_noticeattachment",
+          "eims_app",
+          "noticeattachment"
+        ],
+        [
+          "add_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "change_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "delete_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "view_outputpayment",
+          "eims_app",
+          "outputpayment"
+        ],
+        [
+          "add_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "change_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "delete_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "view_personnel",
+          "eims_app",
+          "personnel"
+        ],
+        [
+          "add_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "change_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "delete_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "view_personnelallocation",
+          "eims_app",
+          "personnelallocation"
+        ],
+        [
+          "add_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "change_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "delete_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "view_personnelcertificate",
+          "eims_app",
+          "personnelcertificate"
+        ],
+        [
+          "add_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "change_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "delete_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "view_project",
+          "eims_app",
+          "project"
+        ],
+        [
+          "add_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "change_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "delete_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "view_projectdetail",
+          "eims_app",
+          "projectdetail"
+        ],
+        [
+          "add_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "change_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "delete_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "view_projectdynamic",
+          "eims_app",
+          "projectdynamic"
+        ],
+        [
+          "add_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "change_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "delete_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "view_projectreporter",
+          "eims_app",
+          "projectreporter"
+        ],
+        [
+          "add_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "change_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "delete_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "view_projectrole",
+          "eims_app",
+          "projectrole"
+        ],
+        [
+          "add_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "change_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "delete_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "view_role",
+          "eims_app",
+          "role"
+        ],
+        [
+          "add_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "change_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "delete_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "view_userprofile",
+          "eims_app",
+          "userprofile"
+        ],
+        [
+          "add_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "change_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "delete_session",
+          "sessions",
+          "session"
+        ],
+        [
+          "view_session",
+          "sessions",
+          "session"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$PZsMr2hcyE5roxtKWwSUJx$kAIZ+kbup25/8FyZpH7AACORhO8TJgqtOHiLEkTkJaA=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "易强",
+      "first_name": "易强",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T15:53:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$MBPCaYjqeXBQ7VELHeKaGh$/cIKpH6keQuwbwdiAxkJZASZSQV2Ixe98AXz95f1HUo=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "唐满东",
+      "first_name": "唐满东",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T16:04:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$tZcDlWQAiG7VqLicjGfnqF$BoX5AoDhIg3rsYThfSPwu1s7kAOxLkhVcSBOa8GRk1g=",
+      "last_login": "2026-04-05T21:55:35.490443+00:00",
+      "is_superuser": false,
+      "username": "秦林",
+      "first_name": "秦林",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-21T16:05:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$Q7XC6ncYHdL5GO1D6hrZ7A$oaeQIwgKsP94e4N0SLFsWF63E9G59bxG3VkPSaQUpZo=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "银雪",
+      "first_name": "银雪",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-22T07:30:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$DmHRik1PSJ9SqVwhxNmzQ9$r43chjv6gX0RTEMwCc1Btz0P0nh7tMxSGBq2C++31z8=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "testuser",
+      "first_name": "",
+      "last_name": "",
+      "email": "test@example.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-03-25T10:24:52.668514+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$YzOPqDKONJB28QlkG04ZJH$GzjdtNULh0tmG0svG/I/Pmj+NfSMAtkS+7BbpaJccqE=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "唐薇薇",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-25T13:00:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$puiCDqTBGAbjl8m2aW2Rl5$OFhU3ITe88A/yrDgApyUJSeR3pAtHy6PADPxPz1dP4Q=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "方永明",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-25T13:01:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$WyTPvDvFkEH5INaN2uNz4n$gCJV1+dRD41GnmonsYo/WhT4Hy8vygUKdt1rDhdEio8=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "宋弦弦",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-25T13:02:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$sBYOTgZiDgSrAdcmR5uRNr$x7qUAQgDU3C+9fWyLwngk5O2qryfMlqfJjZ5LnJf/g4=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "秦隆刚",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-25T13:03:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$BnVYqmyubL319zoSdCUWLS$DO7IGbwsT7WzYNjXaFT599MBoxB7n8Anp2kYqbvV4dA=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "黄建波",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-25T14:05:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$1B3pG01NzHdQmGFDBLOOtR$QLzZy4947YNMaeMRIcHuIDkiUQHABPSAl9GMs6qtgw8=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "廖志红",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-25T14:06:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$J7B19CqxFNIitKFjp76gnj$h3/Y2WPKdPbYBn4HOzC9sqU24jxyHUEFGsSJOnq90hM=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "程慧慧",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-03-25T14:07:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$jYfeWPIgspHF50VaVJCUPs$d37bt9CuM7szw/ODrWIq2Z0WWD71C2aSzdKTrshYKgQ=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "甘丽春",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-03-30T02:16:00+00:00",
+      "groups": [
+        [
+          "一般用户"
+        ]
+      ],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$yRBAEDWNlqagnQsGc1umiJ$GIIh7KGVQbWCRyPxpWmetaP4dw9JK6W7L2dfNioeXS4=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "桂华",
+      "first_name": "桂华",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-01T12:46:03.761922+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$AIdjn9BFYT5GHW3yEVVMIF$8+QFH/SO/vo2+STdveYxCGVadGcf5C+ekCriD/2C988=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "林漓",
+      "first_name": "林漓",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-01T12:46:23.246973+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$m9iFU0Hg7NpL7bKb8HugYJ$vOpIwRC69B44vriOIBSrS8hoyp+Vb1XQ/p/cGj/pUNs=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "庞黎明",
+      "first_name": "庞黎明",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-01T12:47:10.317572+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$wT7UZnE0HrNBitA7AgE001$oOTcrYKAH7dP2s4X+vjR8r7cFv90t4Xm6nF/KmNbRiM=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "龙欢",
+      "first_name": "龙欢",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-01T12:47:33.140274+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$SWEJEnlzIMBXtXu7GvEVDy$J8yGHh2n/isURqaBjn1gAraEKCgRIkHwOz56xEJu/kc=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "周林松",
+      "first_name": "周林松",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-01T12:48:44.397523+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$1wH0MiZOycVyMoRhftI3Qn$WkTevgCCWpW+UZnPPjIf63gGXzhNgITtOKf6Vn1S3Dg=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "唐鹏",
+      "first_name": "唐鹏",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-04T14:38:01.132000+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$Lnm7jrQQfNbdk9l8ckdp1S$LUyVQ6hdA8qGu3jgOrbCmH04PTmKU3aca5i2u3EqAg4=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "谢荣明",
+      "first_name": "谢荣明",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-04T14:38:04.870000+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$N7X8RnuPvS8w6qBsVnMwO1$owm4oLBOTeJ91+bYiFgjkQyWsM5Y3Gdin9QaE6PZTtM=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "吴向南",
+      "first_name": "吴向南",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-04T14:38:13.590000+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$a5rWYDfZLRfWUWn3RExXys$syk9IGL8UQ5yw6wgzljXCLqxU8Zbb/jXrDcEzs+wxlU=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "阳著平",
+      "first_name": "阳著平",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-04T14:38:27.848000+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$600000$3kxCmciulndtxjzeQSKDdf$wO7mXepsvXH3K8b6HZzNOX/q4WLgSVZFyU37TtqzCTI=",
+      "last_login": "2026-04-04T23:49:36.709000+00:00",
+      "is_superuser": false,
+      "username": "陈连华",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-04-04T23:45:46.594000+00:00",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "eims_app.projectdetail",
+    "pk": 97,
+    "fields": {
+      "contract_category": "engineering_supervision",
+      "monthly_report_required": true,
+      "project_code": "HT20260405232807",
+      "contract_code": "HT-20260405-2",
+      "project_name": "特高压电抗器生产线建设项目工程监理",
+      "project_status": "not_started",
+      "contract_status": "pending_review",
+      "settlement_status": "unsettled",
+      "contract_party_a": "桂林五环电器制造有限公司",
+      "contract_party_b": "华建嘉质建设有限公司",
+      "signing_date": null,
+      "contract_text": "",
+      "contract_amount": 
