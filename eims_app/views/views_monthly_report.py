@@ -278,8 +278,18 @@ def monthly_report_dashboard(request):
     today = date.today()
     current_month = timezone.now().strftime('%Y-%m')
     
+    # 获取搜索参数
+    search_query = request.GET.get('search', '').strip()
+    
     # 获取所有项目（显示所有项目，不限制）
     projects = ProjectDetail.objects.all()
+    
+    # 如果有搜索关键词，进行模糊搜索
+    if search_query:
+        projects = projects.filter(
+            Q(project_code__icontains=search_query) |
+            Q(project_name__icontains=search_query)
+        )
     
     # 需要填报的项目（本月还未填报的，且项目月报字段值为“需要”）
     needs_filling = []
@@ -331,6 +341,7 @@ def monthly_report_dashboard(request):
         'drafts': drafts,
         'overdue': overdue,
         'projects': projects,  # 添加所有项目列表
+        'search_query': search_query,  # 传递搜索关键词到模板
         'current_month': current_month,
         'today': today,
         'title': '月度填报提醒',

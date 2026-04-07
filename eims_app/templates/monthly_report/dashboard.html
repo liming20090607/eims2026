@@ -285,8 +285,43 @@
             </h5>
         </div>
         <div class="card-body">
+            <!-- 搜索框 -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <form method="GET" action="" id="searchForm">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="search" 
+                                   id="searchInput"
+                                   placeholder="搜索项目编号或项目名称..." 
+                                   value="{{ search_query }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> 搜索
+                            </button>
+                            {% if search_query %}
+                            <a href="{% url 'eims_app:monthly_report_dashboard' %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> 清除
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                {% if search_query %}
+                <div class="col-md-6 text-end align-self-center">
+                    <small class="text-muted">
+                        搜索结果：找到 <strong>{{ projects|length }}</strong> 个项目
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            
             <div class="table-responsive">
-                <table class="table table-hover table-sm all-projects-table">
+                <table class="table table-hover table-sm all-projects-table" id="projectsTable">
                     <thead>
                         <tr>
                             <th>项目编号</th>
@@ -395,4 +430,43 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+// 实时搜索功能（可选增强）
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const projectsTable = document.getElementById('projectsTable');
+    
+    if (searchInput && projectsTable) {
+        let debounceTimer;
+        
+        // 输入时延迟搜索，避免频繁请求
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            
+            // 如果输入为空，不自动提交
+            if (!query) {
+                return;
+            }
+            
+            // 延迟 500ms 后自动提交表单
+            debounceTimer = setTimeout(function() {
+                document.getElementById('searchForm').submit();
+            }, 500);
+        });
+        
+        // 按 Enter 键立即搜索
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('searchForm').submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
 {% endblock %}
