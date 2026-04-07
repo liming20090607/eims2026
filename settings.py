@@ -93,6 +93,17 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_URL = '/login/'
 
+# -------------------------- Session 配置 --------------------------
+SESSION_COOKIE_AGE = 1209600  # Session 过期时间：2 周（14 天）
+SESSION_SAVE_EVERY_REQUEST = True  # 每次请求都保存 session，延长过期时间
+SESSION_COOKIE_HTTPONLY = True  # 防止 XSS 攻击
+SESSION_COOKIE_NAME = 'eims_sessionid'  # 自定义 session cookie 名称
+
+# 生产环境配置（通过 IP 访问时使用）
+# 如果使用域名，取消注释并修改为实际域名
+# SESSION_COOKIE_DOMAIN = 'xietongai.com.cn'
+# SESSION_COOKIE_SECURE = True  # 仅 HTTPS 时启用
+
 # -------------------------- 国际化 --------------------------
 LANGUAGE_CODE = 'zh-hans'
 TIME_ZONE = 'Asia/Shanghai'
