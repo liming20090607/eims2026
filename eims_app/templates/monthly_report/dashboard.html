@@ -439,24 +439,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const projectsTable = document.getElementById('projectsTable');
     
     if (searchInput && projectsTable) {
-        let debounceTimer;
-        
-        // 输入时延迟搜索，避免频繁请求
-        searchInput.addEventListener('input', function() {
-            clearTimeout(debounceTimer);
-            const query = this.value.trim();
-            
-            // 如果输入为空，不自动提交
-            if (!query) {
-                return;
-            }
-            
-            // 延迟 500ms 后自动提交表单
-            debounceTimer = setTimeout(function() {
-                document.getElementById('searchForm').submit();
-            }, 500);
-        });
-        
         // 按 Enter 键立即搜索
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
