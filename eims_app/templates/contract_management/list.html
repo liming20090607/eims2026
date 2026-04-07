@@ -280,6 +280,7 @@
                                 <th class="text-center">序号</th>
                                 <th>项目编号</th>
                                 <th>合同编号</th>
+                                <th>合同类别</th>
                                 <th>项目名称</th>
                                 <th>项目状态</th>
                                 <th>合同状态</th>
@@ -316,6 +317,7 @@
                             <td class="text-center">{{ forloop.counter|add:page_obj.start_index|add:-1 }}</td>
                             <td><code>{{ item.project_code|default:"-" }}</code></td>
                             <td><code>{{ item.contract_code|default:"-" }}</code></td>
+                            <td>{{ item.get_contract_category_display|default:"-" }}</td>
                             <td>{{ item.project_name|truncatechars:15 }}</td>
                             <td>
                                 <span class="status-badge project-{{ item.project_status }}">

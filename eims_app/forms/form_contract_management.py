@@ -36,39 +36,10 @@ class ContractManagementForm(forms.ModelForm):
         
         # 如果是新增实例（没有 PK），清空默认值
         if not self.instance.pk:
-            # 清空状态字段的默认值
             self.initial['contract_category'] = ''
             self.initial['contract_status'] = ''
             self.initial['settlement_status'] = ''
-        else:
-            # 编辑现有记录时，将英文值转换为中文显示
-            # 合同类别映射
-            category_map = {
-                'engineering_supervision': '工程监理',
-                'cost_consulting': '造价咨询',
-                'testing': '检测',
-                'whole_process_consulting': '全过程咨询',
-            }
-            # 合同状态映射
-            contract_status_map = {
-                'pending_review': '待审核',
-                'executing': '在执行',
-                'terminated': '已终止',
-                'released': '已解除',
-            }
-            # 结算情况映射
-            settlement_status_map = {
-                'unsettled': '未结算',
-                'settled': '已结算',
-            }
-            
-            # 转换现有值
-            if self.instance.contract_category:
-                self.initial['contract_category'] = category_map.get(self.instance.contract_category, self.instance.contract_category)
-            if self.instance.contract_status:
-                self.initial['contract_status'] = contract_status_map.get(self.instance.contract_status, self.instance.contract_status)
-            if self.instance.settlement_status:
-                self.initial['settlement_status'] = settlement_status_map.get(self.instance.settlement_status, self.instance.settlement_status)
+        # 编辑现有记录时，ModelForm 会自动从 instance 加载数据，无需手动设置 initial
     
     class Meta:
         model = ProjectDetail
