@@ -126,7 +126,7 @@ class ContractManagementForm(forms.ModelForm):
             'signing_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
-            }),
+            }, format='%Y-%m-%d'),
             'planned_start_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
