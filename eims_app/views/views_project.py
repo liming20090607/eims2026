@@ -533,7 +533,6 @@ def add_dynamic(request, pk):
 
 
 @login_required
-@user_passes_test(is_superuser)
 def add_personnel(request, pk):
     """添加项目人员 - 新页面"""
     from eims_app.models.model_personnel import Personnel

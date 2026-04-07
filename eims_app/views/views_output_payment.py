@@ -100,7 +100,6 @@ class OutputPaymentUpdateView(UpdateView):
 
 
 @login_required
-@user_passes_test(is_superuser)
 def add_output(request, pk):
     """添加产值回款 - 新页面，自动从上个月数据填充"""
     project = get_object_or_404(ProjectDetail, pk=pk)
