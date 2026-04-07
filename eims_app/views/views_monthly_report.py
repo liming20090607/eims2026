@@ -288,7 +288,10 @@ def monthly_report_dashboard(request):
     if search_query:
         projects = projects.filter(
             Q(project_code__icontains=search_query) |
-            Q(project_name__icontains=search_query)
+            Q(project_name__icontains=search_query) |
+            Q(project_address__icontains=search_query) |
+            Q(contract_party_a__icontains=search_query) |
+            Q(contract_party_b__icontains=search_query)
         )
     
     # 需要填报的项目（本月还未填报的，且项目月报字段值为“需要”）

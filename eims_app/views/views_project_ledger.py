@@ -45,6 +45,7 @@ def project_ledger_list(request):
         queryset = queryset.filter(
             Q(project_name__icontains=search_key) |
             Q(project_code__icontains=search_key) |
+            Q(project_address__icontains=search_key) |
             Q(contract_code__icontains=search_key) |
             Q(contract_party_a__icontains=search_key) |
             Q(contract_party_b__icontains=search_key)
