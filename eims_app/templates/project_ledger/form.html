@@ -417,6 +417,45 @@
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ===== 自动计算：合同余款 = 合同总价 - 累计回款 =====
+        const contractAmountField = document.getElementById('{{ form.contract_amount.auto_id }}');
+        const cumulativePaymentField = document.getElementById('{{ form.cumulative_payment.auto_id }}');
+        const contractBalanceField = document.getElementById('{{ form.contract_balance.auto_id }}');
+        
+        function calculateContractBalance() {
+            if (!contractAmountField || !cumulativePaymentField || !contractBalanceField) {
+                return;
+            }
+            
+            const contractAmount = parseFloat(contractAmountField.value) || 0;
+            const cumulativePayment = parseFloat(cumulativePaymentField.value) || 0;
+            const balance = contractAmount - cumulativePayment;
+            
+            contractBalanceField.value = balance.toFixed(2);
+            
+            // 如果余款为负数，显示警告
+            if (balance < 0) {
+                contractBalanceField.style.backgroundColor = '#f8d7da';
+                contractBalanceField.style.borderColor = '#dc3545';
+            } else {
+                contractBalanceField.style.backgroundColor = '';
+                contractBalanceField.style.borderColor = '';
+            }
+        }
+        
+        // 绑定事件监听器
+        if (contractAmountField) {
+            contractAmountField.addEventListener('input', calculateContractBalance);
+            contractAmountField.addEventListener('change', calculateContractBalance);
+        }
+        if (cumulativePaymentField) {
+            cumulativePaymentField.addEventListener('input', calculateContractBalance);
+            cumulativePaymentField.addEventListener('change', calculateContractBalance);
+        }
+        
+        // 页面加载时计算一次
+        calculateContractBalance();
+        
         // 初始化公式计算功能
         if (window.formulaCalculation) {
             window.formulaCalculation.init();
