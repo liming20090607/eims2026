@@ -176,14 +176,14 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">累计回款</label>
+                                <label class="form-label">累计回款 (元)</label>
                                 {{ form.cumulative_payment }}
                                 {% if form.cumulative_payment.errors %}
                                     <div class="text-danger small mt-1">{{ form.cumulative_payment.errors }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">合同余款</label>
+                                <label class="form-label">合同余款 (元)</label>
                                 {{ form.contract_balance }}
                                 {% if form.contract_balance.errors %}
                                     <div class="text-danger small mt-1">{{ form.contract_balance.errors }}</div>

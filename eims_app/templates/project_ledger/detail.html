@@ -668,19 +668,19 @@
             <div class="field-grid-sub">
                 <!-- 字段项 1 -->
                 <div class="field-item money-field">
-                    <span class="field-label">合同总价:</span>
+                    <span class="field-label">合同总价 (元):</span>
                     <span class="field-value text-success"><strong>¥{{ project_detail.contract_amount|floatformat:2 }}</strong></span>
                 </div>
                 
                 <!-- 字段项 2 -->
                 <div class="field-item money-field">
-                    <span class="field-label">累计回款:</span>
+                    <span class="field-label">累计回款 (元):</span>
                     <span class="field-value text-success">¥{{ project_detail.cumulative_payment|floatformat:2 }}</span>
                 </div>
                 
                 <!-- 字段项 3 -->
                 <div class="field-item money-field">
-                    <span class="field-label">合同余款:</span>
+                    <span class="field-label">合同余款 (元):</span>
                     <span class="field-value text-warning">¥{{ project_detail.contract_balance|floatformat:2 }}</span>
                 </div>
                 

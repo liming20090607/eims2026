@@ -413,8 +413,8 @@
                                 <th>合同乙方</th>
                                 <th>签订日期</th>
                                 <th class="text-end">合同总价 (元)</th>
-                                <th class="text-end">累计回款</th>
-                                <th class="text-end">合同余款</th>
+                                <th class="text-end">累计回款 (元)</th>
+                                <th class="text-end">合同余款 (元)</th>
                                 <th>项目规模</th>
                                 <th>项目总投资 (万元)</th>
                                 <th>项目地址</th>
@@ -615,15 +615,15 @@
             <div class="detail-section">
                 <div class="detail-section-title">合同金额</div>
                 <div class="detail-row">
-                    <span class="detail-label">合同总价:</span>
+                    <span class="detail-label">合同总价 (元):</span>
                     <span class="detail-value text-success"><strong id="detail-contract-amount">¥{{ current_project.contract_amount|floatformat:2 }}</strong></span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">累计回款:</span>
+                    <span class="detail-label">累计回款 (元):</span>
                     <span class="detail-value text-success" id="detail-cumulative-payment">¥{{ current_project.cumulative_payment|floatformat:2 }}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">合同余款:</span>
+                    <span class="detail-label">合同余款 (元):</span>
                     <span class="detail-value text-warning" id="detail-contract-balance">¥{{ current_project.contract_balance|floatformat:2 }}</span>
                 </div>
                 <div class="detail-row">
@@ -753,19 +753,19 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="detail-row">
-                            <span class="detail-label">合同总价:</span>
+                            <span class="detail-label">合同总价 (元):</span>
                             <span class="detail-value text-success"><strong>¥{{ current_project.contract_amount|floatformat:2 }}</strong></span>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="detail-row">
-                            <span class="detail-label">累计回款:</span>
+                            <span class="detail-label">累计回款 (元):</span>
                             <span class="detail-value text-success">¥{{ current_project.cumulative_payment|floatformat:2 }}</span>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="detail-row">
-                            <span class="detail-label">合同余款:</span>
+                            <span class="detail-label">合同余款 (元):</span>
                             <span class="detail-value text-warning">¥{{ current_project.contract_balance|floatformat:2 }}</span>
                         </div>
                     </div>

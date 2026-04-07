@@ -23,7 +23,7 @@ class Contract(BaseModel):
     contract_type = models.CharField(verbose_name='合同类型', db_index=True, max_length=20, choices=CONTRACT_TYPE_CHOICES, default='engineering')
     contract_name = models.CharField(verbose_name='合同名称', db_index=True, max_length=255, default='', blank=True)
     contract_code = models.CharField(verbose_name='合同编号', db_index=True, max_length=50, unique=True, null=True, blank=True)
-    contract_amount = models.DecimalField(verbose_name='合同金额', max_digits=12, decimal_places=2, default=0.00)
+    contract_amount = models.DecimalField(verbose_name='合同金额 (元)', max_digits=12, decimal_places=2, default=0.00)
     signing_time = models.DateField(verbose_name='签订时间', db_index=True, null=True, blank=True)
     project_code = models.CharField(verbose_name='项目编号', max_length=50, blank=True, db_index=True)
     party_a = models.CharField(verbose_name='甲方', max_length=200, blank=True)
