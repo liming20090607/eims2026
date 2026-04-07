@@ -35,6 +35,16 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 #ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 ALLOWED_HOSTS = ['*']  # 开发阶段允许所有主机访问（生产环境请务必修改）
 
+# CSRF 信任来源（生产环境配置）
+CSRF_TRUSTED_ORIGINS = [
+    'http://39.106.41.239',
+    'http://39.106.41.239:8000',
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
 # -------------------------- 应用配置 --------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
