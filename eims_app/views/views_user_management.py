@@ -37,10 +37,16 @@ def user_management(request):
         if not user:
             user = User.objects.filter(username=emp.name).first()
         
+        # 获取用户组信息
+        user_groups = []
+        if user:
+            user_groups = list(user.groups.all().values_list('name', flat=True))
+        
         employee_account_status.append({
             'employee': emp,
             'has_account': user is not None,
             'user': user,
+            'user_groups': user_groups,
         })
     
     # 处理批量创建
@@ -110,15 +116,44 @@ def user_management(request):
                 messages.error(request, "密码格式不正确")
             
             return redirect('eims_app:user_management')
+        
+        elif action == 'update_user_groups':
+            # 更新用户组
+            user_id = request.POST.get('user_id')
+            group_ids = request.POST.getlist('group_ids')
+            
+            try:
+                from django.contrib.auth.models import Group
+                user = User.objects.get(id=user_id)
+                
+                # 清空现有组
+                user.groups.clear()
+                
+                # 添加新组
+                if group_ids:
+                    groups = Group.objects.filter(id__in=group_ids)
+                    user.groups.add(*groups)
+                
+                user.save()
+                messages.success(request, f"用户 {user.username} 的用户组更新成功")
+            except Exception as e:
+                messages.error(request, f"用户组更新失败：{str(e)}")
+            
+            return redirect('eims_app:user_management')
     
     # GET 请求，显示页面
     form = BatchUserCreateForm()
     password_reset_form = PasswordResetForm()
     
+    # 获取所有用户组（用于下拉选择）
+    from django.contrib.auth.models import Group
+    all_groups = Group.objects.all().order_by('name')
+    
     context = {
         'employee_account_status': employee_account_status,
         'form': form,
         'password_reset_form': password_reset_form,
+        'all_groups': all_groups,
         'total_employees': employees.count(),
         'has_accounts': sum(1 for e in employee_account_status if e['has_account']),
         'no_accounts': sum(1 for e in employee_account_status if not e['has_account']),

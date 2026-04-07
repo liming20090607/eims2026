@@ -1,0 +1,49 @@
+# =========================================
+# 在服务器上执行的部署命令
+# 复制这些命令到服务器终端执行
+# =========================================
+
+# 1. SSH 登录服务器
+ssh root@39.106.41.239
+
+# 2. 进入项目目录
+cd /var/www/eims
+
+# 3. 备份当前数据库（重要！）
+DATE=$(date +%Y%m%d_%H%M%S)
+mysqldump -u root -p eims > /var/www/eims/backups/eims_backup_${DATE}.sql
+# 输入 MySQL root 密码后回车
+
+# 4. 拉取最新代码
+git pull gitee master
+
+# 5. 激活虚拟环境
+source /var/www/eims/venv/bin/activate
+
+# 6. 更新 Python 依赖
+pip install -r requirements.txt
+
+# 7. 数据库迁移
+python manage.py makemigrations
+python manage.py migrate
+
+# 8. 收集静态文件
+python manage.py collectstatic --noinput
+
+# 9. 重启 Gunicorn 服务
+supervisorctl restart eims
+
+# 10. 重启 Nginx（如果需要）
+systemctl restart nginx
+
+# 11. 检查服务状态
+supervisorctl status eims
+systemctl status nginx
+
+# 12. 测试访问
+curl http://127.0.0.1:8000
+
+# 13. 查看日志（如果有问题）
+tail -f /var/www/eims/logs/gunicorn.log
+
+# 完成！浏览器访问 http://39.106.41.239 验证部署

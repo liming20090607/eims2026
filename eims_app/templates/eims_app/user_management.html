@@ -162,6 +162,7 @@
                                 <th>职位</th>
                                 <th>账号状态</th>
                                 <th>用户名</th>
+                                <th>用户组</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -193,10 +194,25 @@
                                     {% endif %}
                                 </td>
                                 <td>
+                                    {% if item.has_account and item.user_groups %}
+                                        {% for group in item.user_groups %}
+                                        <span class="badge badge-info mr-1">{{ group }}</span>
+                                        {% endfor %}
+                                    {% elif item.has_account %}
+                                        <span class="badge badge-secondary">未分配</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     {% if item.has_account and item.user %}
-                                    <button type="button" class="btn btn-sm btn-info" 
+                                    <button type="button" class="btn btn-sm btn-info mb-1" 
                                             onclick="showResetPasswordModal({{ item.user.id }}, '{{ item.user.username }}')">
                                         <i class="fas fa-key"></i> 重置密码
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-warning mb-1" 
+                                            onclick="showUpdateGroupsModal({{ item.user.id }}, '{{ item.user.username }}', {{ item.user.groups.all|length }})">
+                                        <i class="fas fa-users-cog"></i> 管理用户组
                                     </button>
                                     {% else %}
                                     <a href="{% url 'eims_app:sync_user_from_employee' item.employee.id %}" 
@@ -268,6 +284,70 @@
     </div>
 </div>
 
+<!-- 用户组管理模态框 -->
+<div class="modal fade" id="updateGroupsModal" tabindex="-1" role="dialog" aria-labelledby="updateGroupsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="updateGroupsModalLabel">
+                    <i class="fas fa-users-cog"></i> 管理用户组
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="modal-groups-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_user_groups">
+                    <input type="hidden" name="user_id" id="group-modal-user-id">
+                    
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" class="form-control" id="group-modal-username" readonly>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        当前已分配 <strong id="group-modal-current-count">0</strong> 个用户组
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>选择用户组（可多选）</label>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            {% for group in all_groups %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="group_ids" 
+                                       value="{{ group.id }}" id="group_{{ group.id }}">
+                                <label class="form-check-label" for="group_{{ group.id }}">
+                                    <span class="badge badge-primary mr-2">{{ group.name }}</span>
+                                    <small class="text-muted">{{ group.user_set.count }} 人</small>
+                                </label>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted mb-0">暂无用户组，请先在 Django Admin 后台创建用户组</p>
+                            {% endfor %}
+                        </div>
+                        <small class="form-text text-muted mt-2">
+                            <i class="fas fa-lightbulb"></i> 
+                            提示：用户组用于批量授权和管理权限，与 Django Admin 后台的用户组互通
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> 保存用户组
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times"></i> 取消
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -295,6 +375,14 @@ $(document).ready(function() {
         $('#modal-user-id').val(userId);
         $('#modal-username').val(username);
         $('#resetPasswordModal').modal('show');
+    };
+    
+    // 显示用户组管理模态框
+    window.showUpdateGroupsModal = function(userId, username, currentGroupCount) {
+        $('#group-modal-user-id').val(userId);
+        $('#group-modal-username').val(username);
+        $('#group-modal-current-count').text(currentGroupCount);
+        $('#updateGroupsModal').modal('show');
     };
     
     // 表单验证
