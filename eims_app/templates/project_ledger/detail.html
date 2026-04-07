@@ -79,6 +79,7 @@
         font-size: 11px;
     }
     
+    /* 搜索按钮 - 防止被挤压 */
     .project-search-btn {
         padding: 4px 12px;
         font-size: 12px;
@@ -88,6 +89,8 @@
         align-items: center;
         justify-content: center;
         gap: 4px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     
     .search-result-info {
@@ -229,7 +232,7 @@
             grid-template-columns: repeat(6, 1fr) !important;
         }
         .field-grid-sub {
-            grid-template-columns: repeat(8, 1fr) !important;
+            grid-template-columns: repeat(6, 1fr) !important;
         }
     }
     
@@ -239,7 +242,7 @@
             grid-template-columns: repeat(4, 1fr) !important;
         }
         .field-grid-sub {
-            grid-template-columns: repeat(6, 1fr) !important;
+            grid-template-columns: repeat(4, 1fr) !important;
         }
     }
     
@@ -283,11 +286,11 @@
         width: 100%;
     }
     
-    /* 字段网格布局 - 次级窗体（12 列） */
+    /* 字段网格布局 - 次级窗体（8 列）- 优化防止挤压 */
     .field-grid-sub {
         display: grid !important;
-        grid-template-columns: repeat(12, 1fr) !important;
-        gap: 4px;
+        grid-template-columns: repeat(8, 1fr) !important;
+        gap: 6px;
         width: 100%;
     }
     
@@ -300,6 +303,24 @@
         background: white;
         border-radius: 3px;
         border: 1px solid #dee2e6;
+    }
+    
+    /* 资金与结算区域：给所有字段足够的空间，避免内容被挤压 */
+    .field-group-container:has(.field-grid-sub) .field-item {
+        min-width: 140px;
+    }
+    
+    /* 结算情况字段：确保徽章不被挤压 */
+    .field-item.settlement-field {
+        min-width: 140px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .field-item.settlement-field .field-value {
+        display: flex;
+        align-items: center;
+        min-height: 28px;
     }
     
     /* 字段标签 - 统一宽度对齐 */
@@ -685,7 +706,7 @@
                 </div>
                 
                 <!-- 字段项 4 -->
-                <div class="field-item">
+                <div class="field-item settlement-field">
                     <span class="field-label">结算情况:</span>
                     <span class="field-value">
                         <span class="status-badge settlement-{{ project_detail.settlement_status }}">
