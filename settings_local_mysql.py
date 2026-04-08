@@ -32,6 +32,9 @@ DATABASES = {
     }
 }
 
+# Override URL configuration for production
+ROOT_URLCONF = 'urls'
+
 # ==================== Other Development Config ====================
 # Keep DEBUG mode
 DEBUG = True
