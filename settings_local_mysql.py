@@ -47,6 +47,10 @@ DEBUG = True
 # Allow all hosts (local development)
 ALLOWED_HOSTS = ['*']
 
+# ==================== Static Files Configuration ====================
+# WhiteNoise storage for production (compresses static files)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Use PyMySQL as MySQL driver
 import pymysql
 pymysql.install_as_MySQLdb()
