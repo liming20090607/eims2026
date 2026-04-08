@@ -144,6 +144,26 @@
                         </div>
                     </div>
                     
+                    <!-- 系统信息（自动填充） -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-gear"></i> 系统信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">更新时间 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ current_time|date:'Y/m/d H:i:s' }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">操作人 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ user.get_full_name|default:user.username }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- 提交按钮 -->
                     <div class="d-flex justify-content-between">
                         <a href="{% url 'eims_app:project_ledger_detail' project.pk %}" class="btn btn-secondary">

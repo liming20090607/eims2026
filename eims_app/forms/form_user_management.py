@@ -10,7 +10,7 @@ class BatchUserCreateForm(forms.Form):
     # 默认密码设置
     default_password = forms.CharField(
         max_length=50,
-        initial='Abc123456!',
+        initial='sc123456#',
         required=True,
         label='默认密码',
         widget=forms.TextInput(attrs={

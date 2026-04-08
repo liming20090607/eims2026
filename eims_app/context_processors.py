@@ -21,7 +21,7 @@ EIMS 上下文处理器
 
 def sidebar_context(request):
     """
-    向所有模板注入侧边栏状态
+    向所有模板注入侧边栏状态和待审批数量
     """
     # 从 session 获取折叠状态，无则默认展开
     # 安全检查：确保 session 可用
@@ -30,6 +30,31 @@ def sidebar_context(request):
     except (AttributeError, KeyError):
         sidebar_collapsed = False
     
+    # 计算待审批数量（合同+用印+归档）
+    pending_count = 0
+    if request.user.is_authenticated:
+        from eims_app.models.model_contract_approval import ContractApproval
+        from eims_app.models.model_seal_approval import SealApproval
+        from eims_app.models.model_archive_approval import ArchiveApproval
+        
+        contract_count = ContractApproval.objects.filter(
+            current_approver=request.user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        seal_count = SealApproval.objects.filter(
+            current_approver=request.user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        archive_count = ArchiveApproval.objects.filter(
+            current_approver=request.user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        pending_count = contract_count + seal_count + archive_count
+    
     return {
-        'sidebar_collapsed': sidebar_collapsed
+        'sidebar_collapsed': sidebar_collapsed,
+        'pending_count': pending_count,
     }

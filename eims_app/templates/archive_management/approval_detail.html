@@ -1,0 +1,512 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ approval.project_name }} - 归档审批详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:archive_approval_chain' %}">归档审批</a></li>
+<li class="breadcrumb-item active">详情</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .info-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .info-section:last-child {
+        border-bottom: none;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #007bff;
+        border-left: 3px solid #007bff;
+        padding-left: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .info-row {
+        display: flex;
+        margin-bottom: 10px;
+    }
+    
+    .info-label {
+        width: 150px;
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .info-value {
+        flex: 1;
+        color: #212529;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .status-draft { background-color: #6c757d; color: #fff; }
+    .status-pending { background-color: #ffc107; color: #000; }
+    .status-reviewing { background-color: #17a2b8; color: #fff; }
+    .status-approved { background-color: #28a745; color: #fff; }
+    .status-rejected { background-color: #dc3545; color: #fff; }
+    .status-cancelled { background-color: #6c757d; color: #fff; }
+    
+    .attachment-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 3px solid #007bff;
+    }
+    
+    .record-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .record-action {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .action-submit { background-color: #17a2b8; color: #fff; }
+    .action-approve { background-color: #28a745; color: #fff; }
+    .action-reject { background-color: #dc3545; color: #fff; }
+    .action-cancel { background-color: #6c757d; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="detail-container">
+        <!-- 标题和操作按钮 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-archive me-2"></i>{{ approval.title }}</h3>
+            <div>
+                {% if approval.applicant == user and approval.status in 'draft,rejected,cancelled' %}
+                <a href="{% url 'eims_app:archive_approval_edit' approval.pk %}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> 编辑
+                </a>
+                {% endif %}
+                
+                {% if approval.applicant == user and approval.status in 'draft,rejected,cancelled' %}
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#submitModal">
+                    <i class="bi bi-send"></i> 提交审批
+                </button>
+                {% endif %}
+                
+                {% if approval.current_approver == user and approval.status in 'pending,reviewing' %}
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    <i class="bi bi-check-circle"></i> 同意
+                </button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-circle"></i> 退回
+                </button>
+                {% endif %}
+                
+                {% if approval.applicant == user and approval.status in 'pending,reviewing' %}
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                    <i class="bi bi-arrow-return-left"></i> 撤销
+                </button>
+                {% endif %}
+                
+                <a href="{% url 'eims_app:archive_approval_chain' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回
+                </a>
+            </div>
+        </div>
+        
+        <!-- 基本信息 -->
+        <div class="info-section">
+            <div class="section-title">基本信息</div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">项目名称：</div>
+                        <div class="info-value">{{ approval.project_name }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">项目编号：</div>
+                        <div class="info-value">{{ approval.project_code|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">申请部门：</div>
+                        <div class="info-value">{{ approval.department.name|default:"-" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">申请人：</div>
+                        <div class="info-value">{{ approval.applicant.username|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <div class="info-label">归档日期：</div>
+                        <div class="info-value">{{ approval.archive_date|date:"Y-m-d"|default:"-" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <div class="info-label">归档位置：</div>
+                        <div class="info-value">{{ approval.archive_location|default:"-" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <div class="info-label">归档期限：</div>
+                        <div class="info-value">{{ approval.get_archive_period_display }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <div class="info-label">文件总数：</div>
+                        <div class="info-value"><strong>{{ approval.total_files }}</strong> 个</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <div class="info-label">总页数：</div>
+                        <div class="info-value"><strong>{{ approval.total_pages }}</strong> 页</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-row">
+                        <div class="info-label">状态：</div>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ approval.status }}">
+                                {{ approval.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 附件目录 -->
+        <div class="info-section">
+            <div class="section-title">
+                <i class="bi bi-folder2-open me-2"></i>附件目录
+            </div>
+            
+            {% if attachments %}
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">序号</th>
+                            <th>文件名</th>
+                            <th>文件类型</th>
+                            <th>页数</th>
+                            <th>成文日期</th>
+                            <th>文件大小</th>
+                            <th>备注</th>
+                            <th style="width: 100px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for att in attachments %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ att.file_name }}</td>
+                            <td>{{ att.get_file_type_display }}</td>
+                            <td>{{ att.pages|default:"-" }}</td>
+                            <td>{{ att.document_date|date:"Y-m-d"|default:"-" }}</td>
+                            <td>{{ att.file_size|filesizeformat }}</td>
+                            <td>{{ att.remark|default:"-" }}</td>
+                            <td>
+                                <a href="{{ att.file.url }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> 预览
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3">暂无附件</p>
+            {% endif %}
+        </div>
+        
+        <!-- 审批记录 -->
+        <div class="info-section">
+            <div class="section-title">
+                <i class="bi bi-clock-history me-2"></i>审批记录
+            </div>
+            
+            {% if records %}
+            {% for record in records %}
+            <div class="record-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="record-action action-{{ record.action }}">
+                            {{ record.get_action_display }}
+                        </span>
+                        <strong class="ms-2">{{ record.operator.username }}</strong>
+                        <small class="text-muted ms-2">{{ record.created_at|date:"Y-m-d H:i:s" }}</small>
+                    </div>
+                </div>
+                {% if record.comment %}
+                <div class="mt-2 text-muted">
+                    <small>{{ record.comment }}</small>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted text-center py-3">暂无审批记录</p>
+            {% endif %}
+        </div>
+        
+        <!-- 备注 -->
+        {% if approval.remark %}
+        <div class="info-section">
+            <div class="section-title">备注</div>
+            <p class="text-muted">{{ approval.remark }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 提交审批模态框 -->
+<div class="modal fade" id="submitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'eims_app:archive_approval_submit' approval.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">提交审批</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>确定要提交此归档审批吗？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">确认提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 同意审批模态框 -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="{% url 'eims_app:archive_approval_approve' approval.pk %}">
+                {% csrf_token %}
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">同意审批</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">审批意见/建议 <small class="text-muted">(非必填)</small></label>
+                        <textarea name="comment" class="form-control" rows="3" placeholder="请输入您的意见或建议..."></textarea>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">选择操作类型</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="action_type" id="actionFinalize" value="finalize" checked onchange="toggleApproverSelect()">
+                            <label class="form-check-label" for="actionFinalize">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                <strong>终结审批</strong> - 审批通过并完成归档
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="action_type" id="actionForward" value="forward" onchange="toggleApproverSelect()">
+                            <label class="form-check-label" for="actionForward">
+                                <i class="bi bi-arrow-right-circle-fill text-primary me-1"></i>
+                                <strong>后续审批</strong> - 继续流转到下一级审批
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="nextApproverSection" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">选择审批人指派方式</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="assign_method" id="assignAuto" value="auto" checked onchange="toggleManualApprover()">
+                                <label class="form-check-label" for="assignAuto">
+                                    <i class="bi bi-gear-fill text-info me-1"></i>
+                                    <strong>系统指定审批人</strong> - 根据审批流程自动指派
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="assign_method" id="assignManual" value="manual" onchange="toggleManualApprover()">
+                                <label class="form-check-label" for="assignManual">
+                                    <i class="bi bi-person-plus-fill text-warning me-1"></i>
+                                    <strong>自主选择审批人</strong> - 手动选择下一位审批人
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="manualApproverSelect" style="display: none;">
+                            <label class="form-label fw-bold">选择下一步审批人</label>
+                            <select name="next_approver" class="form-select" id="nextApproverSelect">
+                                <option value="">-- 请选择审批人 --</option>
+                                {% for user in available_approvers %}
+                                <option value="{{ user.pk }}">{{ user.username }} ({{ user.get_full_name|default:'未设置姓名' }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">提示：可选择其他部门主管或上级领导进行多级审批</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success" onclick="return validateApproveForm()">
+                        <i class="bi bi-check-circle me-1"></i>确认
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 退回审批模态框 -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'eims_app:archive_approval_reject' approval.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">退回审批</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">退回原因 <span class="text-danger">*</span></label>
+                        <textarea name="comment" class="form-control" rows="3" required placeholder="请填写退回原因"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-danger">确认退回</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 撤销审批模态框 -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'eims_app:archive_approval_cancel' approval.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">撤销审批</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">撤销原因（可选）</label>
+                        <textarea name="comment" class="form-control" rows="3" placeholder="请输入撤销原因"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-secondary">确认撤销</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// 切换审批人选择区域显示
+function toggleApproverSelect() {
+    const actionForward = document.getElementById('actionForward');
+    const nextApproverSection = document.getElementById('nextApproverSection');
+    
+    if (actionForward && actionForward.checked) {
+        if (nextApproverSection) {
+            nextApproverSection.style.display = 'block';
+        }
+    } else {
+        if (nextApproverSection) {
+            nextApproverSection.style.display = 'none';
+        }
+    }
+}
+
+// 切换手动选择审批人下拉框
+function toggleManualApprover() {
+    const assignManual = document.getElementById('assignManual');
+    const manualApproverSelect = document.getElementById('manualApproverSelect');
+    
+    if (assignManual && assignManual.checked) {
+        if (manualApproverSelect) {
+            manualApproverSelect.style.display = 'block';
+        }
+    } else {
+        if (manualApproverSelect) {
+            manualApproverSelect.style.display = 'none';
+        }
+    }
+}
+
+// 验证同意表单
+function validateApproveForm() {
+    const actionForward = document.getElementById('actionForward');
+    
+    if (actionForward && actionForward.checked) {
+        const assignManual = document.getElementById('assignManual');
+        if (assignManual && assignManual.checked) {
+            // 如果选择了自主选择审批人，必须选择具体的人
+            const nextApproverSelect = document.getElementById('nextApproverSelect');
+            if (!nextApproverSelect || !nextApproverSelect.value) {
+                alert('⚠️ 请选择下一步审批人');
+                return false;
+            }
+        }
+        // 如果选择系统指定审批人，不需要额外验证
+    }
+    
+    return confirm('确定执行此操作吗？');
+}
+</script>
+{% endblock %}

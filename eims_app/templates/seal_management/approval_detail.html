@@ -1,12 +1,12 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}{{ approval.contract_name }} - 合同审批详情{% endblock %}
+{% block title %}{{ approval.document_name }} - 用印审批详情{% endblock %}
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
-<li class="breadcrumb-item"><a href="{% url 'eims_app:contract_approval_chain' %}">审批流程</a></li>
-<li class="breadcrumb-item active">{{ approval.contract_name|truncatechars:20 }}</li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:seal_approval_chain' %}">审批流程</a></li>
+<li class="breadcrumb-item active">{{ approval.document_name|truncatechars:20 }}</li>
 {% endblock %}
 
 {% block extra_css %}
@@ -164,7 +164,7 @@
     <div class="detail-container">
         <!-- 标题栏 -->
         <div class="detail-header d-flex justify-content-between align-items-center">
-            <h2><i class="bi bi-file-earmark-text me-2"></i>{{ approval.contract_name }}</h2>
+            <h2><i class="bi bi-stamp me-2"></i>{{ approval.document_name }}</h2>
             <span class="status-badge status-{{ approval.status }}">
                 {{ approval.get_status_display }}
             </span>
@@ -179,20 +179,28 @@
                     <span class="info-value">{{ approval.title }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">合同名称</span>
-                    <span class="info-value">{{ approval.contract_name }}</span>
+                    <span class="info-label">文件名称</span>
+                    <span class="info-value">{{ approval.document_name }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">合同类别</span>
-                    <span class="info-value">{{ approval.get_contract_category_display }}</span>
+                    <span class="info-label">文件类型</span>
+                    <span class="info-value">{{ approval.document_type|default:"-" }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">合同金额 (元)</span>
-                    <span class="info-value text-success">¥{{ approval.contract_amount|floatformat:2 }}</span>
+                    <span class="info-label">印章名称</span>
+                    <span class="info-value">{{ approval.get_seal_type_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">盖章数量</span>
+                    <span class="info-value">{{ approval.seal_count }} 份</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">申请部门</span>
                     <span class="info-value">{{ approval.department.name|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">申请人</span>
+                    <span class="info-value">{{ approval.applicant.username|default:"-" }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">发起人</span>
@@ -201,10 +209,6 @@
                 <div class="info-item">
                     <span class="info-label">发起时间</span>
                     <span class="info-value">{{ approval.initiation_time|date:"Y-m-d H:i:s"|default:"-" }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">申请人</span>
-                    <span class="info-value">{{ approval.applicant.username|default:"-" }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">提交时间</span>
@@ -233,35 +237,37 @@
             </div>
         </div>
         
-        <!-- 合同双方 -->
+        <!-- 关联项目 -->
+        {% if approval.project_name or approval.project_code %}
         <div class="detail-section">
-            <h3 class="section-title">合同双方</h3>
+            <h3 class="section-title">关联项目</h3>
             <div class="info-grid">
                 <div class="info-item">
-                    <span class="info-label">合同甲方</span>
-                    <span class="info-value">{{ approval.party_a|default:"-" }}</span>
+                    <span class="info-label">项目名称</span>
+                    <span class="info-value">{{ approval.project_name|default:"-" }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">合同乙方</span>
-                    <span class="info-value">{{ approval.party_b }}</span>
+                    <span class="info-label">项目编号</span>
+                    <span class="info-value">{{ approval.project_code|default:"-" }}</span>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">服务周期</span>
-                    <span class="info-value">{{ approval.service_period_months|default:"-" }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">服务到期时间</span>
-                    <span class="info-value">{{ approval.service_deadline|date:"Y-m-d"|default:"-" }}</span>
-                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 用印用途 -->
+        <div class="detail-section">
+            <h3 class="section-title">用印用途</h3>
+            <div class="p-3 bg-light rounded">
+                <p class="mb-0">{{ approval.usage_purpose|linebreaksbr }}</p>
             </div>
         </div>
         
         <!-- 附件列表 -->
-        {% if approval.attachments.all %}
+        {% if attachments %}
         <div class="detail-section">
             <h3 class="section-title">附件资料</h3>
             <ul class="attachment-list">
-                {% for attachment in approval.attachments.all %}
+                {% for attachment in attachments %}
                 <li class="attachment-item">
                     <div class="attachment-info">
                         <i class="bi bi-file-earmark attachment-icon"></i>
@@ -274,9 +280,22 @@
                             </small>
                         </div>
                     </div>
-                    <a href="{{ attachment.file.url }}" target="_blank" class="btn btn-sm btn-info">
-                        <i class="bi bi-eye me-1"></i>预览
-                    </a>
+                    <div>
+                        {% with file_ext=attachment.file_name|lower %}
+                        {% if '.jpg' in file_ext or '.jpeg' in file_ext or '.png' in file_ext or '.gif' in file_ext or '.bmp' in file_ext or '.pdf' in file_ext %}
+                        <a href="{% url 'eims_app:seal_attachment_preview' attachment.pk %}?back_url={{ request.path }}" target="_blank" class="btn btn-sm btn-info me-1">
+                            <i class="bi bi-eye me-1"></i>预览
+                        </a>
+                        {% elif '.doc' in file_ext or '.xls' in file_ext or '.ppt' in file_ext %}
+                        <a href="{% url 'eims_app:seal_attachment_download' attachment.pk %}" class="btn btn-sm btn-warning me-1">
+                            <i class="bi bi-download me-1"></i>下载Office文档
+                        </a>
+                        {% endif %}
+                        {% endwith %}
+                        <a href="{% url 'eims_app:seal_attachment_download' attachment.pk %}" class="btn btn-sm btn-success">
+                            <i class="bi bi-download me-1"></i>下载
+                        </a>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
@@ -329,10 +348,10 @@
         <!-- 操作按钮 -->
         <div class="action-buttons">
             {% if approval.status == 'draft' or approval.status == 'rejected' %}
-            <a href="{% url 'eims_app:contract_approval_edit' approval.pk %}" class="btn btn-warning me-2">
+            <a href="{% url 'eims_app:seal_approval_edit' approval.pk %}" class="btn btn-warning me-2">
                 <i class="bi bi-pencil me-1"></i>编辑
             </a>
-            <form method="post" action="{% url 'eims_app:contract_approval_submit' approval.pk %}" style="display: inline;">
+            <form method="post" action="{% url 'eims_app:seal_approval_submit' approval.pk %}" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary me-2">
                     <i class="bi bi-send me-1"></i>提交审批
@@ -341,7 +360,7 @@
             {% endif %}
             
             {% if approval.status in 'pending,reviewing' and approval.applicant == request.user %}
-            <form method="post" action="{% url 'eims_app:contract_approval_cancel' approval.pk %}" style="display: inline;">
+            <form method="post" action="{% url 'eims_app:seal_approval_cancel' approval.pk %}" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-secondary me-2" onclick="return confirm('确定要撤销该审批吗？')">
                     <i class="bi bi-slash-circle me-1"></i>撤销审批
@@ -369,7 +388,7 @@
             </div>
             {% endif %}
             
-            <a href="{% url 'eims_app:contract_approval_chain' %}" class="btn btn-secondary">
+            <a href="{% url 'eims_app:seal_approval_chain' %}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i>返回列表
             </a>
         </div>
@@ -380,7 +399,7 @@
 <div class="modal fade" id="approveModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="post" action="{% url 'eims_app:contract_approval_approve' approval.pk %}">
+            <form method="post" action="{% url 'eims_app:seal_approval_approve' approval.pk %}">
                 {% csrf_token %}
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title">同意审批</h5>
@@ -389,7 +408,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">审批意见/建议 <small class="text-muted">(非必填)</small></label>
-                        <textarea name="submit_comment" class="form-control" rows="3" placeholder="请输入您的意见或建议..."></textarea>
+                        <textarea name="comment" class="form-control" rows="3" placeholder="请输入您的意见或建议..."></textarea>
                     </div>
                     
                     <hr>
@@ -400,7 +419,7 @@
                             <input class="form-check-input" type="radio" name="action_type" id="actionFinalize" value="finalize" checked onchange="toggleApproverSelect()">
                             <label class="form-check-label" for="actionFinalize">
                                 <i class="bi bi-check-circle-fill text-success me-1"></i>
-                                <strong>终结审批</strong> - 审批通过并生成合同台账
+                                <strong>终结审批</strong> - 审批通过并完成用印
                             </label>
                         </div>
                         <div class="form-check">
@@ -458,7 +477,7 @@
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" action="{% url 'eims_app:contract_approval_reject' approval.pk %}">
+            <form method="post" action="{% url 'eims_app:seal_approval_reject' approval.pk %}">
                 {% csrf_token %}
                 <div class="modal-header">
                     <h5 class="modal-title">退回审批</h5>

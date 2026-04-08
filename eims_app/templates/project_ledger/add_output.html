@@ -132,7 +132,7 @@
                                     <span class="input-group-text currency-symbol">¥</span>
                                     <input type="number" class="form-control" name="current_month_output" 
                                            id="current_month_output" step="0.01" required 
-                                           value="{{ last_monthly_output|floatformat:2 }}" onchange="calculateOutput()">
+                                           value="0.00" onchange="calculateOutput()">
                                 </div>
                             </div>
                         </div>
@@ -172,7 +172,7 @@
                                     <span class="input-group-text currency-symbol">¥</span>
                                     <input type="number" class="form-control" name="current_month_payment" 
                                            id="current_month_payment" step="0.01" required 
-                                           value="{{ last_monthly_payment|floatformat:2 }}" onchange="calculatePayment()">
+                                           value="0.00" onchange="calculatePayment()">
                                 </div>
                             </div>
                         </div>
@@ -228,6 +228,26 @@
                             <label class="form-label">需要协助 <span class="text-muted small">(从上月自动填充)</span></label>
                             <textarea class="form-control" name="need_assistance" rows="3" 
                                       placeholder="需要哪些协助">{{ last_need_assistance }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 系统信息（自动填充） -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-gear"></i> 系统信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">更新时间 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ current_time|date:'Y/m/d H:i:s' }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">操作人 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ user.get_full_name|default:user.username }}" readonly>
+                            </div>
                         </div>
                     </div>
                     

@@ -14,6 +14,8 @@ from .model_project_dynamic import ProjectDynamic
 from .model_user import UserProfile, ProjectReporter, MonthlyReport
 from .model_workflow import Role, ProjectRole, ApprovalFlow, ApprovalRecord
 from .model_contract_approval import ContractApproval, ContractAttachment, ContractApprovalRecord
+from .model_archive_approval import ArchiveApproval, ArchiveAttachment, ArchiveApprovalRecord
+from .model_seal_approval import SealApproval, SealAttachment, SealApprovalRecord
 from .model_approval_flow import DepartmentManager, ApprovalFlowConfig
 from .model_dynamic_choice import DynamicChoice
 from .model_sms import SMSVerificationRecord
@@ -50,6 +52,12 @@ __all__ = [
     'ContractApproval',
     'ContractAttachment',
     'ContractApprovalRecord',
+    'ArchiveApproval',
+    'ArchiveAttachment',
+    'ArchiveApprovalRecord',
+    'SealApproval',
+    'SealAttachment',
+    'SealApprovalRecord',
     'DepartmentManager',
     'ApprovalFlowConfig',
     'DynamicChoice',

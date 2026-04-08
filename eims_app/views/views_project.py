@@ -528,6 +528,8 @@ def add_dynamic(request, pk):
         'last_project_progress': last_month_dynamic.project_progress if last_month_dynamic else '',
         'last_project_status': last_month_dynamic.project_status if last_month_dynamic else '',
         'last_delay_status': last_month_dynamic.delay_status if last_month_dynamic else '',
+        # 系统信息
+        'current_time': timezone.now(),
     }
     return render(request, 'project_ledger/add_dynamic.html', context)
 
@@ -639,5 +641,7 @@ def add_personnel(request, pk):
         'employee_names': employee_names,  # 人员姓名列表（倒序）
         'editing_personnel': editing_personnel,  # 正在编辑的人员记录
         'edit_id': edit_id,  # 编辑 ID
+        # 系统信息
+        'current_time': timezone.now(),
     }
     return render(request, 'project_ledger/add_personnel.html', context)

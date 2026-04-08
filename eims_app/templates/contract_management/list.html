@@ -11,23 +11,76 @@
 
 {% block extra_css %}
 <style>
-    .table-responsive { overflow-x: auto; }
+    /* 表格容器 - 启用水平滚动 */
+    .table-responsive { 
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+    
+    /* 自定义滚动条样式 */
+    .table-responsive::-webkit-scrollbar {
+        height: 12px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* 表格基础样式 */
+    .table { 
+        min-width: 2800px; /* 强制表格宽度，触发水平滚动 */
+        width: max-content; /* 使用内容最大宽度 */
+    }
+    
     .table thead th { 
         font-size: 13px; 
         font-weight: 600; 
         white-space: nowrap; 
         background-color: #f8f9fa;
-        padding: 12px 8px;
+        padding: 12px 10px;
         vertical-align: middle;
+        border-bottom: 2px solid #dee2e6;
     }
+    
     .table tbody td { 
         font-size: 13px; 
-        vertical-align: middle;
-        padding: 12px 8px;
-        white-space: nowrap;
+        vertical-align: top; /* 顶部对齐，适应不同行高 */
+        padding: 12px 10px;
+        white-space: normal; /* 允许自动换行 */
+        word-wrap: break-word; /* 长单词自动换行 */
+        word-break: break-all; /* 强制换行 */
+        line-height: 1.5; /* 舒适行高 */
     }
+    
+    /* 操作列 - 保持一行不换行 */
+    .table tbody td:last-child {
+        white-space: nowrap !important;
+        vertical-align: middle; /* 操作按钮垂直居中 */
+        min-width: 120px; /* 设置最小宽度确保按钮一行显示 */
+    }
+    
+    /* 操作列内的按钮容器 */
+    .table tbody td:last-child .btn-group,
+    .table tbody td:last-child .d-flex,
+    .table tbody td:last-child > * {
+        white-space: nowrap !important;
+        flex-wrap: nowrap !important;
+    }
+    
     .table tbody tr:hover { background-color: rgba(0, 123, 255, 0.05); }
-    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 500; }
+    
+    /* 状态徽章 */
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap; }
     .project-not_started { background-color: #ffc107; color: #000; }
     .project-under_construction { background-color: #28a745; color: #fff; }
     .project-stopped { background-color: #dc3545; color: #fff; }
@@ -38,6 +91,8 @@
     .contract-released { background-color: #6c757d; color: #fff; }
     .settlement-unsettled { background-color: #ffc107; color: #000; }
     .settlement-settled { background-color: #28a745; color: #fff; }
+    
+    /* 搜索栏 */
     .search-bar { background: white; border-radius: 8px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .btn-action { 
         padding: 3px 4px; 
@@ -49,6 +104,7 @@
         align-items: center;
         justify-content: center;
         min-width: 24px;
+        white-space: nowrap; /* 按钮文字不换行 */
     }
     
     .btn-action:hover {

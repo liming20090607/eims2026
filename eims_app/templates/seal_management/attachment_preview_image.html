@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}图片预览 - {{ file_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .preview-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    
+    .image-preview-wrapper {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .image-preview-wrapper img {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 4px;
+    }
+    
+    .file-info-bar {
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons {
+        margin-top: 20px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="preview-container">
+        <!-- 面包屑导航 -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                {% if back_url %}
+                <li class="breadcrumb-item"><a href="{{ back_url }}">返回</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active">图片预览</li>
+            </ol>
+        </nav>
+
+        <!-- 页面标题 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-image me-2"></i>{{ file_name }}</h3>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>返回
+            </a>
+        </div>
+
+        <!-- 文件信息 -->
+        <div class="file-info-bar">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>文件名：</strong>{{ file_name }}
+                </div>
+                <div class="col-md-4">
+                    <strong>文件大小：</strong>{{ attachment.file_size|filesizeformat }}
+                </div>
+                <div class="col-md-4">
+                    <strong>上传时间：</strong>{{ attachment.uploaded_at|date:"Y-m-d H:i:s" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 图片预览 -->
+        <div class="image-preview-wrapper">
+            <img src="{{ file_url }}" alt="{{ file_name }}" class="img-fluid">
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <a href="{% url 'eims_app:seal_attachment_download' attachment.pk %}" class="btn btn-success btn-lg">
+                <i class="bi bi-download me-2"></i>下载文件
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

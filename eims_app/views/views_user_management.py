@@ -39,14 +39,17 @@ def user_management(request):
         
         # 获取用户组信息
         user_groups = []
+        user_group_ids = []
         if user:
             user_groups = list(user.groups.all().values_list('name', flat=True))
+            user_group_ids = list(user.groups.all().values_list('id', flat=True))
         
         employee_account_status.append({
             'employee': emp,
             'has_account': user is not None,
             'user': user,
             'user_groups': user_groups,
+            'user_group_ids': user_group_ids,
         })
     
     # 处理批量创建
@@ -56,7 +59,7 @@ def user_management(request):
         if action == 'batch_create':
             # 批量创建账号
             selected_ids = request.POST.getlist('selected_employees')
-            default_password = request.POST.get('default_password', 'Abc123456!')
+            default_password = request.POST.get('default_password', 'sc123456#')
             
             created_count = 0
             failed_count = 0
@@ -173,7 +176,7 @@ def sync_user_from_employee(request, employee_id):
         if User.objects.filter(username=username).exists():
             messages.warning(request, f"用户 {username} 已存在")
         else:
-            default_password = 'Abc123456!'
+            default_password = 'sc123456#'
             user = User.objects.create_user(
                 username=username,
                 password=default_password,

@@ -190,18 +190,18 @@ def project_ledger_detail(request, pk):
     # 获取关联的产值回款记录（带分页）
     output_payments_all = OutputPayment.objects.filter(
         project_code=project_detail.project_code
-    ).order_by('-month', '-create_time')
+    ).order_by('-update_time')  # 按更新时间倒序
     
     # 获取关联的项目人员记录（带分页）
     from eims_app.models.model_personnel import Personnel
     personnel_list_all = Personnel.objects.filter(
         project_code=project_detail.project_code,
         is_deleted=False
-    ).order_by('-create_time')
+    ).order_by('-update_time')  # 按更新时间倒序
     
     # 处理分页
     page = request.GET.get('page', 1)
-    per_page = request.GET.get('per_page', 10)
+    per_page = 5  # 每页显示最近5条记录
     
     # 项目动态分页
     dynamics_paginator = Paginator(project_dynamics_all, per_page)

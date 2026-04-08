@@ -22,6 +22,17 @@ from .views.views_contract import (
     contract_approval_edit, contract_approval_submit, contract_approval_approve,
     contract_approval_reject, contract_approval_cancel
 )
+from .views.views_archive_approval import (
+    archive_approval_chain, archive_approval_add, archive_approval_detail,
+    archive_approval_edit, archive_approval_submit, archive_approval_approve,
+    archive_approval_reject, archive_approval_cancel
+)
+from .views.views_seal_approval import (
+    seal_approval_list, seal_approval_add, seal_approval_detail,
+    seal_approval_edit, seal_approval_submit, seal_approval_approve,
+    seal_approval_reject, seal_approval_cancel, seal_approval_delete_attachment,
+    get_department_personnel_ajax, seal_attachment_preview, seal_attachment_download
+)
 from .views.views_my_approvals import my_pending_approvals, my_initiated_approvals
 from .views.views_profile import profile_view
 from .views.views_my_account import my_account_view
@@ -152,6 +163,28 @@ urlpatterns = [
     path('contract-approval/<int:pk>/approve/', contract_approval_approve, name='contract_approval_approve'),
     path('contract-approval/<int:pk>/reject/', contract_approval_reject, name='contract_approval_reject'),
     path('contract-approval/<int:pk>/cancel/', contract_approval_cancel, name='contract_approval_cancel'),
+    # 归档审批路由
+    path('archive-approval/', archive_approval_chain, name='archive_approval_chain'),
+    path('archive-approval/add/', archive_approval_add, name='archive_approval_add'),
+    path('archive-approval/<int:pk>/', archive_approval_detail, name='archive_approval_detail'),
+    path('archive-approval/<int:pk>/edit/', archive_approval_edit, name='archive_approval_edit'),
+    path('archive-approval/<int:pk>/submit/', archive_approval_submit, name='archive_approval_submit'),
+    path('archive-approval/<int:pk>/approve/', archive_approval_approve, name='archive_approval_approve'),
+    path('archive-approval/<int:pk>/reject/', archive_approval_reject, name='archive_approval_reject'),
+    path('archive-approval/<int:pk>/cancel/', archive_approval_cancel, name='archive_approval_cancel'),
+    # 用印审批路由
+    path('seal-approval/', seal_approval_list, name='seal_approval_chain'),
+    path('seal-approval/add/', seal_approval_add, name='seal_approval_add'),
+    path('seal-approval/<int:pk>/', seal_approval_detail, name='seal_approval_detail'),
+    path('seal-approval/<int:pk>/edit/', seal_approval_edit, name='seal_approval_edit'),
+    path('seal-approval/<int:pk>/submit/', seal_approval_submit, name='seal_approval_submit'),
+    path('seal-approval/<int:pk>/approve/', seal_approval_approve, name='seal_approval_approve'),
+    path('seal-approval/<int:pk>/reject/', seal_approval_reject, name='seal_approval_reject'),
+    path('seal-approval/<int:pk>/cancel/', seal_approval_cancel, name='seal_approval_cancel'),
+    path('seal-approval/attachment/<int:attachment_id>/delete/', seal_approval_delete_attachment, name='seal_approval_delete_attachment'),
+    path('seal-approval/attachment/<int:attachment_id>/preview/', seal_attachment_preview, name='seal_attachment_preview'),
+    path('seal-approval/attachment/<int:attachment_id>/download/', seal_attachment_download, name='seal_attachment_download'),
+    path('seal-approval/get-department-personnel/', get_department_personnel_ajax, name='get_department_personnel_ajax'),
     path('my-pending-approvals/', my_pending_approvals, name='my_pending_approvals'),
     path('my-initiated-approvals/', my_initiated_approvals, name='my_initiated_approvals'),
     path('contract/import/template/', contract_import_template, name='contract_import_template'),

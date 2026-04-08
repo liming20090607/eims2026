@@ -8,6 +8,8 @@ from django import template
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from eims_app.models.model_contract_approval import ContractApproval
+from eims_app.models.model_seal_approval import SealApproval
+from eims_app.models.model_archive_approval import ArchiveApproval
 
 register = template.Library()
 
@@ -116,13 +118,25 @@ def render_sidebar_menu(context):
         elif user.has_perm(item['permission']):
             visible_items.append(item)
     
-    # 获取当前用户的待审批数量（用于显示徽章）
+    # 获取当前用户的待审批数量（用于显示徽章）- 包含合同、用印、归档
     pending_count = 0
     if user.is_authenticated:
-        pending_count = ContractApproval.objects.filter(
+        contract_count = ContractApproval.objects.filter(
             current_approver=user,
-            status__in=['pending', 'reviewing']
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
         ).count()
+        seal_count = SealApproval.objects.filter(
+            current_approver=user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        archive_count = ArchiveApproval.objects.filter(
+            current_approver=user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        pending_count = contract_count + seal_count + archive_count
     
     # 生成 HTML
     html = '<ul id="sidebar-menu" class="nav flex-column">'

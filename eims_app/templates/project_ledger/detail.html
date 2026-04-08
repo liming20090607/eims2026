@@ -474,6 +474,32 @@
         background-color: rgba(0, 123, 255, 0.05);
     }
     
+    /* 子窗体表格滚动条 */
+    .sub-panel .table-responsive {
+        max-height: 400px;
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+    
+    .sub-panel .table-responsive::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .sub-panel .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .sub-panel .table-responsive::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    .sub-panel .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
     .empty-data {
         text-align: center;
         padding: 15px;
@@ -943,7 +969,7 @@
                 <tbody>
                     {% for dynamic in project_dynamics %}
                     <tr>
-                        <td>{{ dynamic.update_time|date:"Y-m-d" }}</td>
+                        <td>{{ dynamic.update_time|date:"Y/m/d H:i:s"|default:"-" }}</td>
                         <td>{{ dynamic.project_progress|default:"-" }}</td>
                         <td>
                             <span class="status-badge status-{{ dynamic.project_status }}">
@@ -1042,6 +1068,7 @@
             <table class="table sub-panel-table">
                 <thead>
                     <tr>
+                        <th>更新时间</th>
                         <th>月份</th>
                         <th>当月产值 (万元)</th>
                         <th>累计产值 (万元)</th>
@@ -1051,12 +1078,14 @@
                         <th>本月实际回款 (元)</th>
                         <th>下月计划 (元)</th>
                         <th>回款日期</th>
+                        <th>操作人</th>
                         <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for payment in output_payments %}
                     <tr>
+                        <td>{{ payment.update_time|date:"Y/m/d H:i:s"|default:"-" }}</td>
                         <td>{{ payment.month }}</td>
                         <td>{{ payment.monthly_output|floatformat:2 }}</td>
                         <td>{{ payment.cumulative_output|floatformat:2 }}</td>
@@ -1066,6 +1095,7 @@
                         <td>{{ payment.actual_payment|floatformat:2 }}</td>
                         <td>{{ payment.next_month_plan|floatformat:2 }}</td>
                         <td>{{ payment.payment_date|date:"Y-m-d"|default:"-" }}</td>
+                        <td>{{ payment.operator|default:"-" }}</td>
                         <td>
                             {% if user.is_superuser %}
                             <a href="{% url 'eims_app:add_output' project_detail.pk %}?edit_id={{ payment.pk }}&project_code={{ project_detail.project_code }}" class="btn btn-sm btn-info btn-sm-custom" title="编辑">
@@ -1153,7 +1183,8 @@
             <table class="table sub-panel-table">
                 <thead>
                     <tr>
-                        <th>人员编号</th>
+                        <th>更新时间</th>
+                        <th style="width: 120px;">人员编号</th>
                         <th>姓名</th>
                         <th>性别</th>
                         <th>部门</th>
@@ -1162,13 +1193,15 @@
                         <th>邮箱</th>
                         <th>入岗时间</th>
                         <th>离岗时间</th>
+                        <th>操作人</th>
                         <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for person in personnel_list %}
                     <tr>
-                        <td><code>{{ person.personnel_code }}</code></td>
+                        <td>{{ person.update_time|date:"Y/m/d H:i:s"|default:"-" }}</td>
+                        <td><code>{{ person.personnel_code|truncatechars:10 }}</code></td>
                         <td>{{ person.name }}</td>
                         <td>{{ person.get_gender_display }}</td>
                         <td>{{ person.department|default:"-" }}</td>
@@ -1177,6 +1210,7 @@
                         <td>{{ person.email|default:"-" }}</td>
                         <td>{{ person.entry_time|date:"Y-m-d"|default:"-" }}</td>
                         <td>{{ person.leave_time|date:"Y-m-d"|default:"-" }}</td>
+                        <td>{{ person.operator|default:"-" }}</td>
                         <td>
                             {% if user.is_superuser %}
                             <a href="{% url 'eims_app:add_personnel' project_detail.pk %}?edit_id={{ person.pk }}&project_code={{ project_detail.project_code }}" class="btn btn-sm btn-info btn-sm-custom" title="编辑">

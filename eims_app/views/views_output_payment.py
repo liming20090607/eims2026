@@ -7,6 +7,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
 from ..models.model_output_payment import OutputPayment
 from ..models.model_project_detail import ProjectDetail
@@ -117,46 +118,26 @@ def add_output(request, pk):
         current_month_cumulative_payment = last_month_cumulative_payment + current_month_payment
         contract_balance = parse_decimal(request.POST.get('contract_total', 0)) - current_month_cumulative_payment
         
-        # 检查是否已存在该月份的记录
-        existing_output = OutputPayment.objects.filter(project=project, month=month).first()
-        
-        if existing_output:
-            messages.warning(request, f'{month} 的产值回款记录已存在，将为您更新记录')
-            # 更新现有记录
-            existing_output.monthly_output = current_month_output
-            existing_output.cumulative_output = current_month_cumulative_output
-            existing_output.contract_total = parse_decimal(request.POST.get('contract_total', 0))
-            existing_output.cumulative_received = current_month_cumulative_payment
-            existing_output.contract_receivable = parse_decimal(request.POST.get('contract_total', 0))
-            existing_output.near_term_receivable = contract_balance
-            existing_output.actual_payment = current_month_payment
-            existing_output.recent_payment_request = request.POST.get('recent_payment_request', '')
-            existing_output.payment_measures = request.POST.get('payment_measures', '')
-            existing_output.next_month_request = request.POST.get('next_month_request', '')
-            existing_output.need_assistance = request.POST.get('need_assistance', '')
-            existing_output.operator = request.user.username
-            existing_output.save()
-        else:
-            # 创建新记录
-            output = OutputPayment(
-                project=project,
-                project_code=project.project_code,
-                month=month,
-                monthly_output=current_month_output,
-                cumulative_output=current_month_cumulative_output,
-                contract_total=parse_decimal(request.POST.get('contract_total', 0)),
-                cumulative_received=current_month_cumulative_payment,
-                contract_receivable=parse_decimal(request.POST.get('contract_total', 0)),
-                near_term_receivable=contract_balance,
-                actual_payment=current_month_payment,
-                recent_payment_request=request.POST.get('recent_payment_request', ''),
-                payment_measures=request.POST.get('payment_measures', ''),
-                next_month_request=request.POST.get('next_month_request', ''),
-                need_assistance=request.POST.get('need_assistance', ''),
-                operator=request.user.username
-            )
-            output.save()
-            messages.success(request, '成功添加产值回款')
+        # 始终创建新记录，不再更新已有记录
+        output = OutputPayment(
+            project=project,
+            project_code=project.project_code,
+            month=month,
+            monthly_output=current_month_output,
+            cumulative_output=current_month_cumulative_output,
+            contract_total=parse_decimal(request.POST.get('contract_total', 0)),
+            cumulative_received=current_month_cumulative_payment,
+            contract_receivable=parse_decimal(request.POST.get('contract_total', 0)),
+            near_term_receivable=contract_balance,
+            actual_payment=current_month_payment,
+            recent_payment_request=request.POST.get('recent_payment_request', ''),
+            payment_measures=request.POST.get('payment_measures', ''),
+            next_month_request=request.POST.get('next_month_request', ''),
+            need_assistance=request.POST.get('need_assistance', ''),
+            operator=request.user.username
+        )
+        output.save()
+        messages.success(request, '成功添加产值回款记录')
         
         # 更新项目信息中的累计回款和合同余款
         project.cumulative_payment = current_month_cumulative_payment
@@ -182,6 +163,8 @@ def add_output(request, pk):
         'last_payment_measures': last_month_output.payment_measures if last_month_output else '',
         'last_next_month_request': last_month_output.next_month_request if last_month_output else '',
         'last_need_assistance': last_month_output.need_assistance if last_month_output else '',
+        # 系统信息
+        'current_time': timezone.now(),
     }
     return render(request, 'project_ledger/add_output.html', context)
 

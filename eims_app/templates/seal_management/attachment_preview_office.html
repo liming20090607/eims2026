@@ -1,0 +1,115 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Office文档预览 - {{ file_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .preview-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    
+    .office-preview-wrapper {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .office-preview-wrapper iframe {
+        width: 100%;
+        min-height: 800px;
+        border: none;
+    }
+    
+    .file-info-bar {
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons {
+        margin-top: 20px;
+        text-align: center;
+    }
+    
+    .preview-notice {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="preview-container">
+        <!-- 面包屑导航 -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                {% if back_url %}
+                <li class="breadcrumb-item"><a href="{{ back_url }}">返回</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active">Office文档预览</li>
+            </ol>
+        </nav>
+
+        <!-- 页面标题 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>
+                {% if '.doc' in file_ext or '.docx' in file_ext %}
+                <i class="bi bi-file-earmark-word text-primary me-2"></i>
+                {% elif '.xls' in file_ext or '.xlsx' in file_ext %}
+                <i class="bi bi-file-earmark-excel text-success me-2"></i>
+                {% elif '.ppt' in file_ext or '.pptx' in file_ext %}
+                <i class="bi bi-file-earmark-ppt text-danger me-2"></i>
+                {% endif %}
+                {{ file_name }}
+            </h3>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>返回
+            </a>
+        </div>
+
+        <!-- 文件信息 -->
+        <div class="file-info-bar">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>文件名：</strong>{{ file_name }}
+                </div>
+                <div class="col-md-4">
+                    <strong>文件大小：</strong>{{ attachment.file_size|filesizeformat }}
+                </div>
+                <div class="col-md-4">
+                    <strong>上传时间：</strong>{{ attachment.uploaded_at|date:"Y-m-d H:i:s" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 预览说明 -->
+        <div class="preview-notice">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>提示：</strong>Office文档使用Microsoft Office Online进行在线预览。如果预览加载失败，请下载文件后使用本地Office软件打开。
+        </div>
+
+        <!-- Office文档预览 -->
+        <div class="office-preview-wrapper">
+            <iframe src="{{ office_online_url }}" frameborder="0" allowfullscreen>
+                您的浏览器不支持Office文档预览，请<a href="{{ file_url }}" target="_blank">点击这里查看</a>或下载文件。
+            </iframe>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <a href="{% url 'eims_app:seal_attachment_download' attachment.pk %}" class="btn btn-success btn-lg">
+                <i class="bi bi-download me-2"></i>下载文件
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

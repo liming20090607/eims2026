@@ -98,6 +98,59 @@
         </div>
     </div>
     
+    <!-- 审批类型分布 -->
+    {% if contract_count > 0 or seal_count > 0 or archive_count > 0 %}
+    <div class="row mb-4">
+        {% if contract_count > 0 %}
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-file-earmark-text display-4 text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="card-title mb-1">合同审批</h5>
+                        <p class="card-text text-muted mb-0">{{ contract_count }} 个待审批</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if seal_count > 0 %}
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-stamp display-4 text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="card-title mb-1">用印审批</h5>
+                        <p class="card-text text-muted mb-0">{{ seal_count }} 个待审批</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if archive_count > 0 %}
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-archive display-4 text-success"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="card-title mb-1">归档审批</h5>
+                        <p class="card-text text-muted mb-0">{{ archive_count }} 个待审批</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
     <!-- 状态分布 -->
     {% if pending_count > 0 or reviewing_count > 0 %}
     <div class="row mb-4">
@@ -150,10 +203,11 @@
                         <tr>
                             <th style="width: 50px;">#</th>
                             <th>审批标题</th>
-                            <th>合同名称</th>
+                            <th>详情</th>
                             <th>申请人</th>
                             <th>申请部门</th>
                             <th>提交时间</th>
+                            <th>类型</th>
                             <th>状态</th>
                             <th style="width: 150px;">操作</th>
                         </tr>
@@ -165,21 +219,47 @@
                             <td>
                                 <strong>{{ approval.title|truncatechars:30 }}</strong>
                             </td>
-                            <td>{{ approval.contract_name|truncatechars:25 }}</td>
+                            <td>{{ approval.subtitle|truncatechars:25|default:"-" }}</td>
                             <td>{{ approval.applicant.get_full_name|default:approval.applicant.username }}</td>
                             <td>{{ approval.department.name|default:"-" }}</td>
-                            <td>{{ approval.submitted_at|date:"Y-m-d H:i" }}</td>
+                            <td>{{ approval.submitted_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                            <td>
+                                {% if approval.approval_type == 'contract' %}
+                                <span class="badge bg-primary">合同审批</span>
+                                {% elif approval.approval_type == 'seal' %}
+                                <span class="badge bg-danger">用印审批</span>
+                                {% elif approval.approval_type == 'archive' %}
+                                <span class="badge bg-success">归档审批</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="status-badge status-{{ approval.status }}">
-                                    {{ approval.get_status_display }}
+                                    {% if approval.status == 'pending' %}待审核
+                                    {% elif approval.status == 'reviewing' %}审核中
+                                    {% else %}{{ approval.status }}
+                                    {% endif %}
                                 </span>
                             </td>
                             <td>
-                                <a href="{% url 'eims_app:contract_approval_detail' approval.pk %}" 
+                                {% if approval.approval_type == 'contract' %}
+                                <a href="{% url 'eims_app:contract_approval_detail' approval.id %}" 
                                    class="btn btn-primary btn-sm quick-action-btn"
                                    title="查看详情并审批">
                                     <i class="bi bi-eye me-1"></i>查看
                                 </a>
+                                {% elif approval.approval_type == 'seal' %}
+                                <a href="{% url 'eims_app:seal_approval_detail' approval.id %}" 
+                                   class="btn btn-primary btn-sm quick-action-btn"
+                                   title="查看详情并审批">
+                                    <i class="bi bi-eye me-1"></i>查看
+                                </a>
+                                {% elif approval.approval_type == 'archive' %}
+                                <a href="{% url 'eims_app:archive_approval_detail' approval.id %}" 
+                                   class="btn btn-primary btn-sm quick-action-btn"
+                                   title="查看详情并审批">
+                                    <i class="bi bi-eye me-1"></i>查看
+                                </a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -190,9 +270,9 @@
             <div class="text-center py-5">
                 <i class="bi bi-check-circle display-1 text-success"></i>
                 <h4 class="mt-3 text-muted">太棒了！</h4>
-                <p class="text-muted">当前没有待审批的合同</p>
-                <a href="{% url 'eims_app:contract_approval_chain' %}" class="btn btn-outline-primary mt-2">
-                    <i class="bi bi-arrow-left me-1"></i>返回审批列表
+                <p class="text-muted">当前没有待审批的事项</p>
+                <a href="{% url 'eims_app:eims_index' %}" class="btn btn-outline-primary mt-2">
+                    <i class="bi bi-arrow-left me-1"></i>返回首页
                 </a>
             </div>
             {% endif %}

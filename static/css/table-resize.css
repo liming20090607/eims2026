@@ -37,3 +37,52 @@
 .table-resizable th:not(:last-child):hover::after {
     background: linear-gradient(to right, transparent, rgba(13, 110, 253, 0.6));
 }
+
+/* 通用表格样式 - 支持列宽拖动和自动换行 */
+table.table {
+    width: 100%;
+    table-layout: auto;
+}
+
+table.table thead th {
+    position: relative;
+    white-space: normal !important;
+    word-wrap: break-word;
+    vertical-align: middle;
+    padding: 8px;
+    min-width: 40px;
+}
+
+table.table tbody td {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    vertical-align: top;
+    padding: 8px;
+}
+
+/* 确保行高自适应内容 */
+table.table tbody tr {
+    height: auto;
+}
+
+/* 拖拽手柄样式（由 JavaScript 动态添加）*/
+.col-resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10;
+    transition: background-color 0.2s;
+}
+
+.col-resize-handle:hover {
+    background: rgba(13, 110, 253, 0.5);
+}
+
+.col-resize-handle.dragging {
+    background: #0d6efd;
+}

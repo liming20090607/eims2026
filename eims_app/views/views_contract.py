@@ -704,34 +704,64 @@ def contract_approval_approve(request, pk):
         
         if action_type == 'forward':
             # 转发到下一步审批人
-            next_approver_id = request.POST.get('next_approver')
-            if next_approver_id:
-                from django.contrib.auth import get_user_model
-                User = get_user_model()
-                try:
-                    next_approver = User.objects.get(pk=next_approver_id)
-                    # 升级审批级别
-                    approval.approval_level += 1
-                    approval.current_approver = next_approver
-                    approval.status = 'reviewing'  # 保持审核中状态
-                    approval.save()
-                    
-                    # 记录操作并保存下一步审批人
-                    record = ContractApprovalRecord.objects.create(
-                        approval=approval,
-                        action='approve',
-                        operator=request.user,
-                        comment=submit_comment or comment or '同意并转发',
-                        next_approver=next_approver
-                    )
-                    
-                    messages.success(request, f'已转发给 {next_approver.username} 进行下一步审批')
-                except User.DoesNotExist:
-                    messages.error(request, '选择的审批人不存在')
+            assign_method = request.POST.get('assign_method', 'auto')  # 'auto' 或 'manual'
+            
+            if assign_method == 'manual':
+                # 自主选择审批人
+                next_approver_id = request.POST.get('next_approver')
+                if next_approver_id:
+                    from django.contrib.auth import get_user_model
+                    User = get_user_model()
+                    try:
+                        next_approver = User.objects.get(pk=next_approver_id)
+                        # 升级审批级别
+                        approval.approval_level += 1
+                        approval.current_approver = next_approver
+                        approval.status = 'reviewing'  # 保持审核中状态
+                        approval.save()
+                        
+                        # 记录操作并保存下一步审批人
+                        ContractApprovalRecord.objects.create(
+                            approval=approval,
+                            action='approve',
+                            operator=request.user,
+                            comment=submit_comment or comment or f'同意并转发给 {next_approver.username}',
+                            next_approver=next_approver
+                        )
+                        
+                        messages.success(request, f'已转发给 {next_approver.username} 进行下一步审批')
+                    except User.DoesNotExist:
+                        messages.error(request, '选择的审批人不存在')
+                        return redirect('eims_app:contract_approval_detail', pk=approval.pk)
+                else:
+                    messages.error(request, '请选择下一步审批人')
                     return redirect('eims_app:contract_approval_detail', pk=approval.pk)
             else:
-                messages.error(request, '请选择下一步审批人')
-                return redirect('eims_app:contract_approval_detail', pk=approval.pk)
+                # 系统指定审批人 - 根据流程自动指派
+                try:
+                    # 升级审批级别
+                    approval.approval_level += 1
+                    assigned_approver = approval.assign_current_approver()
+                    
+                    if assigned_approver:
+                        approval.status = 'reviewing'  # 保持审核中状态
+                        approval.save()
+                        
+                        # 记录操作
+                        ContractApprovalRecord.objects.create(
+                            approval=approval,
+                            action='approve',
+                            operator=request.user,
+                            comment=submit_comment or comment or f'同意并由系统指派给 {assigned_approver.username}'
+                        )
+                        
+                        messages.success(request, f'审批通过，系统已指派给 {assigned_approver.username} 进行下一步审批')
+                    else:
+                        messages.warning(request, '未找到合适的下一位审批人，请手动选择或联系管理员配置')
+                        return redirect('eims_app:contract_approval_detail', pk=approval.pk)
+                except Exception as e:
+                    messages.error(request, f'系统指派审批人失败：{str(e)}')
+                    return redirect('eims_app:contract_approval_detail', pk=approval.pk)
         else:
             # 终结审批，生成合同台账
             approval.status = 'approved'

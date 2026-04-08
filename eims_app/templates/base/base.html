@@ -13,6 +13,7 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/table-resize.css' %}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" type="image/svg+xml">
     
     {% block extra_css %}{% endblock %}
@@ -879,7 +880,9 @@
                    data-bs-toggle="tooltip" data-bs-placement="right" title="审批流程">
                     <span class="menu-icon"><i class="bi bi-diagram-3"></i></span>
                     <span class="menu-text">审批流程</span>
-                    <span class="badge bg-warning ms-auto">4</span>
+                    {% if pending_count > 0 %}
+                    <span class="badge bg-warning ms-auto">{{ pending_count }}</span>
+                    {% endif %}
                 </a>
                 <div class="collapse {% if 'contract-approval' in request.path or 'seal-approval' in request.path or 'archive-approval' in request.path or 'my-pending-approvals' in request.path %}show{% endif %}" id="approvalSubmenu">
                     <ul class="nav flex-column ms-3">
@@ -897,12 +900,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="javascript:void(0);" onclick="alert('用印审批（盖章审批）功能开发中'); return false;" class="nav-link">
-                                <i class="bi bi-circle-fill text-danger me-1" style="font-size: 0.6rem; vertical-align: middle;"></i><i class="bi bi-stamp-fill text-danger"></i> 用印审批
+                            <a href="{% url 'eims_app:seal_approval_chain' %}" class="nav-link {% if '/seal-approval' in request.path %}active{% endif %}">
+                                <i class="bi bi-stamp-fill text-danger"></i> 用印审批
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="javascript:void(0);" onclick="alert('归档审批功能开发中'); return false;" class="nav-link">
+                            <a href="{% url 'eims_app:archive_approval_chain' %}" class="nav-link {% if '/archive-approval' in request.path %}active{% endif %}">
                                 <i class="bi bi-archive"></i> 归档审批
                             </a>
                         </li>
@@ -1044,15 +1047,19 @@
                 </div>
             </li>
             
-            <!-- 后台管理（仅超级管理员可见） -->
-            {% if user.is_authenticated and user.is_superuser %}
-            <li class="nav-item">
-                <a href="#adminSubmenu" class="nav-link" 
-                   data-bs-toggle="collapse" aria-expanded="false">
+            <!-- 后台管理（仅管理员和超级管理员可用） -->
+            {% if user.is_authenticated %}
+            <li class="nav-item {% if not user.is_staff and not user.is_superuser %}disabled{% endif %}">
+                <a href="#adminSubmenu" class="nav-link {% if not user.is_staff and not user.is_superuser %}disabled{% endif %}" 
+                   {% if user.is_staff or user.is_superuser %}data-bs-toggle="collapse" aria-expanded="false"{% else %}onclick="alert('仅管理员可用'); return false;"{% endif %}
+                   style="{% if not user.is_staff and not user.is_superuser %}opacity: 0.5; cursor: not-allowed;{% endif %}">
                     <span class="menu-icon"><i class="bi bi-gear-fill text-warning"></i></span>
                     <span class="menu-text fw-bold">后台管理</span>
+                    {% if user.is_staff or user.is_superuser %}
                     <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem;"></i>
+                    {% endif %}
                 </a>
+                {% if user.is_staff or user.is_superuser %}
                 <div class="collapse" id="adminSubmenu">
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
@@ -1069,6 +1076,7 @@
                         </li>
                     </ul>
                 </div>
+                {% endif %}
             </li>
             {% endif %}
             
@@ -1423,6 +1431,8 @@
             }, 2000);
         });
     </script>
+    <!-- 表格列宽拖拽调整功能 -->
+    <script src="{% static 'js/table-column-resize.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
