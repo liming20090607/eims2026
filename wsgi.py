@@ -17,6 +17,6 @@ except ImportError:
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings_local_mysql')
 
 application = get_wsgi_application()
