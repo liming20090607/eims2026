@@ -11,8 +11,13 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-# Import base settings using absolute import
+# Import base settings module
 import settings as base_settings
+
+# Override critical settings BEFORE importing *
+ROOT_URLCONF = 'urls'  # Must be set before any import from settings
+
+# Now import base settings
 from settings import *
 
 # ==================== Database Configuration ====================

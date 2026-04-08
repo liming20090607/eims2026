@@ -70,7 +70,7 @@ MIDDLEWARE = [
     'eims_app.middleware.monthly_report_reminder.monthly_report_reminder_middleware',
 ]
 
-ROOT_URLCONF = 'EIMS2026.urls'
+ROOT_URLCONF = 'urls'
 WSGI_APPLICATION = 'wsgi.application'
 
 # -------------------------- 数据库配置 --------------------------
