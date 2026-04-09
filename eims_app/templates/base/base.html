@@ -135,6 +135,50 @@
             margin: 15px 0;
         }
         
+        /* 租户（公司）选择器样式 */
+        .tenant-selector {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin: 10px 15px;
+        }
+        
+        .tenant-selector .current-tenant {
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tenant-selector .current-tenant i {
+            color: #3498db;
+            font-size: 1.1rem;
+        }
+        
+        .tenant-selector .tenant-switch-btn {
+            width: 100%;
+            padding: 6px 12px;
+            background: rgba(52, 152, 219, 0.8);
+            border: 1px solid rgba(52, 152, 219, 0.6);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .tenant-selector .tenant-switch-btn:hover {
+            background: rgba(52, 152, 219, 1);
+            border-color: rgba(52, 152, 219, 1);
+            transform: translateY(-1px);
+        }
+        
         /* 子菜单样式 */
         .sidebar .collapse .nav-link {
             padding-left: 52px;
@@ -751,6 +795,22 @@
                 <span>协同 AI 办公系统</span>
             </a>
         </div>
+        
+        <!-- 当前公司选择器 -->
+        {% if user.is_authenticated and request.tenant %}
+        <div class="tenant-selector">
+            <div class="current-tenant">
+                <i class="bi bi-building"></i>
+                <span>{{ request.tenant.name }}</span>
+            </div>
+            <a href="{% url 'eims_app:tenant_switch' %}" class="tenant-switch-btn" onclick="event.preventDefault(); document.getElementById('tenantSwitchForm').submit();">
+                <i class="bi bi-arrow-left-right"></i> 切换公司
+            </a>
+            <form id="tenantSwitchForm" action="{% url 'eims_app:tenant_select' %}" method="GET" style="display: none;">
+            </form>
+        </div>
+        {% endif %}
+        
         <ul class="nav flex-column nav-menu">
             <!-- 主要功能菜单区 -->
             
