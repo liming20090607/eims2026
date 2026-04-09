@@ -114,3 +114,11 @@ def system_navigation(request):
         'eims_index_url': '/',
     }
     return render(request, 'system/navigation.html', context)
+
+
+@login_required
+def module_welcome(request, module_name):
+    """显示模块欢迎页面（待开发模块）"""
+    return render(request, 'eims_app/module_welcome.html', {
+        'module_name': module_name,
+    })

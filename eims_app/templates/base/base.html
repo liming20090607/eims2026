@@ -971,49 +971,70 @@
                 </div>
             </li>
             
-            <!-- 合同管理（带子菜单） -->
+            <!-- 分隔线 -->
+            <hr class="sidebar-divider my-3">
+            
+            <!-- 工程业务模块 -->
+            
+            <!-- 前期准备（待开发） -->
             <li class="nav-item">
-                <a href="#contractSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'contract' in request.path %}true{% else %}false{% endif %}" 
-                   class="nav-link {% if 'contract' in request.path %}active{% endif %}"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="合同管理">
-                    <span class="menu-icon"><i class="bi bi-file-earmark-text"></i></span>
-                    <span class="menu-text">合同管理</span>
-                    <span class="badge bg-primary ms-auto">2</span>
+                <a href="javascript:void(0);" class="nav-link" 
+                   onclick="showCustomMessage('前期准备'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="前期准备">
+                    <span class="menu-icon"><i class="bi bi-clipboard-data"></i></span>
+                    <span class="menu-text">前期准备</span>
                 </a>
-                <div class="collapse {% if 'contract' in request.path %}show{% endif %}" id="contractSubmenu">
-                    <ul class="nav flex-column ms-3">
-                        <li class="nav-item">
-                            <a href="{% url 'eims_app:contract_approval_chain' %}" class="nav-link {% if '/contract-approval' in request.path %}active{% endif %}">
-                                <i class="bi bi-diagram-3"></i> 合同审批
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if '/contracts/' in request.path and 'approval' not in request.path and 'my-' not in request.path %}active{% endif %}">
-                                <i class="bi bi-journal-text"></i> 合同台账
-                            </a>
-                        </li>
-                    </ul>
-                </div>
             </li>
             
-            <!-- 项目管理（带子菜单） -->
+            <!-- 招标投标（待开发） -->
             <li class="nav-item">
-                <a href="#projectSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'project' in request.path %}true{% else %}false{% endif %}" class="nav-link {% if 'project' in request.path %}active{% endif %}"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="项目管理">
-                    <span class="menu-icon"><i class="bi bi-building"></i></span>
-                    <span class="menu-text">项目管理</span>
+                <a href="javascript:void(0);" class="nav-link" 
+                   onclick="showCustomMessage('招标投标'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="招标投标">
+                    <span class="menu-icon"><i class="bi bi-trophy"></i></span>
+                    <span class="menu-text">招标投标</span>
+                </a>
+            </li>
+            
+            <!-- 工程设计（待开发） -->
+            <li class="nav-item">
+                <a href="javascript:void(0);" class="nav-link" 
+                   onclick="showCustomMessage('工程设计'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程设计">
+                    <span class="menu-icon"><i class="bi bi-pencil-square"></i></span>
+                    <span class="menu-text">工程设计</span>
+                </a>
+            </li>
+            
+            <!-- 造价咨询（待开发） -->
+            <li class="nav-item">
+                <a href="javascript:void(0);" class="nav-link" 
+                   onclick="showCustomMessage('造价咨询'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="造价咨询">
+                    <span class="menu-icon"><i class="bi bi-calculator"></i></span>
+                    <span class="menu-text">造价咨询</span>
+                </a>
+            </li>
+            
+            <!-- 工程监理（带子菜单：包含合同管理、项目管理、产值回款） -->
+            <li class="nav-item">
+                <a href="#engineeringSupervisionSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}true{% else %}false{% endif %}" 
+                   class="nav-link {% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}active{% endif %}"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程监理">
+                    <span class="menu-icon"><i class="bi bi-clipboard2-check"></i></span>
+                    <span class="menu-text">工程监理</span>
                     <span class="badge bg-primary ms-auto">3</span>
                 </a>
-                <div class="collapse {% if 'project' in request.path %}show{% endif %}" id="projectSubmenu">
+                <div class="collapse {% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}show{% endif %}" id="engineeringSupervisionSubmenu">
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
-                            <a href="{% url 'eims_app:project_ledger_list' %}" class="nav-link {% if 'project_ledger' in request.path %}active{% endif %}">
-                                <i class="bi bi-journal-text"></i> 项目台账
+                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if '/contract/' in request.path and 'approval' not in request.path %}active{% endif %}">
+                                <i class="bi bi-file-earmark-text"></i> 合同管理
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="javascript:void(0);" onclick="navigateToFirstProjectDetail();" class="nav-link">
-                                <i class="bi bi-file-text"></i> 项目详情
+                            <a href="{% url 'eims_app:project_ledger_list' %}" class="nav-link {% if 'project_ledger' in request.path %}active{% endif %}">
+                                <i class="bi bi-building"></i> 项目管理
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1023,6 +1044,26 @@
                         </li>
                     </ul>
                 </div>
+            </li>
+            
+            <!-- 工程施工（待开发） -->
+            <li class="nav-item">
+                <a href="javascript:void(0);" class="nav-link" 
+                   onclick="showCustomMessage('工程施工'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程施工">
+                    <span class="menu-icon"><i class="bi bi-hammer"></i></span>
+                    <span class="menu-text">工程施工</span>
+                </a>
+            </li>
+            
+            <!-- 工程检测（待开发） -->
+            <li class="nav-item">
+                <a href="javascript:void(0);" class="nav-link" 
+                   onclick="showCustomMessage('工程检测'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程检测">
+                    <span class="menu-icon"><i class="bi bi-search"></i></span>
+                    <span class="menu-text">工程检测</span>
+                </a>
             </li>
             
             <!-- 文件管理 -->
@@ -1368,6 +1409,17 @@
         function navigateToFirstProjectDetail() {
             // 先跳转到项目台账列表页
             window.location.href = '{% url "eims_app:project_ledger_list" %}?auto_open_detail=1';
+        }
+        
+        // 显示自定义消息（用于未开发模块）
+        function showCustomMessage(moduleName) {
+            const message = `「${moduleName}」模块欢迎定制开发，敬请咨询！`;
+            alert(message);
+        }
+        
+        // 显示权限不足提示
+        function showPermissionDenied() {
+            alert('您没有权限访问此功能，请联系系统管理员。');
         }
         
         // ===== 月度报告提醒功能 =====

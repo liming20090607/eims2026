@@ -13,7 +13,7 @@ from .views.views_output_payment import (
     import_output_payment, delete_output, add_output
 )
 from .views import views_contract
-from .views.views_index import IndexView, system_navigation
+from .views.views_index import IndexView, system_navigation, module_welcome
 from .views.views_contract import (
     contract_list, contract_add, contract_edit, 
     contract_delete, contract_detail, contract_batch_delete,
@@ -123,6 +123,14 @@ urlpatterns = [
     # 首页
     path('', IndexView.as_view(), name='eims_index'),
     path('system/navigation/', system_navigation, name='system_navigation'),
+    
+    # 工程业务模块路由（待开发）
+    path('module/preparation/', module_welcome, {'module_name': '前期准备'}, name='module_preparation'),
+    path('module/bidding/', module_welcome, {'module_name': '招标投标'}, name='module_bidding'),
+    path('module/design/', module_welcome, {'module_name': '工程设计'}, name='module_design'),
+    path('module/cost/', module_welcome, {'module_name': '造价咨询'}, name='module_cost'),
+    path('module/construction/', module_welcome, {'module_name': '工程施工'}, name='module_construction'),
+    path('module/testing/', module_welcome, {'module_name': '工程检测'}, name='module_testing'),
     
     # 租户（公司）选择路由
     path('tenant/select/', tenant_select, name='tenant_select'),

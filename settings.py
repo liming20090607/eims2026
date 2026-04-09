@@ -77,12 +77,25 @@ ROOT_URLCONF = 'urls'
 WSGI_APPLICATION = 'wsgi.application'
 
 # -------------------------- 数据库配置 --------------------------
+# 统一使用 MySQL 数据库（本地和服务器）
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'eims',
+        'USER': 'root',
+        'PASSWORD': 'root123',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
 }
+
+# 使用 PyMySQL 作为 MySQL 驱动
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # -------------------------- 密码验证 --------------------------
 AUTH_PASSWORD_VALIDATORS = [
