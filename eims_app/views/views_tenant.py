@@ -33,7 +33,7 @@ def tenant_select(request):
         user_profile.tenant = selected_tenant
         user_profile.save(update_fields=['tenant'])
         messages.success(request, f'已自动选择公司：{selected_tenant.name}')
-        return redirect('eims_app:dashboard')
+        return redirect('eims_app:eims_index')
     
     # 处理POST请求（用户选择了公司）
     if request.method == 'POST':
@@ -66,7 +66,7 @@ def tenant_select(request):
             messages.success(request, f'✓ 已切换到：{selected_tenant.name}')
             
             # 跳转到首页或之前访问的页面
-            next_url = request.GET.get('next', 'eims_app:dashboard')
+            next_url = request.GET.get('next', 'eims_app:eims_index')
             return redirect(next_url)
             
         except Tenant.DoesNotExist:
