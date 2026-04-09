@@ -85,12 +85,13 @@ class ProjectDetail(models.Model):
     
     # ===== 建设手续 =====
     CONSTRUCTION_PERMIT_CHOICES = [
-        ('completed', '已完成'),
-        ('incomplete', '未完成'),
+        ('not_started', '未办理'),
+        ('in_progress', '办理中'),
+        ('completed', '已办理'),
     ]
     construction_permit_status = models.CharField("报建情况", max_length=20, 
                                                    choices=CONSTRUCTION_PERMIT_CHOICES, 
-                                                   default='incomplete')
+                                                   blank=True, default='')
     
     # 施工许可证上传
     def construction_permit_upload_path(instance, filename):
