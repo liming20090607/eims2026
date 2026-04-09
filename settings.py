@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',  # 支持 runserver_plus（HTTPS）
+    'import_export',  # 数据导入导出
     'eims_app',
     'widget_tweaks',
 ]
