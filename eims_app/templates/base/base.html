@@ -803,11 +803,9 @@
                 <i class="bi bi-building"></i>
                 <span>{{ request.tenant.name }}</span>
             </div>
-            <a href="{% url 'eims_app:tenant_switch' %}" class="tenant-switch-btn" onclick="event.preventDefault(); document.getElementById('tenantSwitchForm').submit();">
+            <button type="button" class="tenant-switch-btn" data-bs-toggle="modal" data-bs-target="#tenantSwitchModal">
                 <i class="bi bi-arrow-left-right"></i> 切换公司
-            </a>
-            <form id="tenantSwitchForm" action="{% url 'eims_app:tenant_select' %}" method="GET" style="display: none;">
-            </form>
+            </button>
         </div>
         {% endif %}
         
@@ -1493,6 +1491,54 @@
     </script>
     <!-- 表格列宽拖拽调整功能 -->
     <script src="{% static 'js/table-column-resize.js' %}"></script>
+    
+    <!-- 公司切换密码验证模态框 -->
+    {% if user.is_authenticated and request.tenant %}
+    <div class="modal fade" id="tenantSwitchModal" tabindex="-1" aria-labelledby="tenantSwitchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="tenantSwitchModalLabel">
+                        <i class="bi bi-shield-lock me-2"></i>切换公司 - 安全验证
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'eims_app:tenant_select' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>为了保障数据安全，切换公司需要验证您的身份。</strong>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="switchPassword" class="form-label">
+                                <i class="bi bi-lock me-1"></i>登录密码
+                            </label>
+                            <input type="password" class="form-control" id="switchPassword" name="password" 
+                                   placeholder="请输入您的登录密码" required>
+                            <small class="form-text text-muted">请输入当前账号的登录密码</small>
+                        </div>
+                        
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            验证通过后，您将跳转到公司选择页面。
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-1"></i>取消
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>确认切换
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

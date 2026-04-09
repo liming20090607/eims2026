@@ -19,6 +19,13 @@
                         请选择您要操作的公司。不同公司的数据完全隔离，互不影响。
                     </p>
                     
+                    {% if require_password %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>安全验证：</strong>为了保障数据安全，切换公司需要输入您的登录密码。
+                    </div>
+                    {% endif %}
+                    
                     <form method="post">
                         {% csrf_token %}
                         
@@ -82,6 +89,15 @@
                             {% endfor %}
                         </div>
                         
+                        <div class="mb-3" {% if not require_password %}style="display:none;"{% endif %} id="passwordField">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>登录密码
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="请输入您的登录密码" required>
+                            <small class="form-text text-muted">请输入当前账号的登录密码以验证身份</small>
+                        </div>
+                        
                         <div class="mt-4 d-flex justify-content-between">
                             <a href="{% url 'eims_app:eims_index' %}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>
@@ -116,6 +132,12 @@ function selectTenant(tenantId) {
     // 选中单选框
     document.getElementById('tenant_' + tenantId).checked = true;
     
+    // 如果需要密码验证，显示密码字段
+    const passwordField = document.getElementById('passwordField');
+    if (passwordField && passwordField.style.display !== 'none') {
+        document.getElementById('password').required = true;
+    }
+    
     // 启用提交按钮
     document.getElementById('submitBtn').disabled = false;
     
@@ -133,6 +155,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkedRadio = document.querySelector('input[name="tenant_id"]:checked');
     if (checkedRadio) {
         document.getElementById('submitBtn').disabled = false;
+        
+        // 如果需要密码验证，确保密码字段可见
+        const passwordField = document.getElementById('passwordField');
+        if (passwordField && passwordField.style.display !== 'none') {
+            document.getElementById('password').required = true;
+        }
     }
 });
 </script>

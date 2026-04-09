@@ -38,12 +38,30 @@ def tenant_select(request):
     # 处理POST请求（用户选择了公司）
     if request.method == 'POST':
         tenant_id = request.POST.get('tenant_id')
+        password = request.POST.get('password', '')  # 获取密码
         
         if not tenant_id:
             messages.error(request, '请选择一个公司')
             return render(request, 'eims_app/tenant_select.html', {
                 'tenants': tenants
             })
+        
+        # 验证密码（除了超级管理员外都需要密码）
+        if not request.user.is_superuser and not password:
+            messages.error(request, '请输入登录密码以验证身份')
+            return render(request, 'eims_app/tenant_select.html', {
+                'tenants': tenants,
+                'require_password': True
+            })
+        
+        # 如果需要密码验证，检查密码是否正确
+        if not request.user.is_superuser:
+            if not request.user.check_password(password):
+                messages.error(request, '密码错误，请重新输入')
+                return render(request, 'eims_app/tenant_select.html', {
+                    'tenants': tenants,
+                    'require_password': True
+                })
         
         try:
             selected_tenant = Tenant.objects.get(id=tenant_id, is_active=True)
@@ -73,7 +91,8 @@ def tenant_select(request):
             messages.error(request, '公司不存在或已禁用')
     
     return render(request, 'eims_app/tenant_select.html', {
-        'tenants': tenants
+        'tenants': tenants,
+        'require_password': not request.user.is_superuser  # 非超级管理员需要密码
     })
 
 
@@ -81,26 +100,44 @@ def tenant_select(request):
 def tenant_switch(request):
     """
     快速切换公司（从侧边栏或其他地方调用）
+    需要密码验证
     """
     if request.method == 'POST':
         tenant_id = request.POST.get('tenant_id')
+        password = request.POST.get('password', '')  # 获取密码
         
-        if tenant_id:
-            try:
-                selected_tenant = Tenant.objects.get(id=tenant_id, is_active=True)
-                user_profile = UserProfile.objects.get(user=request.user)
+        if not tenant_id:
+            messages.error(request, '请选择要切换的公司')
+            referer = request.META.get('HTTP_REFERER', '/')
+            return redirect(referer)
+        
+        # 验证密码（超级管理员除外）
+        if not request.user.is_superuser:
+            if not password:
+                messages.error(request, '请输入登录密码以验证身份')
+                referer = request.META.get('HTTP_REFERER', '/')
+                return redirect(referer)
+            
+            if not request.user.check_password(password):
+                messages.error(request, '密码错误，切换失败')
+                referer = request.META.get('HTTP_REFERER', '/')
+                return redirect(referer)
+        
+        try:
+            selected_tenant = Tenant.objects.get(id=tenant_id, is_active=True)
+            user_profile = UserProfile.objects.get(user=request.user)
+            
+            # 验证权限
+            if request.user.is_superuser or user_profile.tenant == selected_tenant:
+                request.session['tenant_id'] = selected_tenant.id
+                user_profile.tenant = selected_tenant
+                user_profile.save(update_fields=['tenant'])
+                messages.success(request, f'✓ 已切换到：{selected_tenant.name}')
+            else:
+                messages.error(request, '您没有权限访问该公司')
                 
-                # 验证权限
-                if request.user.is_superuser or user_profile.tenant == selected_tenant:
-                    request.session['tenant_id'] = selected_tenant.id
-                    user_profile.tenant = selected_tenant
-                    user_profile.save(update_fields=['tenant'])
-                    messages.success(request, f'已切换到：{selected_tenant.name}')
-                else:
-                    messages.error(request, '您没有权限访问该公司')
-                    
-            except Tenant.DoesNotExist:
-                messages.error(request, '公司不存在')
+        except Tenant.DoesNotExist:
+            messages.error(request, '公司不存在')
     
     # 返回到来源页面
     referer = request.META.get('HTTP_REFERER', '/')
