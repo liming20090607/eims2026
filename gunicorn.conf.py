@@ -33,3 +33,6 @@ proc_name = 'eims_gunicorn'
 # WSGI Application - this will be loaded AFTER DJANGO_SETTINGS_MODULE is set
 # Do NOT use os.environ.setdefault here as it won't override if already set
 # The wsgi.py will use the already-set environment variable
+
+# Force template reloading on each request
+reload = True
