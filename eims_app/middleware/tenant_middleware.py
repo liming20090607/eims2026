@@ -3,6 +3,8 @@
 用于多租户数据隔离
 """
 from eims_app.models import Tenant
+from django.shortcuts import redirect
+from django.urls import reverse
 
 
 class TenantMiddleware:
@@ -14,6 +16,7 @@ class TenantMiddleware:
     2. 查询对应的 Tenant 对象
     3. 将 tenant 对象附加到 request 对象上
     4. 后续视图可以通过 request.tenant 访问当前租户
+    5. 如果用户已登录但没有选择公司，重定向到公司选择页面
     """
     
     def __init__(self, get_response):

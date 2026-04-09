@@ -102,6 +102,7 @@ from .views.views_wechat_login import (
     wechat_bind_account, wechat_check_status,
     wechat_unbind, wechat_my_bindings
 )
+from .views.views_tenant import tenant_select, tenant_switch
 from django.views.generic import RedirectView
 
 # 导入调试工具（临时使用）
@@ -122,6 +123,10 @@ urlpatterns = [
     # 首页
     path('', IndexView.as_view(), name='eims_index'),
     path('system/navigation/', system_navigation, name='system_navigation'),
+    
+    # 租户（公司）选择路由
+    path('tenant/select/', tenant_select, name='tenant_select'),
+    path('tenant/switch/', tenant_switch, name='tenant_switch'),
     
     # 项目管理路由
     path('contract/contract/', RedirectView.as_view(url='/contract/', permanent=True)),
