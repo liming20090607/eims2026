@@ -118,7 +118,14 @@ def project_ledger_add(request):
             messages.success(request, '✓ 项目台账添加成功！')
             return redirect('eims_app:project_ledger_list')
         else:
-            messages.error(request, '请检查输入内容是否正确')
+            # Show actual validation errors
+            for field, errors in form.errors.items():
+                field_label = form.fields[field].label if field in form.fields else field
+                for error in errors:
+                    messages.error(request, f'{field_label}: {error}')
+            if form.non_field_errors():
+                for error in form.non_field_errors():
+                    messages.error(request, error)
     else:
         form = ProjectLedgerForm()
     
@@ -149,7 +156,14 @@ def project_ledger_edit(request, pk):
             messages.success(request, '✓ 项目台账更新成功！')
             return redirect('eims_app:project_ledger_list')
         else:
-            messages.error(request, '请检查输入内容是否正确')
+            # Show actual validation errors
+            for field, errors in form.errors.items():
+                field_label = form.fields[field].label if field in form.fields else field
+                for error in errors:
+                    messages.error(request, f'{field_label}: {error}')
+            if form.non_field_errors():
+                for error in form.non_field_errors():
+                    messages.error(request, error)
     else:
         form = ProjectLedgerForm(instance=project_detail)
     
