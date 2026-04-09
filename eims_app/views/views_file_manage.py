@@ -62,6 +62,9 @@ def file_add(request):
         if form.is_valid():
             print(f"Form is valid! Cleaned data: {form.cleaned_data}")
             file_obj = form.save(commit=False)
+            # 自动分配租户
+            if hasattr(file_obj, 'tenant') and hasattr(request, 'tenant'):
+                file_obj.tenant = request.tenant
             # 手动设置上传人
             if request.user.is_authenticated:
                 file_obj.uploader = request.user.username

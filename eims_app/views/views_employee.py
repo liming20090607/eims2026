@@ -86,6 +86,9 @@ def employee_add(request):
         if form.is_valid():
             employee = form.save(commit=False)
             employee.operator = request.user.username
+            # 自动分配租户
+            if hasattr(employee, 'tenant') and hasattr(request, 'tenant'):
+                employee.tenant = request.tenant
             employee.save()
             messages.success(request, "员工信息添加成功！")
             return redirect("eims_app:employee_list")

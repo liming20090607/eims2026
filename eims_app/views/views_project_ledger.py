@@ -120,6 +120,9 @@ def project_ledger_add(request):
         form = ProjectLedgerForm(request.POST, request.FILES)
         if form.is_valid():
             project_detail = form.save(commit=False)
+            # 自动分配租户
+            if hasattr(project_detail, 'tenant') and hasattr(request, 'tenant'):
+                project_detail.tenant = request.tenant
             project_detail.save()
             messages.success(request, '✓ 项目台账添加成功！')
             return redirect('eims_app:project_ledger_list')

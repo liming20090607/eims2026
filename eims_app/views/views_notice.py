@@ -86,6 +86,9 @@ def notice_add(request, pk=None):
         form = NoticeForm(request.POST, request.FILES)
         if form.is_valid():
             notice = form.save(commit=False)
+            # 自动分配租户
+            if hasattr(notice, 'tenant') and hasattr(request, 'tenant'):
+                notice.tenant = request.tenant
             # 自动填充发布人和上传人（当前登录用户）
             notice.publish_person = request.user.username
             notice.upload_person = request.user.username

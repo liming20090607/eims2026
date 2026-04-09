@@ -84,6 +84,9 @@ def department_create(request):
         form = DepartmentForm(request.POST)
         if form.is_valid():
             dept = form.save(commit=False)
+            # 自动分配租户
+            if hasattr(dept, 'tenant') and hasattr(request, 'tenant'):
+                dept.tenant = request.tenant
             dept.save()
             messages.success(request, f'部门 "{dept.department_name}" 创建成功！')
             return redirect('eims_app:department_list')

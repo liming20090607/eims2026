@@ -118,7 +118,11 @@ def personnel_add(request):
     if request.method == 'POST':
         form = PersonnelForm(request.POST)
         if form.is_valid():
-            form.save()
+            personnel = form.save(commit=False)
+            # 自动分配租户
+            if hasattr(personnel, 'tenant') and hasattr(request, 'tenant'):
+                personnel.tenant = request.tenant
+            personnel.save()
             messages.success(request, "人员添加成功！")
             return redirect('eims_app:personnel_list')
         else:

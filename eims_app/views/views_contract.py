@@ -89,7 +89,11 @@ def contract_add(request):
     if request.method == 'POST':
         form = ContractManagementForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            contract = form.save(commit=False)
+            # 自动分配租户
+            if hasattr(contract, 'tenant') and hasattr(request, 'tenant'):
+                contract.tenant = request.tenant
+            contract.save()
             messages.success(request, "✓ 合同添加成功！")
             return redirect('eims_app:contract_management_list')
         else:
