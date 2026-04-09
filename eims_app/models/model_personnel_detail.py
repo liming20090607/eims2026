@@ -4,6 +4,13 @@ from .base import BaseModel
 class PersonnelCertificate(BaseModel):
     """人员证书模型"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     CERTIFICATE_TYPE_CHOICES = (
         ('qualification', '职业资格证书'),
         ('training', '培训证书'),
@@ -39,6 +46,13 @@ class PersonnelCertificate(BaseModel):
 
 class PersonnelAllocation(BaseModel):
     """人员分配模型"""
+    
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
     
     ALLOCATION_STATUS_CHOICES = (
         ('allocated', '已分配'),

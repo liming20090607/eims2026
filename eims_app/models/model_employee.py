@@ -4,6 +4,13 @@ from .base import BaseModel
 class Employee(BaseModel):
     """员工基本信息 - 入职登记"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     GENDER_CHOICES = (
         (0, '男'),
         (1, '女'),

@@ -3,6 +3,13 @@ from .base import BaseModel
 
 
 class Contract(BaseModel):
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     STATUS_CHOICES = [
         ('draft', '草稿'),
         ('signed', '已签署'),

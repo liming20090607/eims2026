@@ -6,6 +6,13 @@ import os
 class ProjectDetail(models.Model):
     """监理项目信息总表 - 完整的项目合同信息"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     # ===== 合同类别 =====
     CONTRACT_CATEGORY_CHOICES = [
         ('engineering_supervision', '工程监理'),

@@ -9,6 +9,14 @@ def file_upload_path(instance, filename):
 
 class FileManage(models.Model):
     """文件管理模块数据模型"""
+    
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     # 基础字段
     file_name = models.CharField(max_length=255, verbose_name='文件名称', help_text='请输入文件名称')
     file_path = models.FileField(upload_to=file_upload_path, verbose_name='文件路径', help_text='请选择上传文件')

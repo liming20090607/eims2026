@@ -4,6 +4,13 @@ from .base import BaseModel
 class Personnel(BaseModel):
     """项目人员信息 - 二次分配"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     # 与员工基本信息关联
     employee = models.ForeignKey('Employee', on_delete=models.CASCADE, null=True, blank=True, verbose_name='员工', help_text='选择员工', related_name='project_assignments')
     

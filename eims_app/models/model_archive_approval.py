@@ -7,6 +7,13 @@ import uuid
 class ArchiveApproval(models.Model):
     """归档审批表 - 存储归档审批主信息"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     # 审批状态选择
     APPROVAL_STATUS_CHOICES = [
         ('draft', '草稿'),

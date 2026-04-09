@@ -4,6 +4,13 @@ from .base import BaseModel
 class ProjectDynamic(BaseModel):
     """项目动态模型 - 跟踪项目进度和变更"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     project = models.ForeignKey('ProjectDetail', on_delete=models.CASCADE, verbose_name='关联项目', help_text='选择关联的项目', null=True, blank=True)
     project_code = models.CharField(max_length=50, verbose_name='项目编号', db_index=True, blank=True, default='')
     

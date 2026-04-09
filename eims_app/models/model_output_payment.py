@@ -9,6 +9,13 @@ from .model_project_detail import ProjectDetail
 class OutputPayment(models.Model):
     """产值回款表 - 用于记录项目的产值和回款情况"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     # 关联项目
     project = models.ForeignKey(
         ProjectDetail, 

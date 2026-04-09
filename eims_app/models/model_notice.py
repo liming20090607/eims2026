@@ -2,6 +2,14 @@ from django.db import models
 
 class Notice(models.Model):
     """通知公告模型（优化版 - 含关键字、批量上传）"""
+    
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     # 基础信息
     notice_code = models.CharField('公告编号', max_length=50, blank=True, null=True)
     notice_title = models.CharField('公告标题', max_length=200, blank=False, null=False, help_text='必填：通知的标题')

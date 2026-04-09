@@ -6,6 +6,13 @@ from django.contrib.auth.models import User
 class Department(BaseModel):
     """公司部门管理"""
     
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True)
+    
     DEPARTMENT_TYPE_CHOICES = [
         ('functional', '职能部门'),
         ('project', '项目部门'),
