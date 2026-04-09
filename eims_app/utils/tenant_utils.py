@@ -19,11 +19,7 @@ def get_queryset_for_tenant(model_class, request):
     """
     queryset = model_class.objects.all()
     
-    # 超级管理员可以查看所有数据
-    if hasattr(request, 'user') and request.user.is_superuser:
-        return queryset
-    
-    # 普通用户按租户过滤
+    # 所有用户（包括超级管理员）都按租户过滤
     if hasattr(request, 'tenant') and request.tenant:
         if hasattr(model_class, 'tenant'):
             queryset = queryset.filter(tenant=request.tenant)
@@ -49,11 +45,7 @@ def filter_queryset_by_tenant(queryset, request):
         projects = ProjectDetail.objects.filter(status='active')
         projects = filter_queryset_by_tenant(projects, request)
     """
-    # 超级管理员可以查看所有数据
-    if hasattr(request, 'user') and request.user.is_superuser:
-        return queryset
-    
-    # 普通用户按租户过滤
+    # 所有用户（包括超级管理员）都按租户过滤
     if hasattr(request, 'tenant') and request.tenant:
         if hasattr(queryset.model, 'tenant'):
             queryset = queryset.filter(tenant=request.tenant)

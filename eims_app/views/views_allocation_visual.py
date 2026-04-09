@@ -8,16 +8,23 @@ from eims_app.models import Personnel, PersonnelAllocation, Department
 from eims_app.models.model_project_detail import ProjectDetail  # 改用 ProjectDetail
 from eims_app.forms.form_personnel_detail import PersonnelAllocationForm
 from django.urls import reverse
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_http_methods
 import json
 
 def is_superuser(user):
     return user.is_superuser
 
+def has_personnel_permission(user):
+    """检查用户是否具有人员管理权限"""
+    if user.is_superuser:
+        return True
+    return user.has_perm('eims_app.view_personnel') or user.has_perm('eims_app.change_personnel')
+
 # ==================== 可视化人员分配 ====================
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocation_visual(request):
     """可视化人员分配页面 - 支持复选、双击等交互方式"""
     
@@ -91,7 +98,8 @@ def allocation_visual(request):
 
 
 @require_http_methods(["POST"])
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocate_personnel_ajax(request):
     """AJAX 接口：批量分配人员到多个项目（支持一人多项目，每个项目有独立的岗位、分配时间和到岗时间）"""
     try:
@@ -239,7 +247,8 @@ def allocate_personnel_ajax(request):
 
 
 @require_http_methods(["POST"])
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def assign_to_department_ajax(request):
     """AJAX 接口：分配人员到部门"""
     try:
@@ -278,7 +287,8 @@ def assign_to_department_ajax(request):
         }, status=500)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def recall_personnel_ajax(request, pk):
     """AJAX 接口：召回人员（从项目撤回）"""
     try:
@@ -323,7 +333,8 @@ def recall_personnel_ajax(request, pk):
         }, status=500)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def get_personnel_projects(request, pk):
     """AJAX 接口：获取人员的当前项目分配信息（用于编辑模式）"""
     try:
@@ -412,7 +423,8 @@ from django.utils import timezone
 
 
 @require_http_methods(["POST"])
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def update_personnel_allocation(request, pk):
     """AJAX 接口：更新人员的项目分配（支持一人多项目）"""
     try:
@@ -515,7 +527,8 @@ def update_personnel_allocation(request, pk):
 
 
 @require_http_methods(["POST"])
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def delete_all_personnel_allocation(request, pk):
     """AJAX 接口：删除人员的所有项目分配"""
     try:
@@ -554,7 +567,8 @@ def delete_all_personnel_allocation(request, pk):
 
 # ==================== 部门人员管理 ====================
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def department_personnel(request):
     """部门人员管理页面 - 显示已分配部门但未分配项目的人员"""
     
@@ -605,7 +619,8 @@ def department_personnel(request):
 
 # ==================== 项目人员管理 ====================
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def project_personnel(request):
     """项目人员管理页面 - 显示已分配项目的人员"""
     
@@ -647,7 +662,8 @@ def project_personnel(request):
 # ==================== AJAX 接口 ====================
 
 @require_http_methods(["POST"])
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocate_to_project_ajax(request):
     """AJAX 接口：从部门人员分配到项目"""
     try:
@@ -760,7 +776,8 @@ def allocate_to_project_ajax(request):
 
 
 @require_http_methods(["POST"])
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def recall_to_company_ajax(request):
     """AJAX 接口：从部门召回公司（待分配状态）"""
     try:
@@ -803,7 +820,8 @@ def recall_to_company_ajax(request):
 
 
 @require_http_methods(["POST"])
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def recall_to_department_ajax(request):
     """AJAX 接口：从项目召回部门（保留部门信息，清空项目信息）"""
     try:

@@ -19,8 +19,22 @@ def is_superuser(user):
 def user_management(request):
     """用户账号管理页面"""
     
-    # 获取所有员工
-    employees = Employee.objects.filter(is_deleted=False).order_by('employee_code')
+    # 获取搜索关键词
+    search_keyword = request.GET.get('search', '').strip()
+    
+    # 获取所有员工（基础查询集）
+    employees = Employee.objects.filter(is_deleted=False)
+    
+    # 如果有搜索关键词，进行模糊搜索
+    if search_keyword:
+        # 搜索员工信息（姓名、职位、公司）
+        employees = employees.filter(
+            Q(name__icontains=search_keyword) |
+            Q(admin_position__icontains=search_keyword) |
+            Q(tenant__name__icontains=search_keyword)
+        )
+    
+    employees = employees.order_by('employee_code')
     
     # 获取已创建账号的员工（通过手机号或姓名关联 User）
     existing_users = User.objects.all()
@@ -40,9 +54,33 @@ def user_management(request):
         # 获取用户组信息
         user_groups = []
         user_group_ids = []
+        user_tenant = None
         if user:
             user_groups = list(user.groups.all().values_list('name', flat=True))
             user_group_ids = list(user.groups.all().values_list('id', flat=True))
+            # 获取用户所属公司
+            try:
+                user_tenant = user.profile.tenant
+            except:
+                pass
+            
+            # 如果有关键词，也搜索用户名和用户组
+            if search_keyword:
+                # 检查用户名是否匹配
+                username_match = search_keyword.lower() in user.username.lower()
+                # 检查用户组是否匹配
+                group_match = any(search_keyword.lower() in group.lower() for group in user_groups)
+                
+                # 如果用户名和用户组都不匹配，且员工信息也不匹配，则跳过
+                if not username_match and not group_match:
+                    # 检查是否已经在员工查询中匹配（通过 Q 查询）
+                    emp_match = (
+                        search_keyword.lower() in emp.name.lower() or
+                        (emp.admin_position and search_keyword.lower() in emp.admin_position.lower()) or
+                        (emp.tenant and search_keyword.lower() in emp.tenant.name.lower())
+                    )
+                    if not emp_match:
+                        continue
         
         employee_account_status.append({
             'employee': emp,
@@ -50,6 +88,7 @@ def user_management(request):
             'user': user,
             'user_groups': user_groups,
             'user_group_ids': user_group_ids,
+            'user_tenant': user_tenant,
         })
     
     # 处理批量创建
@@ -160,6 +199,7 @@ def user_management(request):
         'total_employees': employees.count(),
         'has_accounts': sum(1 for e in employee_account_status if e['has_account']),
         'no_accounts': sum(1 for e in employee_account_status if not e['has_account']),
+        'search_keyword': search_keyword,
     }
     
     return render(request, 'eims_app/user_management.html', context)

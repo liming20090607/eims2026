@@ -9,14 +9,21 @@ from eims_app.utils.tenant_utils import filter_queryset_by_tenant
 from eims_app.models.model_project_detail import ProjectDetail  # 改用 ProjectDetail
 from eims_app.forms.form_personnel_detail import PersonnelCertificateForm, PersonnelAllocationForm
 from django.urls import reverse
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 def is_superuser(user):
     return user.is_superuser
 
+def has_personnel_permission(user):
+    """检查用户是否具有人员管理权限"""
+    if user.is_superuser:
+        return True
+    return user.has_perm('eims_app.view_personnel') or user.has_perm('eims_app.change_personnel')
+
 # ==================== 人员证书管理 ====================
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def certificate_list(request):
     """人员证书列表页面"""
     
@@ -86,7 +93,8 @@ def certificate_list(request):
     return render(request, "personnel/certificate_list.html", context)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def certificate_create(request):
     """创建人员证书"""
     if request.method == 'POST':
@@ -110,7 +118,8 @@ def certificate_create(request):
     return render(request, "personnel/certificate_form.html", context)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def certificate_edit(request, pk):
     """编辑人员证书"""
     certificate = get_object_or_404(PersonnelCertificate, pk=pk)
@@ -137,7 +146,8 @@ def certificate_edit(request, pk):
     return render(request, "personnel/certificate_form.html", context)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def certificate_delete(request, pk):
     """删除人员证书（软删除）"""
     certificate = get_object_or_404(PersonnelCertificate, pk=pk)
@@ -152,7 +162,8 @@ def certificate_delete(request, pk):
     return redirect('eims_app:certificate_list')
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def certificate_detail(request, pk):
     """人员证书详情"""
     certificate = get_object_or_404(PersonnelCertificate, pk=pk)
@@ -167,7 +178,8 @@ def certificate_detail(request, pk):
 
 # ==================== 人员分配管理 ====================
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocation_list(request):
     """人员分配列表页面"""
     
@@ -258,7 +270,8 @@ def allocation_list(request):
     return render(request, "personnel/allocation_list.html", context)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocation_create(request):
     """创建人员分配"""
     if request.method == 'POST':
@@ -282,7 +295,8 @@ def allocation_create(request):
     return render(request, "personnel/allocation_form.html", context)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocation_edit(request, pk):
     """编辑人员分配"""
     allocation = get_object_or_404(PersonnelAllocation, pk=pk)
@@ -309,7 +323,8 @@ def allocation_edit(request, pk):
     return render(request, "personnel/allocation_form.html", context)
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocation_delete(request, pk):
     """删除人员分配（软删除）"""
     allocation = get_object_or_404(PersonnelAllocation, pk=pk)
@@ -324,7 +339,8 @@ def allocation_delete(request, pk):
     return redirect('eims_app:allocation_list')
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def allocation_detail(request, pk):
     """人员分配详情"""
     allocation = get_object_or_404(PersonnelAllocation, pk=pk)

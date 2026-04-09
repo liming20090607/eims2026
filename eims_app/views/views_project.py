@@ -20,6 +20,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from io import BytesIO
 from datetime import datetime
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant  # 租户过滤工具
 
 def is_superuser(user):
     return user.is_superuser
@@ -73,8 +74,9 @@ class ProjectListView(ListView):
         keyword = self.request.GET.get('keyword', '')
         show_detail = self.request.GET.get('show_detail', '')
         
-        # 查询所有记录（不区分模块）
+        # 查询所有记录（不区分模块），并应用租户过滤
         queryset = ProjectDetail.objects.select_related().all()
+        queryset = filter_queryset_by_tenant(queryset, self.request)  # 租户过滤
         
         if selected_status:
             queryset = queryset.filter(project_status=selected_status)

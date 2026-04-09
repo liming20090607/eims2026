@@ -12,7 +12,7 @@ from .model_notice import Notice
 from .model_attachments import NoticeAttachment, FileManageVersion
 from .model_file_permissions import FileAccessPermission, check_file_permission
 from .model_project_dynamic import ProjectDynamic
-from .model_user import UserProfile, ProjectReporter, MonthlyReport
+from .model_user import UserProfile, UserTenantRelation, ProjectReporter, MonthlyReport
 from .model_workflow import Role, ProjectRole, ApprovalFlow, ApprovalRecord
 from .model_contract_approval import ContractApproval, ContractAttachment, ContractApprovalRecord
 from .model_archive_approval import ArchiveApproval, ArchiveAttachment, ArchiveApprovalRecord
@@ -45,6 +45,7 @@ __all__ = [
     'FileAccessPermission',
     'check_file_permission',
     'UserProfile',
+    'UserTenantRelation',
     'ProjectReporter',
     'MonthlyReport',
     'Role',

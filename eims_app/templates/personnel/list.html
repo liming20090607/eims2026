@@ -380,6 +380,7 @@
             text-align: center;
         }
         
+        .col-company { min-width: 150px; text-align: center; }
         .col-personnel-code { min-width: 100px; text-align: center; }
         .col-name { min-width: 80px; text-align: center; }
         .col-gender { min-width: 60px; text-align: center; }
@@ -617,6 +618,7 @@
                                 <th class="checkbox-col">
                                     <input type="checkbox" id="selectAll" onchange="toggleSelect()">
                                 </th>
+                                <th class="col-company">所属公司</th>
                                 <th class="col-personnel-code">人员编号</th>
                                 <th class="col-name">姓名</th>
                                 <th class="col-gender">性别</th>
@@ -648,6 +650,7 @@
                                 <td class="checkbox-col">
                                     <input type="checkbox" name="personnel_ids" value="{{ personnel.id }}" class="item-checkbox">
                                 </td>
+                                <td class="col-company">{{ personnel.tenant.name|default:"-" }}</td>
                                 <td class="col-personnel-code">{{ personnel.personnel_code }}</td>
                                 <td class="col-name">{{ personnel.name }}</td>
                                 <td class="col-gender">
@@ -713,7 +716,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="23" class="text-center text-muted">暂无数据</td>
+                                <td colspan="24" class="text-center text-muted">暂无数据</td>
                             </tr>
                             {% endfor %}
                         </tbody>

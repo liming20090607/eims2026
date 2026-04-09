@@ -8,6 +8,7 @@ from datetime import date
 from eims_app.models.model_project_detail import ProjectDetail  # 改用 ProjectDetail
 from eims_app.models.model_contract import Contract
 from eims_app.models import MonthlyReport
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant, get_queryset_for_tenant  # 租户过滤工具
 
 @method_decorator(login_required, name='dispatch')
 class IndexView(TemplateView):
@@ -15,21 +16,24 @@ class IndexView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        request = self.request
         
-        # 获取项目统计数据
-        context['total_projects'] = ProjectDetail.objects.count()
-        context['active_projects'] = ProjectDetail.objects.filter(project_status='under_construction').count()
-        context['delayed_projects'] = ProjectDetail.objects.filter(is_delayed=True).count() if hasattr(ProjectDetail, 'is_delayed') else 0
-        context['completed_projects'] = ProjectDetail.objects.filter(project_status='completed').count()
+        # 获取项目统计数据（应用租户过滤）
+        project_queryset = get_queryset_for_tenant(ProjectDetail, request)
+        context['total_projects'] = project_queryset.count()
+        context['active_projects'] = project_queryset.filter(project_status='under_construction').count()
+        context['delayed_projects'] = project_queryset.filter(is_delayed=True).count() if hasattr(ProjectDetail, 'is_delayed') else 0
+        context['completed_projects'] = project_queryset.filter(project_status='completed').count()
         
-        # 获取合同统计数据 - 修正字段名称
-        context['total_contracts'] = Contract.objects.count()
-        context['active_contracts'] = Contract.objects.filter(status='active').count()
-        context['expired_contracts'] = Contract.objects.filter(status='expired').count()
-        context['recent_contracts'] = Contract.objects.order_by('-signing_time')[:5]
+        # 获取合同统计数据（应用租户过滤）
+        contract_queryset = get_queryset_for_tenant(Contract, request)
+        context['total_contracts'] = contract_queryset.count()
+        context['active_contracts'] = contract_queryset.filter(status='active').count()
+        context['expired_contracts'] = contract_queryset.filter(status='expired').count()
+        context['recent_contracts'] = contract_queryset.order_by('-signing_time')[:5]
                 
-        # 获取最近的项目
-        context['recent_projects'] = ProjectDetail.objects.order_by('-created_at')[:5]
+        # 获取最近的项目（应用租户过滤）
+        context['recent_projects'] = project_queryset.order_by('-created_at')[:5]
         
         # 获取最近的合同 - 修正字段名称
         context['recent_contracts'] = Contract.objects.order_by('-signing_time')[:5]
@@ -41,42 +45,41 @@ class IndexView(TemplateView):
         current_month = now.month
         current_month_str = f"{current_year}-{current_month:02d}"
         
-        # 获取用户参与的项目（通过 Personnel 分配）
+        # 获取用户参与的项目（通过 Personnel 分配）- 应用租户过滤
         from eims_app.models import Personnel
-        if user.is_superuser:
-            # 超级管理员查看所有项目
-            user_projects = ProjectDetail.objects.all()
-        else:
-            # 通过 Personnel 表查找用户参与的所有项目
-            # 假设 user.username 与 Personnel.name 匹配
-            personnel_records = Personnel.objects.filter(
-                name=user.username
-            )
-            
-            # 收集所有项目 ID
-            project_ids = set()
-            for p in personnel_records:
-                if p.project_id:
-                    project_ids.add(p.project_id)
-                if hasattr(p, 'project2_id') and p.project2_id:
-                    project_ids.add(p.project2_id)
-                if hasattr(p, 'project3_id') and p.project3_id:
-                    project_ids.add(p.project3_id)
-                if hasattr(p, 'project4_id') and p.project4_id:
-                    project_ids.add(p.project4_id)
-                if hasattr(p, 'project5_id') and p.project5_id:
-                    project_ids.add(p.project5_id)
-            
-            # 另外也检查 project_manager 字段（兼容旧逻辑）
-            manager_projects = ProjectDetail.objects.filter(
-                project_manager=user.username
-            ).values_list('id', flat=True)
-            project_ids.update(manager_projects)
-            
-            # 获取用户参与的所有项目
-            user_projects = ProjectDetail.objects.filter(
-                id__in=list(project_ids)
-            ) if project_ids else ProjectDetail.objects.none()
+        # 先按租户过滤 Personnel
+        personnel_queryset = get_queryset_for_tenant(Personnel, request)
+        
+        # 通过 Personnel 表查找用户参与的所有项目
+        # 假设 user.username 与 Personnel.name 匹配
+        personnel_records = personnel_queryset.filter(
+            name=user.username
+        )
+        
+        # 收集所有项目 ID
+        project_ids = set()
+        for p in personnel_records:
+            if p.project_id:
+                project_ids.add(p.project_id)
+            if hasattr(p, 'project2_id') and p.project2_id:
+                project_ids.add(p.project2_id)
+            if hasattr(p, 'project3_id') and p.project3_id:
+                project_ids.add(p.project3_id)
+            if hasattr(p, 'project4_id') and p.project4_id:
+                project_ids.add(p.project4_id)
+            if hasattr(p, 'project5_id') and p.project5_id:
+                project_ids.add(p.project5_id)
+        
+        # 另外也检查 project_manager 字段（兼容旧逻辑）- 应用租户过滤
+        manager_projects = project_queryset.filter(
+            project_manager=user.username
+        ).values_list('id', flat=True)
+        project_ids.update(manager_projects)
+        
+        # 获取用户参与的所有项目（应用租户过滤）
+        user_projects = project_queryset.filter(
+            id__in=list(project_ids)
+        ) if project_ids else ProjectDetail.objects.none()
         
         # 获取已填报的月报
         existing_reports = MonthlyReport.objects.filter(

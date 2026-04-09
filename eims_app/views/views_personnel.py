@@ -18,11 +18,20 @@ from django.urls import reverse
 from django.db import transaction
 import csv
 from django.http import HttpResponse
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 def is_superuser(user):
     return user.is_superuser
 
+def has_personnel_permission(user):
+    """检查用户是否具有人员管理权限（超级管理员或具有相应权限）"""
+    if user.is_superuser:
+        return True
+    # 检查是否具有 Personnel 模型的查看或修改权限
+    return user.has_perm('eims_app.view_personnel') or user.has_perm('eims_app.change_personnel')
+
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_list(request):
     """人员列表页面 - 支持筛选和搜索"""
     
@@ -104,6 +113,8 @@ def personnel_list(request):
     return render(request, "personnel/list.html", context)
 
 
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_navigation(request):
     """人员管理模块导航页面"""
     context = {
@@ -112,7 +123,8 @@ def personnel_navigation(request):
     }
     return render(request, "personnel/navigation.html", context)
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_add(request):
     """添加人员"""
     if request.method == 'POST':
@@ -132,6 +144,8 @@ def personnel_add(request):
     
     return render(request, 'personnel/add.html', {'form': form})
 
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_detail(request, pk):
     """人员详情"""
     personnel = get_object_or_404(Personnel, pk=pk, is_deleted=False)
@@ -159,7 +173,8 @@ def personnel_detail(request, pk):
         'field_data': field_data
     })
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_edit(request, pk):
     """编辑人员"""
     personnel = get_object_or_404(Personnel, pk=pk, is_deleted=False)
@@ -181,7 +196,8 @@ def personnel_edit(request, pk):
         "personnel": personnel
     })
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_delete(request, pk):
     """删除人员（软删除）"""
     personnel = get_object_or_404(Personnel, pk=pk, is_deleted=False)
@@ -191,7 +207,8 @@ def personnel_delete(request, pk):
     messages.success(request, f"人员【{personnel_name}】删除成功！")
     return redirect("eims_app:personnel_list")
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_batch_delete(request):
     """批量删除人员"""
     if request.method == 'POST':
@@ -226,7 +243,8 @@ def personnel_batch_delete(request):
     
     return redirect('eims_app:personnel_list')
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_import(request):
     """导入人员花名册信息（导入到 Employee 模型）"""
     if request.method == "POST" and request.FILES.get("excel_file"):
@@ -388,7 +406,8 @@ def personnel_import(request):
     messages.error(request, "导入失败！未检测到上传文件")
     return redirect("eims_app:personnel_list")
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_import_template(request):
     """下载人员花名册导入模板（Employee 模型）"""
     wb = Workbook()
@@ -447,7 +466,8 @@ def personnel_import_template(request):
     )
     return response
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_export(request):
     """导出人员花名册 - 导出员工基本信息 + 项目分配信息（全部字段）"""
     
@@ -598,7 +618,8 @@ def personnel_export(request):
     return response
 
 
-@user_passes_test(is_superuser)
+@login_required
+@user_passes_test(has_personnel_permission)
 def personnel_destination(request):
     """人员去向页面 - 展示所有人员的部门和项目分配情况"""
     

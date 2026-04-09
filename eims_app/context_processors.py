@@ -32,10 +32,13 @@ def sidebar_context(request):
     
     # 计算待审批数量（合同+用印+归档）
     pending_count = 0
+    tenants_all = []
+    
     if request.user.is_authenticated:
         from eims_app.models.model_contract_approval import ContractApproval
         from eims_app.models.model_seal_approval import SealApproval
         from eims_app.models.model_archive_approval import ArchiveApproval
+        from eims_app.models import Tenant, UserProfile
         
         contract_count = ContractApproval.objects.filter(
             current_approver=request.user,
@@ -53,8 +56,26 @@ def sidebar_context(request):
             is_deleted=False
         ).count()
         pending_count = contract_count + seal_count + archive_count
+        
+        # 获取用户可访问的所有公司（用于切换公司下拉列表）
+        # 注意：这里返回所有活跃公司，因为切换公司时用户需要看到所有可选的公司
+        # 但数据查询时会按当前选中的租户过滤
+        try:
+            if request.user.is_superuser:
+                # 超级管理员可以看到所有公司（用于切换）
+                tenants_all = Tenant.objects.filter(is_active=True)
+            else:
+                # 普通用户只能看到自己所属的公司
+                user_profile = UserProfile.objects.get(user=request.user)
+                tenants_all = Tenant.objects.filter(
+                    is_active=True,
+                    userprofile=user_profile
+                )
+        except UserProfile.DoesNotExist:
+            tenants_all = []
     
     return {
         'sidebar_collapsed': sidebar_collapsed,
         'pending_count': pending_count,
+        'tenants_all': tenants_all,
     }

@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 from eims_app.models.model_contract import Contract  # 导入合同模型，路径确保正确
-from .models.model_project import Project
+# from .models.model_project import Project  # 已废弃，使用 ProjectDetail 替代
 from .models.model_output_payment import OutputPayment
 from .models.model_personnel import Personnel
 from .models.model_employee import Employee
+from .models.model_project_detail import ProjectDetail
 from .models.model_project_dynamic import ProjectDynamic
 from .models.model_user import UserProfile
 from .models.model_dynamic_choice import DynamicChoice
@@ -19,9 +20,14 @@ try:
     IMPORT_EXPORT_AVAILABLE = True
     
     # 创建 Resource 类
-    class ProjectResource(resources.ModelResource):
+    # class ProjectResource(resources.ModelResource):  # 已废弃
+    #     class Meta:
+    #         model = Project
+    #         import_id_fields = ('id',)
+    
+    class ProjectDetailResource(resources.ModelResource):
         class Meta:
-            model = Project
+            model = ProjectDetail
             import_id_fields = ('id',)
     
     class EmployeeResource(resources.ModelResource):
@@ -39,14 +45,14 @@ except ImportError:
     print("提示：安装 django-import-export 以启用导入导出功能")
     print("命令：pip install django-import-export")
 
-@admin.register(Project)
-class ProjectAdmin(ImportExportModelAdmin if IMPORT_EXPORT_AVAILABLE else admin.ModelAdmin):
-    list_display = ('project_code', 'project_name', 'project_category', 'project_status', 'contract_count')
-    search_fields = ('project_code', 'project_name', 'project_director')
-    list_filter = ('project_category', 'project_status')
+# Project 已废弃，使用 ProjectDetail 替代
+@admin.register(ProjectDetail)
+class ProjectDetailAdmin(ImportExportModelAdmin if IMPORT_EXPORT_AVAILABLE else admin.ModelAdmin):
+    list_display = ('project_code', 'project_name', 'contract_category', 'project_status', 'contract_status')
+    search_fields = ('project_code', 'project_name', 'project_director', 'contract_code')
+    list_filter = ('contract_category', 'project_status', 'contract_status')
     if IMPORT_EXPORT_AVAILABLE:
-        resource_classes = [ProjectResource]
-        # Django 4.x 不需要手动指定模板
+        resource_classes = [ProjectDetailResource]
 
 @admin.register(OutputPayment)
 class OutputPaymentAdmin(admin.ModelAdmin):

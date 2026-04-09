@@ -11,8 +11,8 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
                                null=True, blank=True, 
-                               verbose_name='所属公司',
-                               help_text='用户所属的公司，数据隔离依据')
+                               verbose_name='默认公司',
+                               help_text='用户默认所属公司，用于数据隔离和登录默认选择')
     real_name = models.CharField(max_length=50, verbose_name='姓名', blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, verbose_name='性别', blank=True)
     birthday = models.DateField(verbose_name='生日', null=True, blank=True)
@@ -25,6 +25,40 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return self.user.username
+
+
+class UserTenantRelation(models.Model):
+    """用户-公司关联表 - 支持一个用户在多家公司任职"""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
+    tenant = models.ForeignKey('Tenant', on_delete=models.CASCADE, verbose_name='公司')
+    is_primary = models.BooleanField(default=False, verbose_name='是否主公司',
+                                     help_text='每个用户只能有一个主公司')
+    remark = models.CharField(max_length=200, blank=True, verbose_name='备注',
+                             help_text='如：全职/兼职/顾问等')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    
+    class Meta:
+        verbose_name = '用户公司关联'
+        verbose_name_plural = '用户公司关联管理'
+        unique_together = ['user', 'tenant']  # 同一用户在同一公司只能有一条记录
+        indexes = [
+            models.Index(fields=['user', 'is_primary']),
+            models.Index(fields=['tenant']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.tenant.name}"
+    
+    def save(self, *args, **kwargs):
+        """确保每个用户只有一个主公司"""
+        if self.is_primary:
+            # 将该用户的其他关联记录设为非主公司
+            UserTenantRelation.objects.filter(
+                user=self.user,
+                is_primary=True
+            ).exclude(id=self.id).update(is_primary=False)
+        super().save(*args, **kwargs)
 
 
 class ProjectReporter(models.Model):
