@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.http import JsonResponse
 from ..models import ProjectDetail, OutputPayment
 from ..forms.form_project_ledger import ProjectLedgerForm
+from ..utils.tenant_utils import filter_queryset_by_tenant
 import os
 from django.conf import settings
 from django.http import FileResponse, Http404
@@ -23,8 +24,12 @@ def project_ledger_list(request):
     auto_open_detail = request.GET.get('auto_open_detail', '0') == '1'
     
     if auto_open_detail:
-        # 获取第一个项目
-        first_project = ProjectDetail.objects.order_by('project_code').first()
+        # 获取第一个项目（按租户过滤）
+        if hasattr(request, 'tenant') and request.tenant:
+            first_project = ProjectDetail.objects.filter(tenant=request.tenant).order_by('project_code').first()
+        else:
+            first_project = ProjectDetail.objects.order_by('project_code').first()
+        
         if first_project:
             # 直接跳转到该项目的详情页
             return redirect('eims_app:project_ledger_detail', pk=first_project.pk)
@@ -37,8 +42,9 @@ def project_ledger_list(request):
     project_status = request.GET.get('project_status', '')
     contract_status = request.GET.get('contract_status', '')
     
-    # 基础查询集 - 查询所有记录，不区分模块
+    # 基础查询集 - 使用辅助函数按租户过滤
     queryset = ProjectDetail.objects.select_related().all()
+    queryset = filter_queryset_by_tenant(queryset, request)
     
     # 应用筛选条件
     if search_key:

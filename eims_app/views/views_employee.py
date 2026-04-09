@@ -23,8 +23,14 @@ def employee_list(request):
     education = request.GET.get('education', '')
     ethnic = request.GET.get('ethnic', '')
     
-    # 2. 基础查询集
-    employee_list = Employee.objects.filter(is_deleted=False).order_by('employee_code')
+    # 2. 基础查询集（按租户过滤）
+    if hasattr(request, 'tenant') and request.tenant:
+        if request.user.is_superuser:
+            employee_list = Employee.objects.filter(is_deleted=False).order_by('employee_code')
+        else:
+            employee_list = Employee.objects.filter(is_deleted=False, tenant=request.tenant).order_by('employee_code')
+    else:
+        employee_list = Employee.objects.filter(is_deleted=False).order_by('employee_code')
     
     # 3. 多条件筛选
     if search_key:

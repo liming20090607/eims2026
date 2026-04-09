@@ -12,6 +12,7 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment
 from eims_app.models.model_project_detail import ProjectDetail  # 改用 ProjectDetail 模型
 from eims_app.forms.form_contract_management import ContractManagementForm  # 使用合同管理表单
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant
 from django.urls import reverse 
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
@@ -34,8 +35,9 @@ def contract_list(request):
     contract_type = request.GET.get('contract_type', '')
     keyword = request.GET.get('keyword', '')
 
-    # 2. 基础查询集（直接查询 ProjectDetail）
+    # 2. 基础查询集（使用辅助函数按租户过滤）
     queryset = ProjectDetail.objects.select_related().all().order_by('project_code')
+    queryset = filter_queryset_by_tenant(queryset, request)
 
     # 3. 多条件筛选
     if status:
