@@ -67,7 +67,7 @@ class ProjectLedgerForm(forms.ModelForm):
         fields = [
             'monthly_report_required', 'project_code', 'contract_code',
             'project_name', 'project_status', 'contract_status',
-            'contract_party_a', 'contract_party_b', 'contract_text',
+            'contract_party_a', 'contract_party_b', 'signing_date', 'contract_text',
             'contract_amount', 'payment_agreement', 'cumulative_payment',
             'contract_balance', 'project_scale', 'project_investment',
             'project_address', 'agreed_staffing', 'service_start_date', 'service_period_months', 'service_deadline',

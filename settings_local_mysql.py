@@ -47,9 +47,13 @@ DEBUG = True
 # Allow all hosts (local development)
 ALLOWED_HOSTS = ['*']
 
-# ==================== Static Files Configuration ====================
-# WhiteNoise storage for production (compresses static files)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# ==================== Static Files Configuration (Django 4.2+) ====================
+# Django 4.2+ uses STORAGES instead of STATICFILES_STORAGE
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Use PyMySQL as MySQL driver
 import pymysql
