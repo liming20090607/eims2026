@@ -1568,7 +1568,7 @@
         // 从 Django 模板获取 tenants_all 数据
         const tenantsData = [
             {% for tenant in tenants_all %}
-            {id: {{ tenant.id }}, name: '{{ tenant.name|escapejs }}', isCurrent: {{ tenant.id == request.tenant.id|yesno:'true,false' }}},
+            {id: {{ tenant.id }}, name: '{{ tenant.name|escapejs }}', isCurrent: {% if tenant.id == request.tenant.id %}true{% else %}false{% endif %}},
             {% endfor %}
         ];
         
