@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth import views as auth_views
 from django.http import HttpResponseRedirect
+from eims_app.views.views_custom_login import custom_login
 
 def profile_redirect(request):
     return HttpResponseRedirect('/')
@@ -16,8 +16,8 @@ def logout_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('logout/', logout_view, name='logout'),
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='user_login'),
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('login/', custom_login, name='user_login'),
+    path('accounts/login/', custom_login, name='login'),
     path('accounts/profile/', profile_redirect, name='user_profile'),
     
     # ✅ 包含eims_app的URL并设置命名空间
