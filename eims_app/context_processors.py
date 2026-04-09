@@ -63,15 +63,19 @@ def sidebar_context(request):
         try:
             if request.user.is_superuser:
                 # 超级管理员可以看到所有公司（用于切换）
-                tenants_all = Tenant.objects.filter(is_active=True)
+                tenants_all = list(Tenant.objects.filter(is_active=True))
             else:
                 # 普通用户只能看到自己所属的公司
                 user_profile = UserProfile.objects.get(user=request.user)
-                tenants_all = Tenant.objects.filter(
+                tenants_all = list(Tenant.objects.filter(
                     is_active=True,
                     userprofile=user_profile
-                )
-        except UserProfile.DoesNotExist:
+                ))
+        except Exception as e:
+            # 记录错误但继续执行，避免影响页面加载
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error loading tenants for user {request.user.username}: {e}")
             tenants_all = []
     
     return {
