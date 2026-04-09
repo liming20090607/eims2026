@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from eims_app.models import PersonnelCertificate, PersonnelAllocation, Personnel
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant
 from eims_app.models.model_project_detail import ProjectDetail  # 改用 ProjectDetail
 from eims_app.forms.form_personnel_detail import PersonnelCertificateForm, PersonnelAllocationForm
 from django.urls import reverse

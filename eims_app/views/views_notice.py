@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
 from eims_app.models import Notice
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant
 from eims_app.forms import NoticeForm
 
 # 通知公告列表（优化版 - 含关键字、上传人、文件预览）

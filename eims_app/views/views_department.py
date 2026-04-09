@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
 from eims_app.models import Department, DepartmentRole, ApprovalChain, Personnel
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant
 from eims_app.forms.form_department import DepartmentForm, DepartmentRoleForm, ApprovalChainForm
 from django.urls import reverse
 from django.contrib.auth.decorators import user_passes_test, login_required

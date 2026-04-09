@@ -11,6 +11,7 @@ from io import BytesIO
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment
 from eims_app.models import Personnel, Employee, Department
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant
 from eims_app.models.model_project_detail import ProjectDetail  # 改用 ProjectDetail
 from eims_app.forms.form_personnel import PersonnelForm
 from django.urls import reverse 
