@@ -1,4 +1,5 @@
 from .base import BaseModel
+from .model_tenant import Tenant
 from .model_project_detail import ProjectDetail
 from .model_contract import Contract
 from .model_personnel import Personnel
@@ -25,6 +26,7 @@ from .model_wechat_binding import WechatUserBinding, WechatQRCodeSession
 
 __all__ = [
     'BaseModel',
+    'Tenant',
     'Contract',
     'ProjectDetail',
     'Personnel',

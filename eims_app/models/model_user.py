@@ -9,6 +9,10 @@ class UserProfile(models.Model):
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='用户所属的公司，数据隔离依据')
     real_name = models.CharField(max_length=50, verbose_name='姓名', blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, verbose_name='性别', blank=True)
     birthday = models.DateField(verbose_name='生日', null=True, blank=True)

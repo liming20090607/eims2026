@@ -1,0 +1,79 @@
+"""
+租户工具函数 - 用于多租户数据隔离的辅助函数
+"""
+
+
+def get_queryset_for_tenant(model_class, request):
+    """
+    根据当前租户过滤查询集
+    
+    参数：
+        model_class: 模型类
+        request: HTTP 请求对象（包含 tenant 属性）
+    
+    返回：
+        已过滤的 QuerySet
+    
+    用法：
+        projects = get_queryset_for_tenant(ProjectDetail, request)
+    """
+    queryset = model_class.objects.all()
+    
+    # 超级管理员可以查看所有数据
+    if hasattr(request, 'user') and request.user.is_superuser:
+        return queryset
+    
+    # 普通用户按租户过滤
+    if hasattr(request, 'tenant') and request.tenant:
+        if hasattr(model_class, 'tenant'):
+            queryset = queryset.filter(tenant=request.tenant)
+        else:
+            # 如果模型没有 tenant 字段（如 Tenant 本身），返回所有数据
+            pass
+    
+    return queryset
+
+
+def filter_queryset_by_tenant(queryset, request):
+    """
+    过滤已有的查询集（用于已经构建了查询集的场景）
+    
+    参数：
+        queryset: 已有的 QuerySet
+        request: HTTP 请求对象（包含 tenant 属性）
+    
+    返回：
+        已过滤的 QuerySet
+    
+    用法：
+        projects = ProjectDetail.objects.filter(status='active')
+        projects = filter_queryset_by_tenant(projects, request)
+    """
+    # 超级管理员可以查看所有数据
+    if hasattr(request, 'user') and request.user.is_superuser:
+        return queryset
+    
+    # 普通用户按租户过滤
+    if hasattr(request, 'tenant') and request.tenant:
+        if hasattr(queryset.model, 'tenant'):
+            queryset = queryset.filter(tenant=request.tenant)
+    
+    return queryset
+
+
+def assign_tenant_to_object(obj, request):
+    """
+    为对象自动分配租户（在保存前调用）
+    
+    参数：
+        obj: 模型实例
+        request: HTTP 请求对象
+    
+    用法：
+        project = ProjectDetail()
+        assign_tenant_to_object(project, request)
+        project.save()
+    """
+    if hasattr(obj, 'tenant') and hasattr(request, 'tenant'):
+        obj.tenant = request.tenant
+    return obj
