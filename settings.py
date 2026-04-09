@@ -68,8 +68,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'eims_app.middleware.TenantMiddleware',  # 租户中间件 - 多租户数据隔离
-    'eims_app.middleware.login_required.login_required_middleware',
-    'eims_app.middleware.monthly_report_reminder.monthly_report_reminder_middleware',
+    'eims_app.middleware.login_required_middleware',
+    'eims_app.middleware.monthly_report_reminder_middleware',
 ]
 
 ROOT_URLCONF = 'urls'
