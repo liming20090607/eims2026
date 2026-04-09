@@ -19,6 +19,9 @@ def notice_list(request):
 
     notices = Notice.objects.filter(is_deleted=False)
     
+    # 应用租户过滤
+    notices = filter_queryset_by_tenant(notices, request)
+    
     # 关键词筛选（通知标题、关键字、发布人、上传人、内容摘要）
     if search_key:
         notices = notices.filter(

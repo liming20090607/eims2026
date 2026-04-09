@@ -19,6 +19,9 @@ def file_list(request):
     # 基础查询：过滤已删除文件，关联 FileManage 模型
     files = FileManage.objects.filter(is_deleted=False)
     
+    # 应用租户过滤
+    files = filter_queryset_by_tenant(files, request)
+    
     # 搜索过滤（模糊匹配文件名、内容摘要）
     if search_key:
         files = files.filter(

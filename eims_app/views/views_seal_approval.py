@@ -7,6 +7,7 @@ from django.http import JsonResponse
 import os
 from eims_app.models.model_seal_approval import SealApproval, SealAttachment, SealApprovalRecord
 from eims_app.forms.form_seal_approval import SealApprovalForm, SealAttachmentForm
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -21,6 +22,9 @@ def seal_approval_list(request):
     
     # 基础查询
     approvals = SealApproval.objects.filter(is_deleted=False)
+    
+    # 应用租户过滤
+    approvals = filter_queryset_by_tenant(approvals, request)
     
     # 搜索过滤
     if search_query:

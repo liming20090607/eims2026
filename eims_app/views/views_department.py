@@ -41,6 +41,9 @@ def department_list(request):
     # 基础查询集
     dept_list = Department.objects.filter(is_deleted=False).order_by('parent_department', 'order')
     
+    # 应用租户过滤
+    dept_list = filter_queryset_by_tenant(dept_list, request)
+    
     # 筛选
     if search_key:
         dept_list = dept_list.filter(

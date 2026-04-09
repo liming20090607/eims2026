@@ -28,6 +28,9 @@ def certificate_list(request):
     # 2. 基础查询集
     certificate_list = PersonnelCertificate.objects.filter(is_deleted=False).order_by('-create_time')
     
+    # 应用租户过滤
+    certificate_list = filter_queryset_by_tenant(certificate_list, request)
+    
     # 3. 多条件筛选
     if search_key:
         certificate_list = certificate_list.filter(
@@ -176,6 +179,9 @@ def allocation_list(request):
     
     # 2. 基础查询集
     allocation_list = PersonnelAllocation.objects.filter(is_deleted=False).order_by('-allocation_date')
+    
+    # 应用租户过滤
+    allocation_list = filter_queryset_by_tenant(allocation_list, request)
     
     # 3. 多条件筛选
     if search_key:

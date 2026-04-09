@@ -35,6 +35,9 @@ def personnel_list(request):
     # 2. 基础查询集
     personnel_list = Personnel.objects.filter(is_deleted=False).select_related('employee').order_by('personnel_code')
     
+    # 应用租户过滤
+    personnel_list = filter_queryset_by_tenant(personnel_list, request)
+    
     # 3. 多条件筛选
     if search_key:
         personnel_list = personnel_list.filter(
