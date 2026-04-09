@@ -1517,10 +1517,6 @@
                             <label for="switchTenantSelect" class="form-label">
                                 <i class="bi bi-building me-1"></i>选择要切换的公司
                             </label>
-                            <!-- 调试信息 -->
-                            <div class="alert alert-warning py-1 mb-2" style="font-size: 0.8rem;">
-                                调试: tenants_all数量={{ tenants_all|length }}, request.user={{ request.user }}, is_superuser={{ request.user.is_superuser }}
-                            </div>
                             <select class="form-select" id="switchTenantSelect" name="tenant_id" required>
                                 <option value="">-- 请选择公司 --</option>
                                 {% for tenant in tenants_all %}
@@ -1564,10 +1560,38 @@
     </div>
     
     <script>
-    // 切换公司模态对话框：选择公司后启用提交按钮
+    // 切换公司模态对话框：选择公司后启用提交按钮，并通过 JS 填充下拉列表（绕过缓存问题）
     document.addEventListener('DOMContentLoaded', function() {
         const tenantSelect = document.getElementById('switchTenantSelect');
         const submitBtn = document.getElementById('switchTenantSubmitBtn');
+        
+        // 从 Django 模板获取 tenants_all 数据
+        const tenantsData = [
+            {% for tenant in tenants_all %}
+            {id: {{ tenant.id }}, name: '{{ tenant.name|escapejs }}', isCurrent: {{ tenant.id == request.tenant.id|yesno:'true,false' }}},
+            {% endfor %}
+        ];
+        
+        // 如果下拉列表为空，动态填充
+        if (tenantSelect && tenantsData.length > 0) {
+            // 清除现有选项（保留第一个默认选项）
+            while (tenantSelect.options.length > 1) {
+                tenantSelect.remove(1);
+            }
+            
+            // 添加租户选项
+            tenantsData.forEach(function(tenant) {
+                const option = document.createElement('option');
+                option.value = tenant.id;
+                option.textContent = tenant.name + (tenant.isCurrent ? ' (当前)' : '');
+                if (tenant.isCurrent) {
+                    option.disabled = true;
+                }
+                tenantSelect.appendChild(option);
+            });
+            
+            console.log('已动态填充 ' + tenantsData.length + ' 个公司选项');
+        }
         
         if (tenantSelect && submitBtn) {
             tenantSelect.addEventListener('change', function() {
