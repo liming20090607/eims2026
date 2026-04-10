@@ -226,6 +226,24 @@
         </div>
     </div>
     
+    <!-- 标签页导航 -->
+    <ul class="nav nav-tabs mb-4" id="contractTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'eims_app:contract_management_list' %}" 
+               class="nav-link {% if 'contract_management' in request.path and 'approval' not in request.path %}active{% endif %}" 
+               id="ledger-tab" role="tab">
+                <i class="bi bi-journal-text me-1"></i>合同台账
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'eims_app:contract_approval_chain' %}" 
+               class="nav-link {% if 'approval_chain' in request.path %}active{% endif %}" 
+               id="approval-tab" role="tab">
+                <i class="bi bi-diagram-3 me-1"></i>合同审批
+            </a>
+        </li>
+    </ul>
+    
     <div class="search-bar">
         <form method="get" action="{% url 'eims_app:contract_management_list' %}">
             <div class="row g-3">

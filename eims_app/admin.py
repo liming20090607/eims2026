@@ -15,6 +15,9 @@ from .models.model_tenant_module import TenantModule, TenantModulePermission
 # 导入自定义的用户管理配置
 from .admin_user import UserAdmin, UserProfileAdmin
 
+# 导入租户模块权限管理配置（包含 TenantAdmin, TenantModuleAdmin, TenantModulePermissionAdmin）
+from . import admin_tenant_module
+
 # 导入导入导出功能
 try:
     from import_export.admin import ImportExportModelAdmin

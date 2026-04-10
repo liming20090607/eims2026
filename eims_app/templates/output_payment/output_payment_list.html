@@ -6,6 +6,31 @@
 
 {% block content %}
 <div class="container-fluid">
+    <!-- 标签页导航 -->
+    <ul class="nav nav-tabs mb-4" id="projectTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'eims_app:project_ledger_list' %}" 
+               class="nav-link {% if 'project_ledger' in request.path %}active{% endif %}" 
+               id="ledger-tab" role="tab">
+                <i class="bi bi-journal-text me-1"></i>项目台账
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'eims_app:contract_management_list' %}" 
+               class="nav-link {% if 'contract_management' in request.path %}active{% endif %}" 
+               id="contract-tab" role="tab">
+                <i class="bi bi-file-earmark-text me-1"></i>合同管理
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'eims_app:output_payment_list' %}" 
+               class="nav-link {% if 'output_payment' in request.path %}active{% endif %}" 
+               id="payment-tab" role="tab">
+                <i class="bi bi-cash-coin me-1"></i>产值回款
+            </a>
+        </li>
+    </ul>
+    
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">

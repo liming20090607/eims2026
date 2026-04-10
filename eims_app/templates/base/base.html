@@ -1024,7 +1024,7 @@
             </li>
             {% endif %}
             
-            <!-- 工程监理（带子菜单：包含合同管理、项目管理、产值回款） -->
+            <!-- 工程监理（一级模块，带子菜单） -->
             {% if 'supervision' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="#engineeringSupervisionSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}true{% else %}false{% endif %}" 
@@ -1036,16 +1036,19 @@
                 </a>
                 <div class="collapse {% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}show{% endif %}" id="engineeringSupervisionSubmenu">
                     <ul class="nav flex-column ms-3">
+                        <!-- 合同管理（二级模块） -->
                         <li class="nav-item">
-                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if '/contract/' in request.path and 'approval' not in request.path %}active{% endif %}">
+                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if '/contract/' in request.path %}active{% endif %}">
                                 <i class="bi bi-file-earmark-text"></i> 合同管理
                             </a>
                         </li>
+                        <!-- 项目管理（二级模块） -->
                         <li class="nav-item">
                             <a href="{% url 'eims_app:project_ledger_list' %}" class="nav-link {% if 'project_ledger' in request.path %}active{% endif %}">
                                 <i class="bi bi-building"></i> 项目管理
                             </a>
                         </li>
+                        <!-- 产值回款（二级模块） -->
                         <li class="nav-item">
                             <a href="{% url 'eims_app:output_payment_list' %}" class="nav-link {% if 'output_payment' in request.path %}active{% endif %}">
                                 <i class="bi bi-cash-coin"></i> 产值回款
