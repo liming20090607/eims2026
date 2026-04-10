@@ -977,6 +977,7 @@
             <!-- 工程业务模块 -->
             
             <!-- 前期准备（待开发） -->
+            {% if 'preparation' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="javascript:void(0);" class="nav-link" 
                    onclick="showCustomMessage('前期准备'); return false;"
@@ -985,8 +986,10 @@
                     <span class="menu-text">前期准备</span>
                 </a>
             </li>
+            {% endif %}
             
             <!-- 招标投标（待开发） -->
+            {% if 'bidding' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="javascript:void(0);" class="nav-link" 
                    onclick="showCustomMessage('招标投标'); return false;"
@@ -995,8 +998,10 @@
                     <span class="menu-text">招标投标</span>
                 </a>
             </li>
+            {% endif %}
             
             <!-- 工程设计（待开发） -->
+            {% if 'design' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="javascript:void(0);" class="nav-link" 
                    onclick="showCustomMessage('工程设计'); return false;"
@@ -1005,8 +1010,10 @@
                     <span class="menu-text">工程设计</span>
                 </a>
             </li>
+            {% endif %}
             
             <!-- 造价咨询（待开发） -->
+            {% if 'cost' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="javascript:void(0);" class="nav-link" 
                    onclick="showCustomMessage('造价咨询'); return false;"
@@ -1015,8 +1022,10 @@
                     <span class="menu-text">造价咨询</span>
                 </a>
             </li>
+            {% endif %}
             
             <!-- 工程监理（带子菜单：包含合同管理、项目管理、产值回款） -->
+            {% if 'supervision' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="#engineeringSupervisionSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}true{% else %}false{% endif %}" 
                    class="nav-link {% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}active{% endif %}"
@@ -1045,8 +1054,10 @@
                     </ul>
                 </div>
             </li>
+            {% endif %}
             
             <!-- 工程施工（待开发） -->
+            {% if 'construction' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="javascript:void(0);" class="nav-link" 
                    onclick="showCustomMessage('工程施工'); return false;"
@@ -1055,8 +1066,10 @@
                     <span class="menu-text">工程施工</span>
                 </a>
             </li>
+            {% endif %}
             
             <!-- 工程检测（待开发） -->
+            {% if 'testing' in enabled_module_codes %}
             <li class="nav-item">
                 <a href="javascript:void(0);" class="nav-link" 
                    onclick="showCustomMessage('工程检测'); return false;"
@@ -1065,6 +1078,7 @@
                     <span class="menu-text">工程检测</span>
                 </a>
             </li>
+            {% endif %}
             
             <!-- 文件管理 -->
             <li class="nav-item">

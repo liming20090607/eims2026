@@ -9,6 +9,8 @@ from .models.model_project_detail import ProjectDetail
 from .models.model_project_dynamic import ProjectDynamic
 from .models.model_user import UserProfile
 from .models.model_dynamic_choice import DynamicChoice
+from .models.model_tenant import Tenant
+from .models.model_tenant_module import TenantModule, TenantModulePermission
 
 # 导入自定义的用户管理配置
 from .admin_user import UserAdmin, UserProfileAdmin

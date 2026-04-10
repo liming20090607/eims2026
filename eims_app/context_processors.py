@@ -33,12 +33,14 @@ def sidebar_context(request):
     # 计算待审批数量（合同+用印+归档）
     pending_count = 0
     tenants_all = []
+    enabled_module_codes = []  # 当前租户启用的模块代码列表
     
     if request.user.is_authenticated:
         from eims_app.models.model_contract_approval import ContractApproval
         from eims_app.models.model_seal_approval import SealApproval
         from eims_app.models.model_archive_approval import ArchiveApproval
         from eims_app.models import Tenant, UserProfile
+        from eims_app.models.model_tenant_module import TenantModulePermission
         
         contract_count = ContractApproval.objects.filter(
             current_approver=request.user,
@@ -71,15 +73,40 @@ def sidebar_context(request):
                     is_active=True,
                     userprofile=user_profile
                 ))
+            
+            # 获取当前租户启用的模块列表
+            current_tenant_id = request.session.get('tenant_id')
+            if current_tenant_id:
+                enabled_permissions = TenantModulePermission.objects.filter(
+                    tenant_id=current_tenant_id,
+                    is_enabled=True,
+                    module__is_active=True
+                ).values_list('module__code', flat=True)
+                enabled_module_codes = list(enabled_permissions)
+            else:
+                # 如果没有选择租户，默认启用所有模块
+                from eims_app.models.model_tenant_module import TenantModule
+                enabled_module_codes = list(
+                    TenantModule.objects.filter(is_active=True).values_list('code', flat=True)
+                )
         except Exception as e:
             # 记录错误但继续执行，避免影响页面加载
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error loading tenants for user {request.user.username}: {e}")
             tenants_all = []
+            # 出错时默认启用所有模块
+            try:
+                from eims_app.models.model_tenant_module import TenantModule
+                enabled_module_codes = list(
+                    TenantModule.objects.filter(is_active=True).values_list('code', flat=True)
+                )
+            except:
+                enabled_module_codes = []
     
     return {
         'sidebar_collapsed': sidebar_collapsed,
         'pending_count': pending_count,
         'tenants_all': tenants_all,
+        'enabled_module_codes': enabled_module_codes,  # 当前租户启用的模块代码
     }
