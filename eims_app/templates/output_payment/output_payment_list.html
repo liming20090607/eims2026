@@ -4,6 +4,28 @@
 
 {% block title %}产值回款{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* 标签页样式优化 */
+    .nav-tabs .nav-link {
+        color: #495057 !important;
+        border-color: #dee2e6 !important;
+        font-weight: 500;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: #0d6efd !important;
+        border-color: #e9ecef #e9ecef #dee2e6 !important;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #0d6efd !important;
+        font-weight: 600;
+        border-color: #dee2e6 #dee2e6 #fff !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <!-- 标签页导航 -->
