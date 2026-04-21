@@ -16,8 +16,17 @@ logging==0.4.9.6
 conda-pack==0.6.0
 # 新增：加载.env文件依赖（必装，解决当前dotenv模块找不到报错）
 python-dotenv==1.0.0
+# 拼音转换库（用于中文按拼音排序）
+pypinyin==0.50.0
 # 二维码生成库（用于扫码登录功能）
 qrcode[pil]==7.4.2
+# Excel导入导出
+django-import-export==3.3.1
+openpyxl==3.1.2
+# 图片处理
+Pillow==10.2.0
+# Django扩展
+django-extensions==3.2.3
 
 #以上就是：
 #Django==4.2.7
