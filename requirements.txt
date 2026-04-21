@@ -27,6 +27,8 @@ openpyxl==3.1.2
 Pillow==10.2.0
 # Django扩展
 django-extensions==3.2.3
+# 表单小部件增强
+django-widget-tweaks==1.5.0
 
 #以上就是：
 #Django==4.2.7
