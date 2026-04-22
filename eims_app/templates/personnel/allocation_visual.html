@@ -5,6 +5,58 @@
 
 {% block extra_css %}
 <style>
+    /* 全屏布局 - 移除页脚空白 */
+    html, body {
+        height: 100vh !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* 隐藏当前页面的页脚 */
+    .footer {
+        display: none !important;
+    }
+    
+    /* 主内容区域占满视口 */
+    .main-content {
+        height: 100vh !important;
+        overflow: hidden !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* container-fluid 占满高度 */
+    .container-fluid.py-4 {
+        height: calc(100vh - 60px) !important; /* 减去顶部导航栏高度 */
+        padding-top: 1rem !important;
+        padding-bottom: 0 !important;
+        overflow: hidden !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* 操作提示不占用太多空间 */
+    .alert-info.mb-4 {
+        margin-bottom: 0.5rem !important;
+        padding: 0.5rem !important;
+        flex-shrink: 0;
+    }
+    
+    /* 主行占满剩余空间 */
+    .row[style*="margin-bottom: 0"] {
+        flex: 1 !important;
+        overflow: hidden !important;
+        margin-bottom: 0 !important;
+        display: flex;
+    }
+    
+    /* 列占满高度 */
+    .col-md-6 {
+        height: 100% !important;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden !important;
+    }
     /* 待分配人员表格列宽优化 */
     #unassignedTable th:nth-child(2),
     #unassignedTable td:nth-child(2) {
@@ -95,22 +147,28 @@
         padding-top: 0 !important;
     }
     
-    /* 待分配人员卡片高度 400px */
+    /* 待分配人员卡片 - 可调整高度 */
     #unassignedTable .table-responsive {
-        max-height: 400px; /* 固定高度 400px */
+        min-height: 150px;
+        max-height: none;
         overflow-y: auto;
+        flex: 1;
     }
     
-    /* 部门人员卡片高度 800px */
+    /* 部门人员卡片 - 可调整高度 */
     #assignedTable .table-responsive {
-        max-height: 800px; /* 固定高度 800px */
+        min-height: 150px;
+        max-height: none;
         overflow-y: auto;
+        flex: 1;
     }
     
-    /* 项目人员卡片高度 400px */
+    /* 项目人员卡片 - 可调整高度 */
     #projectTable .table-responsive {
-        max-height: 400px; /* 固定高度 400px */
+        min-height: 150px;
+        max-height: none;
         overflow-y: auto;
+        flex: 1;
     }
     
     /* 项目人员卡片容器 */
@@ -118,18 +176,23 @@
         clear: none;
     }
     
-    /* 项目人员卡片使用绝对定位 */
+    /* 项目人员卡片容器 - 使用flex布局 */
     #projectPersonnelContainer {
-        position: absolute;
-        top: 0;
-        left: 0;
+        position: relative;
         width: 100%;
-        z-index: 10;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
     
     #projectPersonnelCard {
         position: relative;
         margin: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
     
     #unassignedTable th:nth-child(3),
@@ -215,6 +278,80 @@
         padding: 0.25em 0.5em;
     }
     
+    /* 可调整大小的卡片样式 */
+    .resizable-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    /* 底部拖拽手柄 */
+    .resize-handle-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        cursor: ns-resize;
+        background: transparent;
+        z-index: 100;
+        transition: background-color 0.2s;
+    }
+    
+    .resize-handle-bottom:hover {
+        background: rgba(52, 152, 219, 0.3);
+    }
+    
+    .resize-handle-bottom::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(52, 152, 219, 0.5);
+        border-radius: 2px;
+    }
+    
+    /* 右下角拖拽手柄 */
+    .resize-handle-corner {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 16px;
+        height: 16px;
+        cursor: nwse-resize;
+        background: transparent;
+        z-index: 101;
+    }
+    
+    .resize-handle-corner:hover::after {
+        background: rgba(52, 152, 219, 0.7);
+    }
+    
+    .resize-handle-corner::after {
+        content: '';
+        position: absolute;
+        bottom: 3px;
+        right: 3px;
+        width: 10px;
+        height: 10px;
+        border-right: 3px solid rgba(52, 152, 219, 0.5);
+        border-bottom: 3px solid rgba(52, 152, 219, 0.5);
+    }
+    
+    /* 正在拖拽时的样式 */
+    .resizing {
+        user-select: none;
+    }
+    
+    .resizing .resize-handle-bottom,
+    .resizing .resize-handle-corner {
+        background: rgba(52, 152, 219, 0.2);
+    }
+    
     /* 项目徽章容器 */
     #assignedTable td:nth-child(5) > div {
         line-height: 1.6;
@@ -273,7 +410,7 @@
     <div class="row" style="margin-bottom: 0;">
         <!-- 左上：待分配人员 -->
         <div class="col-md-6" style="padding-bottom: 0;">
-            <div class="card" style="margin-bottom: 0;">
+            <div class="card resizable-card" id="unassignedCard" style="margin-bottom: 0;">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0"><i class="bi bi-person-plus"></i> 待分配人员 ({{ unassigned_personnel.count }})</h5>
                 </div>
@@ -344,11 +481,14 @@
                         </table>
                     </div>
                 </div>
+                <!-- 拖拽手柄 -->
+                <div class="resize-handle-bottom" data-target="unassignedCard"></div>
+                <div class="resize-handle-corner" data-target="unassignedCard"></div>
             </div>
 
-            <!-- 项目人员容器（绝对定位在待分配人员卡片下方） -->
-            <div id="projectPersonnelContainer" style="position: relative; margin-top: 0; height: 400px;">
-                <div class="card" id="projectPersonnelCard" style="position: absolute; margin: 0; top: 0; left: 0; width: 100%;">
+            <!-- 项目人员容器（使用flex布局） -->
+            <div id="projectPersonnelContainer" style="position: relative; margin-top: 0; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                <div class="card resizable-card" id="projectPersonnelCard" style="position: relative; margin: 0; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
                     <div class="card-header bg-success text-white">
                         <h5 class="mb-0"><i class="bi bi-briefcase-fill"></i> 项目人员 ({{ project_personnel.count }})</h5>
                     </div>
@@ -427,12 +567,15 @@
                         </div>
                     </div>
                 </div>
+                <!-- 拖拽手柄 -->
+                <div class="resize-handle-bottom" data-target="projectPersonnelCard"></div>
+                <div class="resize-handle-corner" data-target="projectPersonnelCard"></div>
             </div>
         </div>
 
         <!-- 右上：部门人员 -->
         <div class="col-md-6">
-            <div class="card">
+            <div class="card resizable-card" id="assignedCard">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="bi bi-people-fill"></i> 部门人员 ({{ assigned_personnel.count }})</h5>
                 </div>
@@ -516,6 +659,9 @@
                         </table>
                     </div>
                 </div>
+                <!-- 拖拽手柄 -->
+                <div class="resize-handle-bottom" data-target="assignedCard"></div>
+                <div class="resize-handle-corner" data-target="assignedCard"></div>
             </div>
     </div>
 </div>
@@ -977,9 +1123,24 @@
 <script>
 // 切换全选
 function toggleSelectAll(type) {
-    const selectAll = document.getElementById(type + 'SelectAll');
+    const selectAllCheckbox = document.getElementById(type + 'SelectAll');
     const checkboxes = document.querySelectorAll(`input[name="${type}_ids"]`);
-    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    
+    // 判断是否是点击了按钮还是复选框
+    if (event.target.tagName === 'BUTTON' || (event.target.parentElement && event.target.parentElement.tagName === 'BUTTON')) {
+        // 点击的是按钮：切换所有复选框状态
+        const firstCheckbox = checkboxes[0];
+        const shouldCheck = firstCheckbox ? !firstCheckbox.checked : !selectAllCheckbox.checked;
+        
+        // 更新表头复选框状态
+        selectAllCheckbox.checked = shouldCheck;
+        // 更新所有行复选框
+        checkboxes.forEach(cb => cb.checked = shouldCheck);
+    } else {
+        // 点击的是表头复选框：同步所有复选框
+        checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+    }
+    
     updateSelectedCount();
 }
 
@@ -1376,7 +1537,7 @@ function recallPersonnel(personnelId, personnelName) {
         return;
     }
     
-    fetch(`/personnel/allocations/recall/${personnelId}/`, {
+    fetch('{% url "eims_app:recall_personnel_ajax" 0 %}'.replace('/0/', `/${personnelId}/`), {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -1411,7 +1572,7 @@ function batchRecall() {
     // 逐个召回
     let completed = 0;
     selectedIds.forEach(id => {
-        fetch(`/personnel/allocations/recall/${id}/`, {
+        fetch('{% url "eims_app:recall_personnel_ajax" 0 %}'.replace('/0/', `/${id}/`), {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
@@ -1531,7 +1692,7 @@ function editPersonnelAllocation(personnelId, personnelName) {
     console.log('编辑人员分配:', personnelId, personnelName);
     
     // 获取该人员的当前分配信息
-    fetch(`/personnel/allocations/get-personnel-projects/${personnelId}/`)
+    fetch('{% url "eims_app:get_personnel_projects" 0 %}'.replace('/0/', `/${personnelId}/`))
         .then(response => response.json())
         .then(data => {
             console.log('获取到人员项目数据:', data);
@@ -1702,7 +1863,7 @@ function submitEditAllocation() {
     }
     
     // 发送 AJAX 请求更新分配
-    fetch(`/personnel/allocations/update/${personnelId}/`, {
+    fetch('{% url "eims_app:update_personnel_allocation" 0 %}'.replace('/0/', `/${personnelId}/`), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1739,7 +1900,7 @@ function deleteAllAllocations() {
         return;
     }
     
-    fetch(`/personnel/allocations/delete-all/${personnelId}/`, {
+    fetch('{% url "eims_app:delete_all_personnel_allocation" 0 %}'.replace('/0/', `/${personnelId}/`), {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -1949,9 +2110,11 @@ function getSelectedProjectIds() {
     return Array.from(checkboxes).map(cb => cb.value);
 }
 
-// ==================== 动态布局调整 ====================
+// ==================== 动态布局调整（已禁用，改用flex布局） ====================
 
 // 动态调整项目人员卡片位置和宽度，使其紧挨待分配人员卡片下方
+// 注意：现在使用 flex 布局，不再需要绝对定位
+/*
 function adjustProjectCardPosition() {
     const unassignedCard = document.querySelector('#unassignedTable').closest('.card');
     const container = document.getElementById('projectPersonnelContainer');
@@ -1975,8 +2138,10 @@ function adjustProjectCardPosition() {
         console.log('项目人员容器宽度:', unassignedCard.offsetWidth, 'px');
     }
 }
+*/
 
-// 页面加载时和窗口大小改变时调整
+// 页面加载时和窗口大小改变时调整（已禁用）
+/*
 $(document).ready(function() {
     // 延迟执行，确保 DOM 已完全渲染
     setTimeout(adjustProjectCardPosition, 100);
@@ -1987,8 +2152,10 @@ $(window).on('resize', function() {
     adjustProjectCardPosition();
     console.log('Window resized, adjusting project card position...');
 });
+*/
 
-// 监听表格内容变化
+// 监听表格内容变化（已禁用）
+/*
 const observer = new MutationObserver(function(mutations) {
     adjustProjectCardPosition();
     console.log('Table content changed, adjusting project card position...');
@@ -2008,5 +2175,169 @@ setTimeout(function() {
     adjustProjectCardPosition();
     console.log('Observer set up, initial adjustment complete');
 }, 1000);
+*/
+
+// ==================== 拖拽调整大小功能 ====================
+
+let isResizing = false;
+let currentCard = null;
+let startY = 0;
+let startHeight = 0;
+let minHeight = 150; // 最小高度
+
+// 初始化拖拽手柄
+document.addEventListener('DOMContentLoaded', function() {
+    initializeResizeHandles();
+});
+
+function initializeResizeHandles() {
+    const handles = document.querySelectorAll('.resize-handle-bottom, .resize-handle-corner');
+    
+    handles.forEach(handle => {
+        handle.addEventListener('mousedown', startResize);
+        handle.addEventListener('touchstart', startResize, { passive: false });
+    });
+}
+
+function startResize(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    isResizing = true;
+    const handle = e.target;
+    const targetId = handle.getAttribute('data-target');
+    currentCard = document.getElementById(targetId);
+    
+    if (!currentCard) return;
+    
+    // 获取起始位置
+    startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+    startHeight = currentCard.offsetHeight;
+    
+    // 添加正在调整大小的类
+    document.body.classList.add('resizing');
+    
+    // 绑定移动和结束事件
+    document.addEventListener('mousemove', doResize);
+    document.addEventListener('mouseup', stopResize);
+    document.addEventListener('touchmove', doResize, { passive: false });
+    document.addEventListener('touchend', stopResize);
+}
+
+function doResize(e) {
+    if (!isResizing || !currentCard) return;
+    
+    e.preventDefault();
+    
+    // 获取当前 Y 坐标
+    const currentY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+    
+    // 计算高度变化
+    const deltaY = currentY - startY;
+    let newHeight = startHeight + deltaY;
+    
+    // 限制最小高度
+    if (newHeight < minHeight) {
+        newHeight = minHeight;
+    }
+    
+    // 应用新高度
+    currentCard.style.height = newHeight + 'px';
+    currentCard.style.maxHeight = newHeight + 'px';
+    currentCard.style.flex = 'none'; // 禁用 flex 以适应固定高度
+    
+    // 如果是底部拖拽，还需要调整 table-responsive 的高度
+    const tableResponsive = currentCard.querySelector('.table-responsive');
+    if (tableResponsive) {
+        const cardHeader = currentCard.querySelector('.card-header');
+        const cardBody = currentCard.querySelector('.card-body');
+        const headerHeight = cardHeader ? cardHeader.offsetHeight : 0;
+        const bodyPadding = cardBody ? (parseInt(getComputedStyle(cardBody).paddingTop) + parseInt(getComputedStyle(cardBody).paddingBottom)) : 40;
+        const otherElements = cardBody ? Array.from(cardBody.children).filter(child => !child.classList.contains('table-responsive')).reduce((sum, el) => sum + el.offsetHeight, 0) : 0;
+        
+        const availableHeight = newHeight - headerHeight - bodyPadding - otherElements;
+        if (availableHeight > 50) {
+            tableResponsive.style.maxHeight = availableHeight + 'px';
+        }
+    }
+}
+
+function stopResize(e) {
+    if (!isResizing) return;
+    
+    isResizing = false;
+    currentCard = null;
+    
+    // 移除正在调整大小的类
+    document.body.classList.remove('resizing');
+    
+    // 解绑事件
+    document.removeEventListener('mousemove', doResize);
+    document.removeEventListener('mouseup', stopResize);
+    document.removeEventListener('touchmove', doResize);
+    document.removeEventListener('touchend', stopResize);
+    
+    // 保存调整的大小到 localStorage（可选）
+    savePanelSizes();
+}
+
+// 保存面板大小到 localStorage
+function savePanelSizes() {
+    const panels = ['unassignedCard', 'assignedCard', 'projectPersonnelCard'];
+    const sizes = {};
+    
+    panels.forEach(panelId => {
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            sizes[panelId] = panel.offsetHeight;
+        }
+    });
+    
+    try {
+        localStorage.setItem('allocationPanelSizes', JSON.stringify(sizes));
+    } catch (e) {
+        console.warn('无法保存面板大小:', e);
+    }
+}
+
+// 从 localStorage 恢复面板大小
+function restorePanelSizes() {
+    try {
+        const saved = localStorage.getItem('allocationPanelSizes');
+        if (saved) {
+            const sizes = JSON.parse(saved);
+            Object.keys(sizes).forEach(panelId => {
+                const panel = document.getElementById(panelId);
+                if (panel && sizes[panelId]) {
+                    panel.style.height = sizes[panelId] + 'px';
+                    panel.style.maxHeight = sizes[panelId] + 'px';
+                    panel.style.flex = 'none';
+                    
+                    // 同时调整 table-responsive
+                    const tableResponsive = panel.querySelector('.table-responsive');
+                    if (tableResponsive) {
+                        const cardHeader = panel.querySelector('.card-header');
+                        const cardBody = panel.querySelector('.card-body');
+                        const headerHeight = cardHeader ? cardHeader.offsetHeight : 0;
+                        const bodyPadding = cardBody ? (parseInt(getComputedStyle(cardBody).paddingTop) + parseInt(getComputedStyle(cardBody).paddingBottom)) : 40;
+                        const otherElements = cardBody ? Array.from(cardBody.children).filter(child => !child.classList.contains('table-responsive')).reduce((sum, el) => sum + el.offsetHeight, 0) : 0;
+                        
+                        const availableHeight = sizes[panelId] - headerHeight - bodyPadding - otherElements;
+                        if (availableHeight > 50) {
+                            tableResponsive.style.maxHeight = availableHeight + 'px';
+                        }
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        console.warn('无法恢复面板大小:', e);
+    }
+}
+
+// 页面加载时恢复之前保存的面板大小
+window.addEventListener('load', function() {
+    setTimeout(restorePanelSizes, 200);
+});
 </script>
 {% endblock %}

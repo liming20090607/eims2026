@@ -231,6 +231,7 @@ def file_manage_batch_upload(request):
         for file in files:
             try:
                 file_obj = FileManage.objects.create(
+                    tenant=request.tenant if hasattr(request, 'tenant') else None,
                     file_name=file.name,
                     file_path=file,
                     file_category=file_category,
@@ -241,8 +242,12 @@ def file_manage_batch_upload(request):
                 uploaded_count += 1
             except Exception as e:
                 print(f"上传失败 {file.name}: {e}")
+                messages.error(request, f'文件 {file.name} 上传失败：{str(e)}')
         
-        messages.success(request, f'成功上传 {uploaded_count} 个文件！')
+        if uploaded_count > 0:
+            messages.success(request, f'成功上传 {uploaded_count} 个文件！')
+        else:
+            messages.error(request, '所有文件上传失败，请重试！')
     else:
         messages.error(request, f'上传失败：{form.errors}')
     
@@ -252,7 +257,8 @@ def file_manage_batch_upload(request):
 @login_required
 def file_manage_batch_upload_page(request):
     """文件管理批量上传页面"""
-    return render(request, 'file_manage/file_manage_batch_upload.html')
+    form = FileManageBatchUploadForm()
+    return render(request, 'file_manage/file_manage_batch_upload.html', {'form': form})
 
 
 # ==================== 版本管理 ====================

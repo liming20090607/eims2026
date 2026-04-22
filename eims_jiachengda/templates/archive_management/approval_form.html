@@ -1,0 +1,298 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if approval %}编辑{% else %}新增{% endif %}归档审批{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:archive_approval_chain' %}">归档审批</a></li>
+<li class="breadcrumb-item active">{% if approval %}编辑{% else %}新增{% endif %}</li>
+{% endblock %}
+
+{% block extra_css %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .form-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #007bff;
+        border-left: 3px solid #007bff;
+        padding-left: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .attachment-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    /* Select2 自定义样式 */
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="form-container">
+        <!-- 标题 -->
+        <h3 class="mb-4"><i class="bi bi-archive me-2"></i>{% if approval %}编辑{% else %}新增{% endif %}归档审批</h3>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- 基本信息 -->
+            <div class="form-section">
+                <div class="section-title">基本信息</div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">审批标题 <span class="text-danger">*</span></label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">项目名称 <span class="text-danger">*</span></label>
+                        {{ form.project_name }}
+                        {% if form.project_name.errors %}
+                            <div class="text-danger small">{{ form.project_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">项目编号</label>
+                        {{ form.project_code }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">申请部门</label>
+                        {{ form.department }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">归档日期</label>
+                        {{ form.archive_date }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">归档位置</label>
+                        {{ form.archive_location }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">归档期限</label>
+                        {{ form.archive_period }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 审批流程配置 -->
+            <div class="form-section">
+                <div class="section-title">审批流程配置</div>
+                
+                <div class="mb-3">
+                    <label class="form-label d-block">审批流程类型 <span class="text-danger">*</span></label>
+                    {% for radio in form.approval_flow_type %}
+                    <div class="form-check form-check-inline">
+                        {{ radio.tag }}
+                        <label class="form-check-label">{{ radio.choice_label }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div id="userSelectedFields" style="display: none;">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">选择审批部门</label>
+                            {{ form.selected_department }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">选择审批人</label>
+                            {{ form.selected_approver }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 备注 -->
+            <div class="form-section">
+                <div class="section-title">备注</div>
+                {{ form.remark }}
+            </div>
+            
+            <!-- 附件上传 -->
+            <div class="form-section">
+                <div class="section-title">附件上传 <span class="text-danger">*</span></div>
+                
+                {% if existing_attachments %}
+                <div class="mb-3">
+                    <label class="form-label">已有附件</label>
+                    {% for att in existing_attachments %}
+                    <div class="attachment-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-file-earmark me-2"></i>
+                                {{ att.file_name }} ({{ att.get_file_type_display }})
+                                {% if att.pages %}<span class="badge bg-secondary ms-2">{{ att.pages }}页</span>{% endif %}
+                            </div>
+                            <div>
+                                <input type="checkbox" name="delete_attachments" value="{{ att.id }}" id="delete_{{ att.id }}">
+                                <label for="delete_{{ att.id }}" class="text-danger">删除</label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div id="attachmentContainer">
+                    <div class="attachment-row mb-3">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <input type="file" name="new_attachments" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.dwg,.zip,.rar" required>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="new_file_types" class="form-select">
+                                    <option value="contract">合同协议</option>
+                                    <option value="supplement">补充协议</option>
+                                    <option value="letter">联系函</option>
+                                    <option value="report">报告</option>
+                                    <option value="drawing">图纸</option>
+                                    <option value="photo">照片</option>
+                                    <option value="video">视频</option>
+                                    <option value="other">其他文件</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="new_pages" class="form-control" placeholder="页数" min="0">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="date" name="new_document_dates" class="form-control" placeholder="成文日期">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" name="new_remarks" class="form-control" placeholder="备注">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addAttachmentRow()">
+                    <i class="bi bi-plus-circle"></i> 添加更多附件
+                </button>
+            </div>
+            
+            <!-- 提交按钮 -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'eims_app:archive_approval_chain' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> 保存
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // 初始化所有下拉列表为 Select2（除了附件类型选择器）
+    $('.form-select').not('[name*="new_file_types"]').select2({
+        placeholder: '请选择',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return '没有找到匹配的结果';
+            },
+            searching: function() {
+                return '搜索中...';
+            },
+            inputTooShort: function(args) {
+                return '请输入 ' + (args.minimum - args.input.length) + ' 个或更多字符';
+            }
+        }
+    });
+    
+    // 项目名称选择变化时，自动填充项目编号
+    $('#id_project_name').on('change', function() {
+        var projectCode = $(this).val();
+        if (projectCode) {
+            // 从选项文本中提取项目编号（格式："项目名称 (项目编号)"）
+            var selectedText = $(this).find('option:selected').text();
+            var codeMatch = selectedText.match(/\(([^)]+)\)$/);
+            if (codeMatch) {
+                $('#id_project_code').val(codeMatch[1]);
+            }
+        } else {
+            $('#id_project_code').val('');
+        }
+    });
+});
+
+// 显示/隐藏用户选择字段
+document.querySelectorAll('input[name="approval_flow_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const userSelectedFields = document.getElementById('userSelectedFields');
+        if (this.value === 'user_selected') {
+            userSelectedFields.style.display = 'block';
+        } else {
+            userSelectedFields.style.display = 'none';
+        }
+    });
+});
+
+// 初始化时检查
+const checkedRadio = document.querySelector('input[name="approval_flow_type"]:checked');
+if (checkedRadio && checkedRadio.value === 'user_selected') {
+    document.getElementById('userSelectedFields').style.display = 'block';
+}
+
+// 添加附件行
+function addAttachmentRow() {
+    const container = document.getElementById('attachmentContainer');
+    const newRow = container.firstElementChild.cloneNode(true);
+    
+    // 清空输入值
+    newRow.querySelectorAll('input, select').forEach(input => {
+        if (input.type === 'file') {
+            input.required = false;
+        } else {
+            input.value = '';
+        }
+    });
+    
+    container.appendChild(newRow);
+}
+</script>
+{% endblock %}

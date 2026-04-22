@@ -6,6 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>协同 AI 办公系统 - XietongAI</title>
+    <!-- API路径配置 -->
+    <script>
+        window.API_BASE = '{{ request.path }}'.split('/').filter(Boolean).length > 0 
+            ? '/' + '{{ request.path }}'.split('/').filter(Boolean)[0]
+            : '';
+    </script>
     <!-- Bootstrap CSS (国内 CDN) -->
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -30,12 +36,18 @@
             --transition-speed: 0.3s;
         }
 
+        html {
+            height: auto;
+            overflow-y: auto;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f8f9fa;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            overflow-y: auto;
         }
 
         /* 侧边栏样式 */
@@ -54,7 +66,7 @@
         }
 
         .sidebar-header {
-            padding: 20px 15px;
+            padding: 12px 13.5px;  /* 缩小头部内边距，从18px改为12px */
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
         }
@@ -75,11 +87,11 @@
         }
 
         .nav-menu {
-            padding: 20px 0;
+            padding: 10px 0;  /* 缩小菜单上下内边距，从18px改为10px，使整体更紧凑 */
         }
 
         .nav-item {
-            margin-bottom: 5px;
+            margin-bottom: 2px;  /* 缩小按钮间距，从4.5px改为2px，使下方用户按钮展开时无需滚动 */
             position: relative;
         }
         
@@ -91,7 +103,7 @@
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 12px 20px;
+            padding: 8px 16px;  /* 缩小内边距，从10.8px 18px改为8px 16px，使菜单更紧凑 */
             color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
             transition: all 0.3s ease;
@@ -105,21 +117,21 @@
         .nav-link:focus {
             background: rgba(255, 255, 255, 0.15);
             color: #fff;
-            transform: translateX(5px);
+            transform: translateX(4.5px);  /* 原为5px，缩小到90% */
         }
 
         .nav-link.active {
             background: rgba(52, 152, 219, 0.25);
             color: #fff;
             border-left: 4px solid #3498db;
-            transform: translateX(5px);
+            transform: translateX(4.5px);  /* 原为5px，缩小到90% */
         }
 
         .menu-icon {
             width: 28px;
             display: inline-block;
             text-align: center;
-            margin-right: 12px;
+            margin-right: 10.8px;  /* 原为12px，缩小到90% */
             font-size: 1.1rem;
         }
 
@@ -132,25 +144,25 @@
             height: 1px;
             background: rgba(255, 255, 255, 0.1);
             border: none;
-            margin: 15px 0;
+            margin: 8px 0;  /* 缩小分隔线间隙，从13.5px改为8px */
         }
         
         /* 租户（公司）选择器样式 */
         .tenant-selector {
-            padding: 15px;
+            padding: 13.5px;  /* 原为15px，缩小到90% */
             background: rgba(0, 0, 0, 0.2);
             border-radius: 8px;
-            margin: 10px 15px;
+            margin: 9px 13.5px;  /* 原为10px 15px，缩小到90% */
         }
         
         .tenant-selector .current-tenant {
             color: #fff;
             font-size: 0.95rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 9px;  /* 原为10px，缩小到90% */
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 7.2px;  /* 原为8px，缩小到90% */
         }
         
         .tenant-selector .current-tenant i {
@@ -181,7 +193,7 @@
         
         /* 子菜单样式 */
         .sidebar .collapse .nav-link {
-            padding-left: 52px;
+            padding-left: 46.8px;  /* 原为52px，缩小到90% */
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.7);
         }
@@ -199,7 +211,7 @@
         
         .sidebar .collapse .menu-icon {
             font-size: 0.9rem;
-            margin-right: 8px;
+            margin-right: 7.2px;  /* 原为8px，缩小到90% */
         }
         
         /* 禁用菜单样式 - 灰色显示 */
@@ -228,12 +240,15 @@
             background-color: rgba(255, 255, 255, 0.3) !important;
         }
 
-        /* 主内容区样式 */
+        /* 主内容区样式 - 允许垂直滚动 */
         .main-content {
             margin-left: var(--sidebar-width);
             transition: margin-left var(--transition-speed) ease;
-            min-height: auto;
-            padding-top: 5px;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex !important;
+            flex-direction: column !important;
         }
 
         .header {
@@ -246,6 +261,12 @@
             position: sticky;
             top: 0;
             z-index: 900;
+            flex-shrink: 0 !important;
+        }
+        
+        /* 全局隐藏顶部搜索栏 */
+        .header .search-box {
+            display: none !important;
         }
 
         .header-toggler {
@@ -260,16 +281,95 @@
         .breadcrumb {
             background: transparent;
             margin: 0;
-            padding: 0;
-            font-size: 0.9rem;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #e3e6f0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+            padding: 0 0.5rem;
+        }
+        
+        .breadcrumb-item a {
+            color: #4e73df;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #224abe;
+            text-decoration: underline;
         }
 
         .breadcrumb-item.active {
             color: #6c757d;
+            font-weight: 600;
         }
 
+        /* 造价咨询子模块标签页样式 */
+        .cost-module-tabs {
+            display: flex;  /* 改为直接显示 */
+            justify-content: center;  /* 标签居中 */
+            flex: 1;
+            margin: 0 auto;  /* 居中显示 */
+            padding: 0 20px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            gap: 4px;  /* 标签间距 */
+        }
+        
+        .cost-module-tab {
+            padding: 8px 20px;  /* 增加内边距 */
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-size: 0.9rem;  /* 稍微加大字体 */
+            color: #495057;
+            text-decoration: none;
+            position: relative;
+            top: 1px;
+            font-weight: 500;
+        }
+        
+        .cost-module-tab:hover {
+            background: #e9ecef;
+            color: #4e73df;
+            text-decoration: none;
+            transform: translateY(-2px);  /* 悬停时微微上移 */
+        }
+        
+        .cost-module-tab.active {
+            background: #fff;
+            color: #4e73df;  /* 蓝色文字 */
+            border-bottom: 2px solid #fff;
+            font-weight: 700;  /* 加粗 */
+            font-size: 0.95rem;  /* 激活时字体稍大 */
+            box-shadow: 0 -2px 6px rgba(78, 115, 223, 0.15);  /* 添加阴影增强高亮效果 */
+        }
+
+        /* 容器占满剩余空间 */
         .container-fluid {
-            padding: 10px;
+            flex: 1 !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* 全局隐藏页脚 */
+        .footer {
+            display: none !important;
+            height: 0 !important;
+            overflow: hidden !important;
         }
 
         /* 用户信息下拉菜单 */
@@ -299,7 +399,7 @@
         }
 
         .dropdown-item {
-            padding: 8px 15px;
+            padding: 7.2px 13.5px;  /* 原为8px 15px，缩小到90% */
             transition: all 0.2s ease;
         }
 
@@ -309,7 +409,7 @@
         }
 
         .dropdown-divider {
-            margin: 5px 0;
+            margin: 4.5px 0;  /* 原为5px，缩小到90% */
         }
 
         /* 响应式调整 */
@@ -425,7 +525,7 @@
         /* 状态徽章样式 */
         .badge {
             font-weight: 500;
-            padding: 5px 10px;
+            padding: 4.5px 9px;  /* 原为5px 10px，缩小到90% */
             border-radius: 20px;
         }
 
@@ -444,10 +544,19 @@
             color: #721c24;
         }
 
-        /* 表格样式 */
+        /* 表格样式 - 全局表头浅蓝色背景 */
+        .table thead th {
+            background-color: #e3f2fd !important;
+            color: #1565c0 !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+        }
+        
         .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
+            background-color: #e3f2fd !important;
+            color: #1565c0 !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
         }
 
         .table-hover tbody tr:hover {
@@ -831,7 +940,121 @@
             </li>
             
             <!-- 分隔线 -->
-            <hr class="sidebar-divider my-3">
+            <hr class="sidebar-divider">
+            
+            <!-- ==================== Root超级管理员专属菜单 ==================== -->
+            {% if url_namespace == 'root' and user.is_superuser %}
+            
+            <!-- 租户管理 -->
+            <li class="nav-item">
+                <a href="#tenantSubmenu" data-bs-toggle="collapse" aria-expanded="false" 
+                   class="nav-link"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="租户管理">
+                    <span class="menu-icon"><i class="bi bi-building-gear"></i></span>
+                    <span class="menu-text">租户管理</span>
+                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem;"></i>
+                </a>
+                <div class="collapse" id="tenantSubmenu">
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:tenant_list' %}" class="nav-link">
+                                <i class="bi bi-buildings"></i> 公司管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:user_management' %}" class="nav-link">
+                                <i class="bi bi-people-fill"></i> 用户管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/eims_app/tenantmodule/" class="nav-link">
+                                <i class="bi bi-grid-3x3-gap-fill"></i> 模块配置
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- 组织管理（带子菜单）- 仅Root系统显示 -->
+            <li class="nav-item">
+                <a href="#orgSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'department' in request.path or 'approval-chain' in request.path %}true{% else %}false{% endif %}" 
+                   class="nav-link {% if 'department' in request.path or 'approval-chain' in request.path %}active{% endif %}"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="组织管理">
+                    <span class="menu-icon"><i class="bi bi-building"></i></span>
+                    <span class="menu-text">组织管理</span>
+                    <span class="badge bg-warning ms-auto">4</span>
+                </a>
+                <div class="collapse {% if 'department' in request.path or 'approval-chain' in request.path %}show{% endif %}" id="orgSubmenu">
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:organization_navigation' %}" class="nav-link {% if request.path == '/departments/navigation/' %}active{% endif %}">
+                                <i class="bi bi-grid-3x3-gap"></i> 模块导航
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:department_list' %}" class="nav-link {% if '/departments/' in request.path and 'add' not in request.path %}active{% endif %}">
+                                <i class="bi bi-building"></i> 部门管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:department_role_list' %}" class="nav-link {% if '/department-roles/' in request.path %}active{% endif %}">
+                                <i class="bi bi-person-badge"></i> 角色配置
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:approval_chain_list' %}" class="nav-link {% if '/approval-chains/' in request.path %}active{% endif %}">
+                                <i class="bi bi-diagram-3"></i> 审批管理
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- 人证管理（原人员管理，带子菜单）- 仅Root系统显示 -->
+            <li class="nav-item">
+                <a href="#personnelSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'personnel' in request.path %}true{% else %}false{% endif %}" class="nav-link {% if 'personnel' in request.path %}active{% endif %}"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="人证管理">
+                    <span class="menu-icon"><i class="bi bi-people"></i></span>
+                    <span class="menu-text">人证管理</span>
+                    <span class="badge bg-info ms-auto">4</span>
+                </a>
+                <div class="collapse {% if 'personnel' in request.path %}show{% endif %}" id="personnelSubmenu">
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:personnel_navigation' %}" class="nav-link {% if request.path == '/personnel/navigation/' %}active{% endif %}">
+                                <i class="bi bi-grid-3x3-gap"></i> 模块导航
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:personnel_list' %}" class="nav-link {% if request.path == '/personnel/' or '/personnel/' in request.path and 'certificate' not in request.path and 'allocation' not in request.path and 'navigation' not in request.path and 'destination' not in request.path %}active{% endif %}">
+                                <i class="bi bi-journal-text"></i> 人员花名册
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:certificate_list' %}" class="nav-link {% if 'certificate' in request.path %}active{% endif %}">
+                                <i class="bi bi-award"></i> 人员证书
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:allocation_visual' %}" class="nav-link {% if 'visual' in request.path %}active{% endif %}">
+                                <i class="bi bi-diagram-3"></i> 可视化分配
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:personnel_destination' %}" class="nav-link {% if 'destination' in request.path %}active{% endif %}">
+                                <i class="bi bi-geo-alt"></i> 人员去向
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- 分隔线 -->
+            <hr class="sidebar-divider">
+            
+            {% else %}
+            
+            <!-- ==================== 租户公司业务菜单 ==================== -->
             
             <!-- 组织管理（带子菜单）- 仅超级管理员可用 -->
             {% if user.is_superuser %}
@@ -931,6 +1154,8 @@
             </li>
             {% endif %}
             
+            {% endif %}
+            
             <!-- 审批流程（带子菜单） -->
             <li class="nav-item">
                 <a href="#approvalSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'contract-approval' in request.path or 'seal-approval' in request.path or 'archive-approval' in request.path or 'my-pending-approvals' in request.path %}true{% else %}false{% endif %}" 
@@ -944,6 +1169,7 @@
                 </a>
                 <div class="collapse {% if 'contract-approval' in request.path or 'seal-approval' in request.path or 'archive-approval' in request.path or 'my-pending-approvals' in request.path %}show{% endif %}" id="approvalSubmenu">
                     <ul class="nav flex-column ms-3">
+                        {% if 'my_pending_approvals' in enabled_submodule_codes %}
                         <li class="nav-item">
                             <a href="{% url 'eims_app:my_pending_approvals' %}" class="nav-link {% if 'my-pending-approvals' in request.path %}active{% endif %}">
                                 <i class="bi bi-bell-fill"></i> 我的待审批
@@ -952,106 +1178,152 @@
                                 {% endif %}
                             </a>
                         </li>
+                        {% endif %}
+                        {% if 'contract_approval' in enabled_submodule_codes %}
                         <li class="nav-item">
                             <a href="{% url 'eims_app:contract_approval_chain' %}" class="nav-link {% if '/contract-approval' in request.path %}active{% endif %}">
                                 <i class="bi bi-file-earmark-check"></i> 合同审批
                             </a>
                         </li>
+                        {% endif %}
+                        {% if 'seal_approval' in enabled_submodule_codes %}
                         <li class="nav-item">
                             <a href="{% url 'eims_app:seal_approval_chain' %}" class="nav-link {% if '/seal-approval' in request.path %}active{% endif %}">
                                 <i class="bi bi-stamp-fill text-danger"></i> 用印审批
                             </a>
                         </li>
+                        {% endif %}
+                        {% if 'archive_approval' in enabled_submodule_codes %}
                         <li class="nav-item">
                             <a href="{% url 'eims_app:archive_approval_chain' %}" class="nav-link {% if '/archive-approval' in request.path %}active{% endif %}">
                                 <i class="bi bi-archive"></i> 归档审批
                             </a>
                         </li>
+                        {% endif %}
                     </ul>
                 </div>
             </li>
             
             <!-- 分隔线 -->
-            <hr class="sidebar-divider my-3">
+            <hr class="sidebar-divider">
             
             <!-- 工程业务模块 -->
             
-            <!-- 前期准备（待开发） -->
+            <!-- 工程监理（一级模块，包含子模块） -->
+            {% if 'supervision' in enabled_module_codes %}
+            <li class="nav-item">
+                <a href="#supervisionSubmenu" class="nav-link {% if 'project' in request.path or 'contract' in request.path or 'output' in request.path %}active{% endif %}" 
+                   data-bs-toggle="collapse" aria-expanded="{% if 'project' in request.path or 'contract' in request.path or 'output' in request.path %}true{% else %}false{% endif %}">
+                    <span class="menu-icon"><i class="bi bi-clipboard2-check"></i></span>
+                    <span class="menu-text">工程监理</span>
+                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem;"></i>
+                </a>
+                <div class="collapse {% if 'project' in request.path or 'contract' in request.path or 'output' in request.path %}show{% endif %}" id="supervisionSubmenu">
+                    <ul class="nav flex-column ms-3">
+                        <!-- 项目管理 -->
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:project_list' %}" class="nav-link {% if 'project_ledger' in request.path or 'project' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-kanban"></i></span>
+                                <span class="menu-text">项目管理</span>
+                            </a>
+                        </li>
+                        <!-- 合同管理 -->
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if 'contract_management' in request.path or 'contract' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-file-earmark-text"></i></span>
+                                <span class="menu-text">合同管理</span>
+                            </a>
+                        </li>
+                        <!-- 产值回款 -->
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:output_payment_list' %}" class="nav-link {% if 'output_payment' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-cash-stack"></i></span>
+                                <span class="menu-text">产值回款</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+            
+            <!-- 项目前期 -->
             {% if 'preparation' in enabled_module_codes %}
             <li class="nav-item">
-                <a href="javascript:void(0);" class="nav-link" 
-                   onclick="showCustomMessage('前期准备'); return false;"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="前期准备">
+                <a href="{% url 'eims_app:module_preparation' %}" class="nav-link {% if '/module/preparation/' in request.path %}active{% endif %}">
                     <span class="menu-icon"><i class="bi bi-clipboard-data"></i></span>
-                    <span class="menu-text">前期准备</span>
+                    <span class="menu-text">项目前期</span>
                 </a>
             </li>
             {% endif %}
             
-            <!-- 招标投标（待开发） -->
+            <!-- 招标投标 -->
             {% if 'bidding' in enabled_module_codes %}
             <li class="nav-item">
-                <a href="javascript:void(0);" class="nav-link" 
-                   onclick="showCustomMessage('招标投标'); return false;"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="招标投标">
+                <a href="{% url 'eims_app:module_bidding' %}" class="nav-link {% if '/module/bidding/' in request.path %}active{% endif %}">
                     <span class="menu-icon"><i class="bi bi-trophy"></i></span>
                     <span class="menu-text">招标投标</span>
                 </a>
             </li>
             {% endif %}
             
-            <!-- 工程设计（待开发） -->
-            {% if 'design' in enabled_module_codes %}
-            <li class="nav-item">
-                <a href="javascript:void(0);" class="nav-link" 
-                   onclick="showCustomMessage('工程设计'); return false;"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程设计">
-                    <span class="menu-icon"><i class="bi bi-pencil-square"></i></span>
-                    <span class="menu-text">工程设计</span>
-                </a>
-            </li>
-            {% endif %}
-            
-            <!-- 造价咨询（待开发） -->
+            <!-- 造价咨询 -->
             {% if 'cost' in enabled_module_codes %}
             <li class="nav-item">
-                <a href="javascript:void(0);" class="nav-link" 
-                   onclick="showCustomMessage('造价咨询'); return false;"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="造价咨询">
+                <a href="#costSubmenu" class="nav-link {% if 'cost_project_info' in request.path or 'cost_task_plan' in request.path or 'cost_task_implementation' in request.path or 'cost_review_result' in request.path or 'cost_payment_status' in request.path or 'cost_project_archive' in request.path or 'cost_remuneration_distribution' in request.path %}active{% endif %}" 
+                   data-bs-toggle="collapse" aria-expanded="{% if 'cost_project_info' in request.path or 'cost_task_plan' in request.path or 'cost_task_implementation' in request.path or 'cost_review_result' in request.path or 'cost_payment_status' in request.path or 'cost_project_archive' in request.path or 'cost_remuneration_distribution' in request.path %}true{% else %}false{% endif %}">
                     <span class="menu-icon"><i class="bi bi-calculator"></i></span>
                     <span class="menu-text">造价咨询</span>
+                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem;"></i>
                 </a>
-            </li>
-            {% endif %}
-            
-            <!-- 工程监理（一级模块，带子菜单） -->
-            {% if 'supervision' in enabled_module_codes %}
-            <li class="nav-item">
-                <a href="#engineeringSupervisionSubmenu" data-bs-toggle="collapse" aria-expanded="{% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}true{% else %}false{% endif %}" 
-                   class="nav-link {% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}active{% endif %}"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程监理">
-                    <span class="menu-icon"><i class="bi bi-clipboard2-check"></i></span>
-                    <span class="menu-text">工程监理</span>
-                    <span class="badge bg-primary ms-auto">3</span>
-                </a>
-                <div class="collapse {% if 'contract' in request.path or 'project_ledger' in request.path or 'output_payment' in request.path %}show{% endif %}" id="engineeringSupervisionSubmenu">
+                <div class="collapse {% if 'cost_project_info' in request.path or 'cost_task_plan' in request.path or 'cost_task_implementation' in request.path or 'cost_review_result' in request.path or 'cost_payment_status' in request.path or 'cost_project_archive' in request.path or 'cost_remuneration_distribution' in request.path %}show{% endif %}" id="costSubmenu">
                     <ul class="nav flex-column ms-3">
-                        <!-- 合同管理（二级模块） -->
+                        <!-- 项目信息 -->
                         <li class="nav-item">
-                            <a href="{% url 'eims_app:contract_list' %}" class="nav-link {% if '/contract/' in request.path %}active{% endif %}">
-                                <i class="bi bi-file-earmark-text"></i> 合同管理
+                            <a href="{% url 'eims_app:cost_project_info_list' %}" class="nav-link {% if 'cost_project_info' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-info-circle"></i></span>
+                                <span class="menu-text">项目信息</span>
                             </a>
                         </li>
-                        <!-- 项目管理（二级模块） -->
+                        <!-- 任务计划 -->
                         <li class="nav-item">
-                            <a href="{% url 'eims_app:project_ledger_list' %}" class="nav-link {% if 'project_ledger' in request.path %}active{% endif %}">
-                                <i class="bi bi-building"></i> 项目管理
+                            <a href="{% url 'eims_app:cost_task_plan_list' %}" class="nav-link {% if 'cost_task_plan' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-calendar-check"></i></span>
+                                <span class="menu-text">任务计划</span>
                             </a>
                         </li>
-                        <!-- 产值回款（二级模块） -->
+                        <!-- 任务实施 -->
                         <li class="nav-item">
-                            <a href="{% url 'eims_app:output_payment_list' %}" class="nav-link {% if 'output_payment' in request.path %}active{% endif %}">
-                                <i class="bi bi-cash-coin"></i> 产值回款
+                            <a href="{% url 'eims_app:cost_task_implementation_list' %}" class="nav-link {% if 'cost_task_implementation' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-list-task"></i></span>
+                                <span class="menu-text">任务实施</span>
+                            </a>
+                        </li>
+                        <!-- 审核成果 -->
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:cost_review_result_list' %}" class="nav-link {% if 'cost_review_result' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-file-earmark-check"></i></span>
+                                <span class="menu-text">审核成果</span>
+                            </a>
+                        </li>
+                        <!-- 收费情况 -->
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:cost_payment_status_list' %}" class="nav-link {% if 'cost_payment_status' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-cash-coin"></i></span>
+                                <span class="menu-text">收费情况</span>
+                            </a>
+                        </li>
+                        <!-- 项目存档 -->
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:cost_project_archive_list' %}" class="nav-link {% if 'cost_project_archive' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-archive"></i></span>
+                                <span class="menu-text">项目存档</span>
+                            </a>
+                        </li>
+                        <!-- 酬劳分配 -->
+                        <li class="nav-item">
+                            <a href="{% url 'eims_app:cost_remuneration_distribution_list' %}" class="nav-link {% if 'cost_remuneration_distribution' in request.path %}active{% endif %}">
+                                <span class="menu-icon"><i class="bi bi-cash-coin"></i></span>
+                                <span class="menu-text">酬劳分配</span>
                             </a>
                         </li>
                     </ul>
@@ -1059,14 +1331,28 @@
             </li>
             {% endif %}
             
+            <!-- 工程设计（待开发） -->
+            {% if 'design' in enabled_module_codes %}
+            <li class="nav-item">
+                <a href="javascript:void(0);" class="nav-link disabled-menu" 
+                   onclick="showCustomMessage('工程设计'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程设计（待开发）">
+                    <span class="menu-icon"><i class="bi bi-pencil-square text-muted"></i></span>
+                    <span class="menu-text text-muted">工程设计</span>
+                    <span class="badge bg-secondary ms-auto">待开发</span>
+                </a>
+            </li>
+            {% endif %}
+            
             <!-- 工程施工（待开发） -->
             {% if 'construction' in enabled_module_codes %}
             <li class="nav-item">
-                <a href="javascript:void(0);" class="nav-link" 
+                <a href="javascript:void(0);" class="nav-link disabled-menu" 
                    onclick="showCustomMessage('工程施工'); return false;"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程施工">
-                    <span class="menu-icon"><i class="bi bi-hammer"></i></span>
-                    <span class="menu-text">工程施工</span>
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程施工（待开发）">
+                    <span class="menu-icon"><i class="bi bi-hammer text-muted"></i></span>
+                    <span class="menu-text text-muted">工程施工</span>
+                    <span class="badge bg-secondary ms-auto">待开发</span>
                 </a>
             </li>
             {% endif %}
@@ -1074,11 +1360,25 @@
             <!-- 工程检测（待开发） -->
             {% if 'testing' in enabled_module_codes %}
             <li class="nav-item">
-                <a href="javascript:void(0);" class="nav-link" 
+                <a href="javascript:void(0);" class="nav-link disabled-menu" 
                    onclick="showCustomMessage('工程检测'); return false;"
-                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程检测">
-                    <span class="menu-icon"><i class="bi bi-search"></i></span>
-                    <span class="menu-text">工程检测</span>
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="工程检测（待开发）">
+                    <span class="menu-icon"><i class="bi bi-search text-muted"></i></span>
+                    <span class="menu-text text-muted">工程检测</span>
+                    <span class="badge bg-secondary ms-auto">待开发</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            <!-- 竣工验收（待开发） -->
+            {% if 'completion' in enabled_module_codes %}
+            <li class="nav-item">
+                <a href="javascript:void(0);" class="nav-link disabled-menu" 
+                   onclick="showCustomMessage('竣工验收'); return false;"
+                   data-bs-toggle="tooltip" data-bs-placement="right" title="竣工验收（待开发）">
+                    <span class="menu-icon"><i class="bi bi-check-circle text-muted"></i></span>
+                    <span class="menu-text text-muted">竣工验收</span>
+                    <span class="badge bg-secondary ms-auto">待开发</span>
                 </a>
             </li>
             {% endif %}
@@ -1163,19 +1463,14 @@
                 </div>
             </li>
             
-            <!-- 后台管理（仅管理员和超级管理员可用） -->
-            {% if user.is_authenticated %}
-            <li class="nav-item {% if not user.is_staff and not user.is_superuser %}disabled{% endif %}">
-                <a href="#adminSubmenu" class="nav-link {% if not user.is_staff and not user.is_superuser %}disabled{% endif %}" 
-                   {% if user.is_staff or user.is_superuser %}data-bs-toggle="collapse" aria-expanded="false"{% else %}onclick="alert('仅管理员可用'); return false;"{% endif %}
-                   style="{% if not user.is_staff and not user.is_superuser %}opacity: 0.5; cursor: not-allowed;{% endif %}">
+            <!-- 后台管理（仅管理员和超级管理员可见） -->
+            {% if user.is_staff or user.is_superuser %}
+            <li class="nav-item">
+                <a href="#adminSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="false">
                     <span class="menu-icon"><i class="bi bi-gear-fill text-warning"></i></span>
                     <span class="menu-text fw-bold">后台管理</span>
-                    {% if user.is_staff or user.is_superuser %}
                     <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem;"></i>
-                    {% endif %}
                 </a>
-                {% if user.is_staff or user.is_superuser %}
                 <div class="collapse" id="adminSubmenu">
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
@@ -1192,7 +1487,6 @@
                         </li>
                     </ul>
                 </div>
-                {% endif %}
             </li>
             {% endif %}
             
@@ -1250,7 +1544,22 @@
                     {% block breadcrumb %}{% endblock %}
                 </ol>
             </nav>
+            
+            <!-- 造价咨询子模块标签页 -->
+            {% if 'cost_project_info' in request.path or 'cost_task_plan' in request.path or 'cost_task_implementation' in request.path or 'cost_review_result' in request.path or 'cost_payment_status' in request.path or 'cost_project_archive' in request.path or 'cost_remuneration_distribution' in request.path %}
+            <div class="cost-module-tabs" id="costModuleTabs">
+                <a href="{% url 'eims_app:cost_project_info_list' %}" class="cost-module-tab {% if 'cost_project_info' in request.path %}active{% endif %}">项目信息</a>
+                <a href="{% url 'eims_app:cost_task_plan_list' %}" class="cost-module-tab {% if 'cost_task_plan' in request.path %}active{% endif %}">任务计划</a>
+                <a href="{% url 'eims_app:cost_task_implementation_list' %}" class="cost-module-tab {% if 'cost_task_implementation' in request.path %}active{% endif %}">任务实施</a>
+                <a href="{% url 'eims_app:cost_review_result_list' %}" class="cost-module-tab {% if 'cost_review_result' in request.path %}active{% endif %}">审核成果</a>
+                <a href="{% url 'eims_app:cost_payment_status_list' %}" class="cost-module-tab {% if 'cost_payment_status' in request.path %}active{% endif %}">收费情况</a>
+                <a href="{% url 'eims_app:cost_project_archive_list' %}" class="cost-module-tab {% if 'cost_project_archive' in request.path %}active{% endif %}">项目存档</a>
+                <a href="{% url 'eims_app:cost_remuneration_distribution_list' %}" class="cost-module-tab {% if 'cost_remuneration_distribution' in request.path %}active{% endif %}">酬金分配</a>
+            </div>
+            {% endif %}
+            
             <div class="ms-auto d-flex align-items-center">
+                {% block header_search %}
                 <div class="search-box me-3">
                     <form action="{% url 'eims_app:project_search' %}" method="GET" style="display: flex; align-items: center;">
                         <i class="bi bi-search search-icon"></i>
@@ -1263,6 +1572,7 @@
                         </button>
                     </form>
                 </div>
+                {% endblock %}
                 {% if user.is_authenticated %}
                 <div class="user-dropdown me-2">
                     <a href="#" class="dropdown-toggle d-flex align-items-center text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown">
@@ -1305,7 +1615,7 @@
         <!-- 页脚 -->
         <footer class="footer mt-auto">
             <div class="container">
-                <span>协同 AI 办公系统 (AOS) © 2026 | <a href="#" class="text-white">技术支持</a></span>
+                <span>协同 AI 办公系统 (AOS) © 2026</span>
             </div>
         </footer>
     </div>
@@ -1323,6 +1633,12 @@
     <script src="{% static 'js/permission-check.js' %}"></script>
     <!-- Custom JS -->
     <script>
+        // 全局错误处理，防止JavaScript错误阻止页面加载
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            // 不阻止默认行为，但记录错误以便调试
+        });
+        
         $(document).ready(function() {
             // 侧边栏切换（移动端抽屉式）
             function toggleSidebar() {
@@ -1391,8 +1707,21 @@
             
             // 点击侧边栏内的菜单项后，2 秒再关闭侧边栏
             let sidebarCloseTimeout;
-            $('.sidebar .nav-link').on('click', function() {
-                // 清除之前的定时器
+            $('.sidebar .nav-link').on('click', function(e) {
+                // 如果链接有href属性且不是#开头，允许默认跳转行为
+                const href = $(this).attr('href');
+                if (href && href !== '#' && !href.startsWith('#')) {
+                    // 这是普通链接，不阻止默认行为，只设置定时器关闭侧边栏
+                    if (sidebarCloseTimeout) {
+                        clearTimeout(sidebarCloseTimeout);
+                    }
+                    sidebarCloseTimeout = setTimeout(function() {
+                        closeSidebar();
+                    }, 2000);
+                    return; // 不阻止默认行为，让链接正常跳转
+                }
+                
+                // 如果是collapse toggle或其他非链接操作，清除之前的定时器
                 if (sidebarCloseTimeout) {
                     clearTimeout(sidebarCloseTimeout);
                 }
@@ -1430,7 +1759,7 @@
         
         // 显示自定义消息（用于未开发模块）
         function showCustomMessage(moduleName) {
-            const message = `「${moduleName}」模块欢迎定制开发，敬请咨询！`;
+            const message = `「${moduleName}」模块开发中，敬请期待！`;
             alert(message);
         }
         
@@ -1438,6 +1767,184 @@
         function showPermissionDenied() {
             alert('您没有权限访问此功能，请联系系统管理员。');
         }
+        
+        // ===== 造价咨询提醒功能 =====
+        // 生成本次登录的唯一会话ID
+        const reminderSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+        let currentReminderIds = [];
+        
+        // 显示造价咨询提醒模态框
+        function showCostReminderModal(reminders) {
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('costReminderModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 构建提醒内容HTML
+            let reminderContent = '';
+            if (reminders && reminders.length > 0) {
+                reminderContent = '<div style="text-align: left; margin-bottom: 15px; max-height: 200px; overflow-y: auto;">';
+                reminders.forEach((r, index) => {
+                    reminderContent += `
+                        <div style="padding: 8px; margin-bottom: 8px; background-color: #f8f9fa; border-left: 3px solid #0d6efd; border-radius: 4px;">
+                            <strong>${r.title}</strong><br>
+                            <small style="color: #666;">${r.created_at}</small><br>
+                            <small>${r.content}</small>
+                        </div>
+                    `;
+                });
+                reminderContent += '</div>';
+            }
+            
+            // 创建模态框HTML
+            const modalHtml = `
+                <div id="costReminderModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background-color: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-width: 500px; width: 90%; overflow: hidden;">
+                        <div style="background-color: #0d6efd; color: white; padding: 15px 20px; font-size: 16px; font-weight: bold;">
+                            🔔 造价咨询业务提醒
+                        </div>
+                        <div style="padding: 20px;">
+                            <p style="font-size: 14px; color: #333; margin-bottom: 15px;">
+                                您有 <strong style="color: #dc3545;">${reminders ? reminders.length : 0}</strong> 条新的造价咨询业务提醒，请及时处理。
+                            </p>
+                            ${reminderContent}
+                        </div>
+                        <div style="padding: 15px 20px; background-color: #f8f9fa; border-top: 1px solid #dee2e6; display: flex; justify-content: flex-end; gap: 10px;">
+                            <button id="btnCostReminderView" style="padding: 8px 20px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                查看
+                            </button>
+                            <button id="btnCostReminderIgnore" style="padding: 8px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                忽略
+                            </button>
+                            <button id="btnCostReminderConfirm" style="padding: 8px 20px; background-color: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                确定
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 添加模态框到页面
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 绑定按钮事件
+            document.getElementById('btnCostReminderView').addEventListener('click', function() {
+                // 查看按钮：跳转到项目信息页面
+                window.location.href = "{% url 'eims_app:cost_project_info_list' %}";
+            });
+            
+            document.getElementById('btnCostReminderIgnore').addEventListener('click', function() {
+                // 忽略按钮：本次登录期间不再提醒
+                ignoreReminders();
+            });
+            
+            document.getElementById('btnCostReminderConfirm').addEventListener('click', function() {
+                // 确定按钮：延迟5分钟后再次提醒
+                snoozeReminders();
+            });
+        }
+        
+        // 忽略提醒（本次登录期间）
+        function ignoreReminders() {
+            if (currentReminderIds.length === 0) return;
+            
+            fetch("{% url 'eims_app:ignore_reminder' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    reminder_ids: currentReminderIds,
+                    session_id: reminderSessionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 关闭模态框
+                    const modal = document.getElementById('costReminderModal');
+                    if (modal) {
+                        modal.remove();
+                    }
+                    console.log('提醒已忽略，本次登录期间不再显示');
+                }
+            })
+            .catch(error => console.error('忽略提醒失败:', error));
+        }
+        
+        // 延迟提醒（5分钟后）
+        function snoozeReminders() {
+            if (currentReminderIds.length === 0) return;
+            
+            fetch("{% url 'eims_app:snooze_reminder' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    reminder_ids: currentReminderIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 关闭模态框
+                    const modal = document.getElementById('costReminderModal');
+                    if (modal) {
+                        modal.remove();
+                    }
+                    console.log('提醒已延迟，5分钟后再次提醒');
+                }
+            })
+            .catch(error => console.error('延迟提醒失败:', error));
+        }
+        
+        // 获取CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 检查造价咨询提醒
+        function checkCostReminders() {
+            fetch("{% url 'eims_app:get_unread_reminder_count' %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count > 0 && data.reminders && data.reminders.length > 0) {
+                        // 保存当前提醒ID列表
+                        currentReminderIds = data.reminders.map(r => r.id);
+                        // 显示模态框
+                        showCostReminderModal(data.reminders);
+                    }
+                })
+                .catch(error => console.error('Error checking reminders:', error));
+        }
+        
+        // 页面加载完成后检查提醒
+        document.addEventListener('DOMContentLoaded', function() {
+            // 延迟 2 秒检查，确保页面已完全加载
+            setTimeout(checkCostReminders, 2000);
+            
+            // 每 5 分钟检查一次提醒（如果弹窗未显示）
+            setInterval(function() {
+                if (!document.getElementById('costReminderModal')) {
+                    checkCostReminders();
+                }
+            }, 300000);
+        });
         
         // ===== 月度报告提醒功能 =====
         let reminderInterval = null;
@@ -1447,10 +1954,16 @@
          * 检查是否需要显示月度报告提醒
          */
         function checkMonthlyReportReminder() {
-            // 调用 API 获取待填报项目
-            fetch('/api/monthly-report/pending/')
+            // 使用全局配置的API基础路径，添加超时控制
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+            
+            fetch(window.API_BASE + '/api/monthly-report/pending/', {
+                signal: controller.signal
+            })
                 .then(response => response.json())
                 .then(data => {
+                    clearTimeout(timeoutId);
                     if (data.success && data.is_last_five_days && data.pending_projects.length > 0) {
                         showMonthlyReportModal(data.pending_projects);
                         
@@ -1464,7 +1977,13 @@
                     }
                 })
                 .catch(error => {
-                    console.error('获取待填报项目失败:', error);
+                    clearTimeout(timeoutId);
+                    // 静默失败，不影响页面加载
+                    if (error.name === 'AbortError') {
+                        console.debug('月度报告提醒检查: 请求超时');
+                    } else {
+                        console.debug('月度报告提醒检查:', error.message);
+                    }
                 });
         }
         
@@ -1552,10 +2071,40 @@
         
         // 页面加载完成后检查
         $(document).ready(function() {
-            // 延迟 2 秒后检查，避免干扰页面加载
+            // 确保页面完全加载，移除任何浏览器级别的加载状态
+            if (document.readyState === 'complete') {
+                $('body').css('cursor', 'default');
+            }
+            
+            // 延迟 2 秒后检查月度报告提醒，避免干扰页面加载
             setTimeout(() => {
                 checkMonthlyReportReminder();
             }, 2000);
+            
+            // 造价咨询子模块标签页显示控制
+            const currentPath = window.location.pathname;
+            const costModulePaths = [
+                'cost_project_info',
+                'cost_task_plan',
+                'cost_task_implementation',
+                'cost_review_result',
+                'cost_payment_status',
+                'cost_project_archive',
+                'cost_remuneration_distribution'
+            ];
+            
+            // 检查当前页面是否属于造价咨询子模块
+            const isCostModule = costModulePaths.some(path => currentPath.includes(path));
+            
+            if (isCostModule) {
+                $('#costModuleTabs').addClass('show');
+            }
+        });
+        
+        // 监听页面加载完成事件
+        window.addEventListener('load', function() {
+            // 页面所有资源加载完成后执行
+            console.log('Page fully loaded');
         });
     </script>
     <!-- 表格列宽拖拽调整功能 -->

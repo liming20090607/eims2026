@@ -1,0 +1,529 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ approval.contract_name }} - 合同审批详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:contract_approval_chain' %}">审批流程</a></li>
+<li class="breadcrumb-item active">{{ approval.contract_name|truncatechars:20 }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .detail-header {
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .detail-section {
+        margin-bottom: 30px;
+    }
+    
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #007bff;
+        border-left: 4px solid #007bff;
+        padding-left: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    
+    .info-label {
+        font-size: 13px;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        color: #212529;
+        font-weight: 600;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .status-draft { background-color: #6c757d; color: #fff; }
+    .status-pending { background-color: #ffc107; color: #000; }
+    .status-reviewing { background-color: #17a2b8; color: #fff; }
+    .status-approved { background-color: #28a745; color: #fff; }
+    .status-rejected { background-color: #dc3545; color: #fff; }
+    .status-cancelled { background-color: #6c757d; color: #fff; }
+    
+    .action-buttons {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #e9ecef;
+        text-align: center;
+    }
+    
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-item {
+        display: flex;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 30px;
+        bottom: -20px;
+        width: 2px;
+        background: #e9ecef;
+    }
+    
+    .timeline-item:last-child::before {
+        display: none;
+    }
+    
+    .timeline-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .timeline-content {
+        flex: 1;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+    }
+    
+    .attachment-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .attachment-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .attachment-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .attachment-icon {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="detail-container">
+        <!-- 标题栏 -->
+        <div class="detail-header d-flex justify-content-between align-items-center">
+            <h2><i class="bi bi-file-earmark-text me-2"></i>{{ approval.contract_name }}</h2>
+            <span class="status-badge status-{{ approval.status }}">
+                {{ approval.get_status_display }}
+            </span>
+        </div>
+        
+        <!-- 基本信息 -->
+        <div class="detail-section">
+            <h3 class="section-title">基本信息</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">审批标题</span>
+                    <span class="info-value">{{ approval.title }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">合同名称</span>
+                    <span class="info-value">{{ approval.contract_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">合同类别</span>
+                    <span class="info-value">{{ approval.get_contract_category_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">合同金额 (元)</span>
+                    <span class="info-value text-success">¥{{ approval.contract_amount|floatformat:2 }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">申请部门</span>
+                    <span class="info-value">{{ approval.department.name|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">发起人</span>
+                    <span class="info-value">{{ approval.initiator.username|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">发起时间</span>
+                    <span class="info-value">{{ approval.initiation_time|date:"Y-m-d H:i:s"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">申请人</span>
+                    <span class="info-value">{{ approval.applicant.username|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">提交时间</span>
+                    <span class="info-value">{{ approval.submitted_at|date:"Y-m-d H:i:s"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">当前审批人</span>
+                    <span class="info-value">
+                        {% if approval.current_approver %}
+                            {{ approval.current_approver.username }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">审批级别</span>
+                    <span class="info-value">第 {{ approval.approval_level }} 级 / 共 {{ approval.max_approval_level }} 级</span>
+                </div>
+                {% if approval.approved_at %}
+                <div class="info-item">
+                    <span class="info-label">审批通过时间</span>
+                    <span class="info-value">{{ approval.approved_at|date:"Y-m-d H:i:s" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 合同双方 -->
+        <div class="detail-section">
+            <h3 class="section-title">合同双方</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">合同甲方</span>
+                    <span class="info-value">{{ approval.party_a|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">合同乙方</span>
+                    <span class="info-value">{{ approval.party_b }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">服务周期</span>
+                    <span class="info-value">{{ approval.service_period_months|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">服务到期时间</span>
+                    <span class="info-value">{{ approval.service_deadline|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 附件列表 -->
+        {% if approval.attachments.all %}
+        <div class="detail-section">
+            <h3 class="section-title">附件资料</h3>
+            <ul class="attachment-list">
+                {% for attachment in approval.attachments.all %}
+                <li class="attachment-item">
+                    <div class="attachment-info">
+                        <i class="bi bi-file-earmark attachment-icon"></i>
+                        <div>
+                            <strong>{{ attachment.file_name }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                {{ attachment.get_file_type_display }} · 
+                                {{ attachment.file_size|filesizeformat }}
+                            </small>
+                        </div>
+                    </div>
+                    <a href="{{ attachment.file.url }}" target="_blank" class="btn btn-sm btn-info">
+                        <i class="bi bi-eye me-1"></i>预览
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <!-- 审批历史 -->
+        <div class="detail-section">
+            <h3 class="section-title">审批历史</h3>
+            <div class="timeline">
+                {% for record in records %}
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        {% if record.action == 'submit' %}
+                            <i class="bi bi-send"></i>
+                        {% elif record.action == 'approve' %}
+                            <i class="bi bi-check-circle"></i>
+                        {% elif record.action == 'reject' %}
+                            <i class="bi bi-x-circle"></i>
+                        {% elif record.action == 'cancel' %}
+                            <i class="bi bi-slash-circle"></i>
+                        {% else %}
+                            <i class="bi bi-chat"></i>
+                        {% endif %}
+                    </div>
+                    <div class="timeline-content">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>{{ record.operator.username }}</strong>
+                            <small class="text-muted">{{ record.created_at|date:"Y-m-d H:i:s" }}</small>
+                        </div>
+                        <div class="mt-1">
+                            <span class="badge bg-primary">{{ record.get_action_display }}</span>
+                            {% if record.next_approver %}
+                            <span class="badge bg-info ms-1">
+                                <i class="bi bi-arrow-right me-1"></i>下一步：{{ record.next_approver.username }}
+                            </span>
+                            {% endif %}
+                            {% if record.comment %}
+                            <p class="mb-0 mt-2 text-secondary" style="white-space: pre-wrap;">{{ record.comment }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">暂无审批记录</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            {% if approval.status == 'draft' or approval.status == 'rejected' %}
+            <a href="{% url 'eims_app:contract_approval_edit' approval.pk %}" class="btn btn-warning me-2">
+                <i class="bi bi-pencil me-1"></i>编辑
+            </a>
+            <form method="post" action="{% url 'eims_app:contract_approval_submit' approval.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-send me-1"></i>提交审批
+                </button>
+            </form>
+            {% endif %}
+            
+            {% if approval.status in 'pending,reviewing' and approval.applicant == request.user %}
+            <form method="post" action="{% url 'eims_app:contract_approval_cancel' approval.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary me-2" onclick="return confirm('确定要撤销该审批吗？')">
+                    <i class="bi bi-slash-circle me-1"></i>撤销审批
+                </button>
+            </form>
+            {% endif %}
+            
+            {% if approval.status in 'pending,reviewing' and approval.current_approver == request.user %}
+            <div class="dropdown">
+                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-check-circle me-1"></i>审批操作
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#approveModal">
+                            <i class="bi bi-check-circle me-1"></i>同意
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            <i class="bi bi-x-circle me-1"></i>退回
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+            
+            <a href="{% url 'eims_app:contract_approval_chain' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>返回列表
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 同意审批模态框 -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="{% url 'eims_app:contract_approval_approve' approval.pk %}">
+                {% csrf_token %}
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">同意审批</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">审批意见/建议 <small class="text-muted">(非必填)</small></label>
+                        <textarea name="submit_comment" class="form-control" rows="3" placeholder="请输入您的意见或建议..."></textarea>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">选择操作类型</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="action_type" id="actionFinalize" value="finalize" checked onchange="toggleApproverSelect()">
+                            <label class="form-check-label" for="actionFinalize">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                <strong>终结审批</strong> - 审批通过并生成合同台账
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="action_type" id="actionForward" value="forward" onchange="toggleApproverSelect()">
+                            <label class="form-check-label" for="actionForward">
+                                <i class="bi bi-arrow-right-circle-fill text-primary me-1"></i>
+                                <strong>转发到下一步</strong> - 指定下一位审批人继续审批
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="nextApproverSection" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">选择审批人指派方式</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="assign_method" id="assignAuto" value="auto" checked onchange="toggleManualApprover()">
+                                <label class="form-check-label" for="assignAuto">
+                                    <i class="bi bi-gear-fill text-info me-1"></i>
+                                    <strong>系统指定审批人</strong> - 根据审批流程自动指派
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="assign_method" id="assignManual" value="manual" onchange="toggleManualApprover()">
+                                <label class="form-check-label" for="assignManual">
+                                    <i class="bi bi-person-plus-fill text-warning me-1"></i>
+                                    <strong>自主选择审批人</strong> - 手动选择下一位审批人
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="manualApproverSelect" style="display: none;">
+                            <label class="form-label fw-bold">选择下一步审批人</label>
+                            <select name="next_approver" class="form-select" id="nextApproverSelect">
+                                <option value="">-- 请选择审批人 --</option>
+                                {% for user in available_approvers %}
+                                <option value="{{ user.pk }}">{{ user.username }} ({{ user.get_full_name|default:'未设置姓名' }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">提示：可选择其他部门主管或上级领导进行多级审批</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success" onclick="return validateApproveForm()">
+                        <i class="bi bi-check-circle me-1"></i>确认
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 退回模态框 -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'eims_app:contract_approval_reject' approval.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">退回审批</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">退回原因</label>
+                    <textarea name="comment" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-danger">确认退回</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// 切换审批人选择区域显示
+function toggleApproverSelect() {
+    const actionForward = document.getElementById('actionForward');
+    const nextApproverSection = document.getElementById('nextApproverSection');
+    
+    if (actionForward.checked) {
+        nextApproverSection.style.display = 'block';
+    } else {
+        nextApproverSection.style.display = 'none';
+    }
+}
+
+// 切换手动选择审批人下拉框
+function toggleManualApprover() {
+    const assignManual = document.getElementById('assignManual');
+    const manualApproverSelect = document.getElementById('manualApproverSelect');
+    
+    if (assignManual && assignManual.checked) {
+        if (manualApproverSelect) {
+            manualApproverSelect.style.display = 'block';
+        }
+    } else {
+        if (manualApproverSelect) {
+            manualApproverSelect.style.display = 'none';
+        }
+    }
+}
+
+// 验证同意表单
+function validateApproveForm() {
+    const actionForward = document.getElementById('actionForward');
+    
+    if (actionForward && actionForward.checked) {
+        const assignManual = document.getElementById('assignManual');
+        if (assignManual && assignManual.checked) {
+            // 如果选择了自主选择审批人，必须选择具体的人
+            const nextApproverSelect = document.getElementById('nextApproverSelect');
+            if (!nextApproverSelect || !nextApproverSelect.value) {
+                alert('⚠️ 请选择下一步审批人');
+                return false;
+            }
+        }
+        // 如果选择系统指定审批人，不需要额外验证
+    }
+    
+    return confirm('确定执行此操作吗？');
+}
+</script>
+{% endblock %}

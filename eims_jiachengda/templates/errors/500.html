@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>500 - 服务器错误</title>
+    <style>
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; text-align: center; padding: 50px; background: #f8f9fa; }
+        .container { max-width: 600px; margin: 0 auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #e74c3c; font-size: 72px; margin: 0 0 20px; }
+        p { font-size: 18px; color: #7f8c8d; line-height: 1.6; }
+        a { display: inline-block; margin-top: 20px; padding: 10px 25px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; }
+        a:hover { background: #2980b9; }
+        .error-id { margin-top: 15px; font-size: 14px; color: #95a5a6; }
+        .footer { margin-top: 30px; color: #95a5a6; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>500</h1>
+        <p>服务器遇到意外错误，请稍后再试</p>
+        <p>我们的技术团队已收到通知，正在紧急处理中</p>
+        <a href="{% url 'projects:eims_index' %}">返回首页</a>
+        <div class="error-id">错误ID: {{ request_id|default:"N/A" }}</div>
+        <div class="footer">
+            协同 AI 办公系统 (AOS) &copy; 2026
+        </div>
+    </div>
+</body>
+</html>

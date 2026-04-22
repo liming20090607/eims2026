@@ -175,7 +175,8 @@ def duplicate_data_to_tenant_b():
     
     # 4. 复制项目台账
     print("\n📁 复制项目台账数据...")
-    projects_a = ProjectDetail.objects.filter(tenant=tenant_a, is_deleted=False)
+    # 注意：ProjectDetail模型没有is_deleted字段，直接按tenant过滤
+    projects_a = ProjectDetail.objects.filter(tenant=tenant_a)
     
     for proj in projects_a:
         new_proj = ProjectDetail(

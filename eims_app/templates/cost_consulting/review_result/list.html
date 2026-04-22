@@ -1,0 +1,1858 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+<!-- Version 2.0 - Added detail panel and clickable rows -->
+
+{% block title %}造价咨询 - 审核成果{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="#">造价咨询</a></li>
+<li class="breadcrumb-item active">审核成果</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 隐藏页脚，最大化视口 */
+    body { padding-bottom: 0 !important; }
+    footer, .footer { display: none !important; height: 0 !important; overflow: hidden !important; }
+    
+    /* 锁定 content-wrapper，禁止外层滚动 */
+    .content-wrapper {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* 主内容区 - 占满剩余空间 */
+    .main-content > .container-fluid {
+        overflow: hidden !important;
+        height: calc(100vh - 60px) !important;
+        max-height: calc(100vh - 60px) !important;
+        padding: 0 !important;
+    }
+    
+    /* 表格容器 - 启用水平和垂直滚动 */
+    .table-responsive {
+        flex: 1 !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+    }
+    
+    /* 自定义滚动条样式 */
+    .table-responsive::-webkit-scrollbar {
+        height: 12px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* 表格基础样式 */
+    .table {
+        min-width: 2200px;
+        width: max-content;
+        margin-bottom: 0 !important;
+    }
+    
+    /* 固定表头 */
+    .table thead th {
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+        background-color: #e3f2fd;
+        color: #1565c0;
+        padding: 10px 10px;
+        vertical-align: middle;
+        border-bottom: 2px solid #dee2e6;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+    }
+    
+    /* 固定顶部区域 */
+    .fixed-top-section {
+        flex-shrink: 0 !important;
+        z-index: 100 !important;
+        background: #f8f9fc !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* 可滚动表格区域 */
+    .scrollable-table-section {
+        flex: 1 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+    }
+    
+    /* 可拖动分隔条 */
+    .resize-handle {
+        height: 8px;
+        background: linear-gradient(to bottom, #dee2e6 0%, #adb5bd 100%);
+        cursor: ns-resize;
+        position: relative;
+        z-index: 1000;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .resize-handle:hover {
+        background: linear-gradient(to bottom, #adb5bd 0%, #6c757d 100%);
+        height: 10px;
+    }
+    
+    .resize-handle::after {
+        content: "⋮⋮";
+        color: #6c757d;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+    
+    .resize-handle:active {
+        background: linear-gradient(to bottom, #6c757d 0%, #495057 100%);
+    }
+    
+    /* 数据表格卡片 */
+    .data-table-card {
+        border: 1px solid #dee2e6;
+        border-top: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        
+        .card-body {
+            padding: 0 !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: visible !important;
+        }
+    }
+    
+    /* 可拖动调整高度的把手 */
+    .resize-handle {
+        position: relative !important;
+        height: 16px !important;
+        background: linear-gradient(to bottom, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.3)) !important;
+        cursor: ns-resize !important;
+        z-index: 1000 !important;
+        transition: all 0.2s ease !important;
+        flex-shrink: 0 !important;
+        border-top: 1px solid rgba(13, 110, 253, 0.3) !important;
+        border-bottom: 2px solid #0d6efd !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .resize-handle:hover {
+        background: linear-gradient(to bottom, rgba(13, 110, 253, 0.2), rgba(13, 110, 253, 0.5)) !important;
+        height: 20px !important;
+        border-bottom-width: 3px !important;
+        box-shadow: 0 -2px 8px rgba(13, 110, 253, 0.3) !important;
+    }
+    
+    .resize-handle::before {
+        content: '⋮⋮⋮' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        color: #0d6efd !important;
+        font-size: 12px !important;
+        letter-spacing: 2px !important;
+        font-weight: bold !important;
+        pointer-events: none !important;
+    }
+    
+    .resize-handle::after {
+        display: none;
+    }
+    
+    .resize-handle:hover::before {
+        color: rgba(0, 123, 255, 1);
+    }
+    
+    .resize-handle.dragging {
+        background: linear-gradient(to bottom, transparent, rgba(0, 123, 255, 0.5));
+    }
+    
+    /* 分页容器样式 */
+    .pagination-container {
+        flex-shrink: 0 !important;
+        padding: 0.5rem 1rem;
+        background: #f8f9fc;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .pagination-container .pagination {
+        margin-bottom: 0;
+    }
+    
+    .table tbody td {
+        font-size: 13px;
+        vertical-align: top;
+        padding: 10px 10px;
+        white-space: normal;
+        word-wrap: break-word;
+        word-break: break-all;
+        line-height: 1.5;
+    }
+    
+    /* 操作列 - 保持一行不换行 */
+    .table tbody td:last-child {
+        white-space: nowrap !important;
+        vertical-align: middle;
+        min-width: 120px;
+    }
+    
+    /* ===== 表头排序样式 (Django Admin风格) ===== */
+    th.sortable {
+        cursor: pointer !important;
+        user-select: none !important;
+        position: relative !important;
+        transition: background-color 0.2s !important;
+        white-space: nowrap !important;
+    }
+    
+    th.sortable:hover {
+        background-color: #e9ecef !important;
+    }
+    
+    /* 优先级数字徽章 */
+    th.sortable .sort-priority {
+        display: inline-block;
+        margin-left: 4px;
+        margin-right: 2px;
+        padding: 1px 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1.2;
+        border-radius: 3px;
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.3);
+        transition: all 0.2s ease;
+        vertical-align: middle;
+        pointer-events: none;  /* 允许点击事件穿透到父元素 */
+    }
+    
+    /* 当前排序列的高亮样式 */
+    th.sortable.sorted-asc .sort-priority,
+    th.sortable.sorted-desc .sort-priority {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+        box-shadow: 0 1px 3px rgba(13, 110, 253, 0.3);
+    }
+    
+    /* 排序方向箭头 */
+    th.sortable .sort-direction {
+        display: inline-block;
+        margin-left: 2px;
+        font-size: 0.7rem;
+        vertical-align: middle;
+        line-height: 1;
+        color: #0d6efd;
+        font-weight: 700;
+        pointer-events: none;  /* 允许点击事件穿透到父元素 */
+    }
+    
+    th.sortable.sorted-asc .sort-direction::before {
+        content: '▲';
+    }
+    
+    th.sortable.sorted-desc .sort-direction::before {
+        content: '▼';
+    }
+    
+    /* 未排序时隐藏方向箭头 */
+    th.sortable:not(.sorted-asc):not(.sorted-desc) .sort-direction {
+        display: none;
+    }
+    
+    /* 筛选漏斗图标 */
+    th.sortable .filter-indicator {
+        display: none;
+        margin-left: 4px;
+        font-size: 0.85rem;
+        vertical-align: middle;
+        color: #0d6efd;
+        cursor: pointer;
+    }
+    
+    th.sortable.filtered .filter-indicator {
+        display: inline-block;
+    }
+    
+    th.sortable.filtered {
+        background-color: rgba(13, 110, 253, 0.08) !important;
+    }
+    
+    /* 操作列内的按钮容器 */
+    .table tbody td:last-child .btn-group,
+    .table tbody td:last-child .d-flex,
+    .table tbody td:last-child > * {
+        white-space: nowrap !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    /* ===== 分页导航样式 - 固定在表格底部 ===== */
+    .pagination-wrapper {
+        flex-shrink: 0;
+        background: #f8f9fc;
+        border-top: 1px solid #e3e6f0;
+        padding: 0.4rem 0;
+        box-shadow: none;
+        position: relative;
+        z-index: 10;
+        margin-top: 0;
+        width: 100%;
+    }
+    
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.3rem;
+        width: 100%;
+    }
+    
+    .pagination-btn {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+        color: #4e73df;
+        background: white;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.25rem;
+        text-decoration: none;
+        line-height: 1.2;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination-btn:hover {
+        background: #4e73df;
+        color: white;
+        border-color: #4e73df;
+        text-decoration: none;
+    }
+    
+    .pagination-btn.disabled {
+        color: #6c757d;
+        background: #e9ecef;
+        border-color: #d1d3e2;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .pagination-info {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        background: #4e73df;
+        border: 1px solid #4e73df;
+        border-radius: 0.25rem;
+        line-height: 1.2;
+    }
+    
+    /* 统计信息样式 */
+    .statistics-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .statistics-info strong {
+        font-weight: 600;
+    }
+    
+    /* 详情面板样式 */
+    .detail-panel {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 20px;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+    
+    .detail-header {
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .detail-header h4 {
+        color: #007bff;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .detail-section {
+        margin-bottom: 20px;
+    }
+    
+    .detail-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #6c757d;
+        border-left: 3px solid #007bff;
+        padding-left: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .detail-row {
+        display: flex;
+        margin-bottom: 8px;
+    }
+    
+    /* 详情字段网格 - 多列网格布局，充分利用空间 */
+    .detail-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 6px 10px;
+        width: 100%;
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 4px 10px;
+        background: white;
+        border-radius: 3px;
+        border: none;
+        min-height: 28px;
+        flex: 0 0 calc(20% - 10px);
+        box-sizing: border-box;
+    }
+    
+    .detail-label {
+        width: 140px;
+        font-weight: 500;
+        color: #495057;
+        flex-shrink: 0;
+        font-size: 0.8rem;
+    }
+    
+    .detail-grid .detail-label {
+        width: 80px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+    
+    .detail-grid .detail-label::after {
+        content: ':';
+        margin-left: 2px;
+    }
+    
+    .detail-value {
+        color: #212529;
+        flex: 1;
+        font-size: 0.85rem;
+        word-break: break-word;
+    }
+    
+    .detail-grid .detail-value {
+        font-size: 0.78rem;
+        padding-left: 4px;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* 列表容器 - 全宽 */
+    .list-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 10px;
+    }
+    
+    /* 可点击的行 */
+    .clickable-row {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .clickable-row:hover {
+        background-color: rgba(0, 123, 255, 0.05) !important;
+    }
+    
+    .clickable-row.active {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+        border-left: 3px solid #007bff;
+    }
+    
+    /* 状态徽章 */
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    .status-not_started { background-color: #ffc107; color: #000; }
+    .status-in_progress { background-color: #28a745; color: #fff; }
+    .status-completed { background-color: #17a2b8; color: #fff; }
+    .status-archived { background-color: #6c757d; color: #fff; }
+    
+    /* 搜索栏 */
+    .search-bar {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    /* 操作按钮 - 紧凑图标风格 */
+    .btn-action {
+        padding: 3px 4px;
+        font-size: 13px;
+        margin: 0 2px;
+        border-radius: 3px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .btn-action:active {
+        transform: translateY(0);
+    }
+    
+    /* 不同颜色按钮的悬停效果 */
+    .btn-info.btn-action:hover {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .btn-warning.btn-action:hover {
+        background-color: #e0a800;
+        color: white;
+    }
+    
+    .btn-danger.btn-action:hover {
+        background-color: #c82333;
+        color: white;
+    }
+    
+    /* 禁用状态的删除按钮 */
+    .btn-disabled-custom {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+        pointer-events: none !important;
+    }
+    
+    .btn-disabled-custom:hover,
+    .btn-disabled-custom:focus,
+    .btn-disabled-custom:active {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+    }
+    
+    /* 固定操作列 */
+    .table-responsive {
+        position: relative;
+        max-height: calc(100vh - 350px);
+        overflow: auto;
+    }
+    
+    .table-responsive thead th.sticky-col,
+    .table-responsive tbody td.sticky-col {
+        position: sticky;
+        right: 0;
+        background: inherit;
+        z-index: 3;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    }
+    
+    .table-responsive thead th.sticky-col {
+        z-index: 4;
+        background-color: #f8f9fa;
+    }
+    
+    .table-responsive tbody tr:hover td.sticky-col {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid content-wrapper" style="padding: 0 !important; margin: 0 !important;">
+    <!-- ===== 固定顶部区域 ===== -->
+    <div class="fixed-top-section" style="padding: 0.2rem 1rem 0.15rem 1rem !important; margin-bottom: 0 !important;">
+        <div class="d-flex justify-content-between align-items-center mb-0" style="margin-bottom: 0 !important;">
+            <div>
+                <h2 class="mb-0" style="font-size: 1.2rem !important; line-height: 1.2 !important;"><i class="bi bi-calendar-check me-2"></i>任务计划</h2>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <!-- 记录统计 -->
+                <div class="me-2">
+                    <span class="badge bg-primary" style="font-size: 0.9rem !important; padding: 5px 10px !important; line-height: 1.5 !important; display: inline-flex; align-items: center;">📊 共 {{ total_count }} 条记录</span>
+                    {% if search_key or project_status %}
+                        <span class="text-muted ms-2"><small>（当前筛选条件）</small></span>
+                    {% endif %}
+                </div>
+                <!-- 批量操作按钮 - 默认隐藏，选择记录后显示 -->
+                <div id="batchActions" style="display: none;">
+                    <span class="text-muted me-2">已选择 <strong id="selectedCount">0</strong> 条</span>
+                    {% if user.is_superuser %}
+                    <button type="button" class="btn btn-danger btn-sm" onclick="submitBatchDelete()" style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; line-height: 1.5 !important;">
+                        <i class="bi bi-trash me-1"></i>批量删除
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-secondary btn-sm me-2 disabled" title="批量删除（仅超级管理员）" disabled style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; line-height: 1.5 !important;">
+                        <i class="bi bi-trash me-1"></i>批量删除
+                    </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-info btn-sm me-2" onclick="submitBatchExport()" style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; line-height: 1.5 !important;">
+                        <i class="bi bi-download me-1"></i>批量导出
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm me-2" onclick="cancelSelection()" style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; line-height: 1.5 !important;">
+                        <i class="bi bi-x-circle me-1"></i>取消选择
+                    </button>
+                </div>
+                <!-- 常规操作按钮 -->
+                <div>
+                    <a href="{% url 'eims_app:cost_review_result_export' %}" class="btn btn-info" id="exportAllBtn" style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; min-width: 88px !important; line-height: 1.5 !important;" title="导出所有审核成果数据">
+                        <i class="bi bi-download me-1"></i>导出全部
+                    </a>
+                    <button type="button" class="btn btn-info" id="exportSelectedBtn" onclick="submitBatchExport()" disabled style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; min-width: 88px !important; line-height: 1.5 !important; opacity: 0.5;" title="导出当前选中的审核成果">
+                        <i class="bi bi-download me-1"></i>导出所选
+                    </button>
+                    {% if request.user.is_superuser %}
+                    <a href="#" class="btn btn-success" style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; min-width: 88px !important; line-height: 1.5 !important;" title="从Excel文件导入审核成果数据">
+                        <i class="bi bi-upload me-1"></i>导入数据
+                    </a>
+                    {% else %}
+                    <button type="button" class="btn btn-secondary disabled" style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; min-width: 88px !important; line-height: 1.5 !important;" title="导入数据（仅超级管理员）">
+                        <i class="bi bi-upload me-1"></i>导入数据
+                    </button>
+                    {% endif %}
+                    <button type="button" id="editSelectedBtn" class="btn btn-primary disabled" onclick="editSelectedProject()" disabled style="padding: 4.4px 15.4px !important; font-size: 0.99rem !important; height: auto !important; min-width: 88px !important; line-height: 1.5 !important; opacity: 0.7; cursor: not-allowed;" title="请先选择表格中的一条记录">
+                        <i class="bi bi-pencil me-1"></i>编辑
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ===== 可滚动表格区域 ===== -->
+    <div class="scrollable-table-section">
+        <div class="card data-table-card">
+            <div class="card-body">
+                <!-- 搜索筛选栏 -->
+                <form method="get" action="{% url 'eims_app:cost_review_result_list' %}" style="padding: 0.35rem 1rem; border-bottom: 1px solid #dee2e6; background: #f8f9fc;">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-6">
+                            <input type="text" name="search" class="form-control form-control-sm" 
+                                   placeholder="搜索项目编号、名称..." 
+                                   value="{{ search_key }}"
+                                   style="height: 37.5px; font-size: 14px;">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="project_status" class="form-select form-select-sm"
+                                    style="height: 37.5px; font-size: 14px;">
+                                <option value="">所有项目状态</option>
+                                <option value="not_started" {% if project_status == 'not_started' %}selected{% endif %}>未开始</option>
+                                <option value="in_progress" {% if project_status == 'in_progress' %}selected{% endif %}>进行中</option>
+                                <option value="completed" {% if project_status == 'completed' %}selected{% endif %}>已完成</option>
+                                <option value="archived" {% if project_status == 'archived' %}selected{% endif %}>已归档</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary btn-sm w-100"
+                                    style="height: 37.5px; font-size: 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-search me-1"></i>搜索
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- 数据表格 -->
+                <div class="table-responsive" id="tableContainer">
+                    <form method="post" id="batchForm" action="{% url 'eims_app:cost_review_result_batch_delete' %}">
+                        {% csrf_token %}
+                        <table class="table table-hover table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center" width="50">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </th>
+                                <th class="text-center">序号</th>
+                                <th class="sortable" data-field="project_code" onclick="handleSort('project_code', event)">项目编号<span class="sort-priority"></span><span class="sort-direction"></span><span class="filter-indicator">🔍</span></th>
+                                <th class="sortable" data-field="project_name" onclick="handleSort('project_name', event)">项目名称<span class="sort-priority"></span><span class="sort-direction"></span><span class="filter-indicator">🔍</span></th>
+                                <th class="sortable" data-field="review_compiler" onclick="handleSort('review_compiler', event)">编制人<span class="sort-priority"></span><span class="sort-direction"></span><span class="filter-indicator">🔍</span></th>
+                                <th class="sortable text-end" data-field="review_final_approved_amount" onclick="handleSort('review_final_approved_amount', event)">审定金额(万)<span class="sort-priority"></span><span class="sort-direction"></span><span class="filter-indicator">🔍</span></th>
+                                <th class="sortable" data-field="created_at" onclick="handleSort('created_at', event)">创建时间<span class="sort-priority"></span><span class="sort-direction"></span><span class="filter-indicator">🔍</span></th>
+                                <th class="text-center sticky-col">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in page_obj %}
+                            <tr class="clickable-row {% if current_project and item.pk == current_project.pk %}active{% endif %}" 
+                                data-project-id="{{ item.pk }}"
+                                data-project-code="{{ item.project_code|default:'' }}"
+                                data-project-name="{{ item.project_name|default:'' }}"
+                                data-review-compiler="{{ item.review_compiler|default:'' }}"
+                                data-review-final-approved-amount="{{ item.review_final_approved_amount|default:0 }}"
+                                data-created-at="{{ item.created_at|date:'Y-m-d H:i'|default:'' }}"
+                                title="双击查看详情">
+                                <td class="text-center">
+                                    <input type="checkbox" name="ids" value="{{ item.pk }}" class="form-check-input item-checkbox"
+                                           onclick="event.stopPropagation();">
+                                </td>
+                                <td class="text-center">{{ forloop.counter|add:page_obj.start_index|add:-1 }}</td>
+                                <td><code>{{ item.project_code|default:"-" }}</code></td>
+                                <td>{{ item.project_name|default:"-" }}</td>
+                                <td>{{ item.review_compiler|default:"-" }}</td>
+                                <td class="text-end">{{ item.review_final_approved_amount|floatformat:2 }}</td>
+                                <td>{{ item.created_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                                <td class="text-center sticky-col">
+                                    <a href="{% url 'eims_app:cost_review_result_detail' item.pk %}" 
+                                       class="btn btn-sm btn-info btn-action" title="查看">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if user.is_superuser %}
+                                    <a href="{% url 'eims_app:cost_review_result_edit' item.pk %}" 
+                                       class="btn btn-sm btn-warning btn-action" title="编辑">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% else %}
+                                    <button type="button" class="btn btn-sm btn-disabled-custom" title="编辑（仅超级管理员）" disabled>
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    {% endif %}
+                                    {% if user.is_superuser %}
+                                    <a href="{% url 'eims_app:cost_review_result_delete' item.pk %}" 
+                                       class="btn btn-sm btn-danger btn-action" 
+                                       onclick="return confirm('确定要删除这条记录吗？')" title="删除">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% else %}
+                                    <button type="button" class="btn btn-sm btn-disabled-custom" title="删除（仅超级管理员）" disabled>
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox display-4"></i>
+                                    <p class="mt-2">暂无数据</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    </form>
+                </div>
+                
+                <!-- 可拖动调整高度的把手 -->
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 项目概览面板（始终显示） ===== -->
+<div id="projectOverview" style="flex-shrink: 0; background: #f8f9fc; border-top: 1px solid #dee2e6; max-height: 30vh; overflow-y: auto;">
+    <div style="padding: 6px 10px 2px 10px;">
+        <!-- 提示文字（未选择时显示，有数据时隐藏） -->
+        <div id="overviewHint" class="text-center text-muted py-2" style="{% if current_project %}display: none;{% endif %}">
+            <i class="bi bi-hand-index" style="font-size: 1.5rem;"></i>
+            <p class="mb-0 mt-1">请点击表格中的某一行以查看详细信息</p>
+        </div>
+        
+        <!-- 详情内容（有数据时显示） -->
+        <div id="overviewContent" style="{% if current_project %}display: block;{% else %}display: none;{% endif %}">
+            <div class="detail-section" style="margin-bottom: 6px;">
+                <div class="detail-grid">
+                    <!-- 基本信息 -->
+                    <div class="detail-item">
+                        <span class="detail-label">项目编号</span>
+                        <span class="detail-value" id="detail-project-code"><code>-</code></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">项目名称</span>
+                        <span class="detail-value" id="detail-project-name"><strong>-</strong></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">项目类型</span>
+                        <span class="detail-value" id="detail-project-type">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">编制人</span>
+                        <span class="detail-value" id="detail-compiler">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">编制金额(万)</span>
+                        <span class="detail-value text-success" id="detail-compilation-amount">-</span>
+                    </div>
+                    
+                    <!-- 一审信息 -->
+                    <div class="detail-item">
+                        <span class="detail-label">一审人员</span>
+                        <span class="detail-value" id="detail-first-reviewer">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">一审开始时间</span>
+                        <span class="detail-value" id="detail-first-review-start">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">一审计划工期</span>
+                        <span class="detail-value" id="detail-first-review-duration">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">一审计划完成</span>
+                        <span class="detail-value" id="detail-first-review-completion">-</span>
+                    </div>
+                    
+                    <!-- 二审信息 -->
+                    <div class="detail-item">
+                        <span class="detail-label">二审人员</span>
+                        <span class="detail-value" id="detail-second-reviewer">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">二审开始时间</span>
+                        <span class="detail-value" id="detail-second-review-start">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">二审计划工期</span>
+                        <span class="detail-value" id="detail-second-review-duration">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">二审计划完成</span>
+                        <span class="detail-value" id="detail-second-review-completion">-</span>
+                    </div>
+                    
+                    <!-- 三审信息 -->
+                    <div class="detail-item">
+                        <span class="detail-label">三审人员</span>
+                        <span class="detail-value" id="detail-third-reviewer">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">三审开始时间</span>
+                        <span class="detail-value" id="detail-third-review-start">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">三审计划工期</span>
+                        <span class="detail-value" id="detail-third-review-duration">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">三审计划完成</span>
+                        <span class="detail-value" id="detail-third-review-completion">-</span>
+                    </div>
+                    <div class="detail-item" style="flex: 0 0 auto; margin-left: auto;">
+                        <a href="javascript:void(0);" id="detailEditBtn" class="btn btn-warning" style="padding: 4.4px 13.2px; font-size: 0.935rem; line-height: 1.4; margin-right: 6px; min-width: 77px; text-align: center;">
+                            <i class="bi bi-pencil me-1"></i>编辑
+                        </a>
+                        <a href="javascript:void(0);" id="detailViewBtn" class="btn btn-info" style="padding: 4.4px 13.2px; font-size: 0.935rem; line-height: 1.4; min-width: 88px; text-align: center;">
+                            <i class="bi bi-eye me-1"></i>查看详情
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 分页导航（始终显示） ===== -->
+{% if page_obj.paginator.num_pages > 1 or page_obj.number == 1 %}
+<div class="pagination-wrapper" style="flex-shrink: 0; background: #f8f9fc; border-top: 1px solid #e3e6f0; padding: 0.4rem 0; box-shadow: none; position: relative; z-index: 10; margin-top: 0; width: 100%;">
+    <nav aria-label="分页导航">
+        <div class="pagination-container">
+            <!-- 统计信息 - 靠左 -->
+            <div class="statistics-info" style="position: absolute; left: 1rem; white-space: nowrap;">
+                <span>总记录数: <strong class="text-primary">{{ page_obj.paginator.count }}</strong> 条</span>
+                <span class="ms-2">当前页: <strong class="text-success">{{ page_obj.number }}</strong> / {{ page_obj.paginator.num_pages }}</span>
+                <span class="ms-2">本页: <strong class="text-info">{{ page_obj|length }}</strong> 条</span>
+            </div>
+            
+            <!-- 分页导航 - 居中 -->
+            {% if page_obj.has_previous %}
+            <a href="?page=1&search={{ search_key }}&project_status={{ project_status }}&sort_field={{ sort_field }}&sort_order={{ sort_order }}" class="pagination-btn">
+                <i class="bi bi-chevron-double-left"></i> 首页
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search_key }}&project_status={{ project_status }}&sort_field={{ sort_field }}&sort_order={{ sort_order }}" class="pagination-btn">
+                <i class="bi bi-chevron-left"></i> 上一页
+            </a>
+            {% else %}
+            <span class="pagination-btn disabled">
+                <i class="bi bi-chevron-double-left"></i> 首页
+            </span>
+            <span class="pagination-btn disabled">
+                <i class="bi bi-chevron-left"></i> 上一页
+            </span>
+            {% endif %}
+            
+            <span class="pagination-info">
+                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search_key }}&project_status={{ project_status }}&sort_field={{ sort_field }}&sort_order={{ sort_order }}" class="pagination-btn">
+                下一页 <i class="bi bi-chevron-right"></i>
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_key }}&project_status={{ project_status }}&sort_field={{ sort_field }}&sort_order={{ sort_order }}" class="pagination-btn">
+                末页 <i class="bi bi-chevron-double-right"></i>
+            </a>
+            {% else %}
+            <span class="pagination-btn disabled">
+                下一页 <i class="bi bi-chevron-right"></i>
+            </span>
+            <span class="pagination-btn disabled">
+                末页 <i class="bi bi-chevron-double-right"></i>
+            </span>
+            {% endif %}
+        </div>
+    </nav>
+</div>
+{% endif %}
+
+<script>
+// Update batch actions visibility and count
+function updateBatchActions() {
+    var checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    var count = checkedBoxes.length;
+    var batchActions = document.getElementById('batchActions');
+    var selectedCount = document.getElementById('selectedCount');
+    var exportSelectedBtn = document.getElementById('exportSelectedBtn');
+    
+    selectedCount.textContent = count;
+    
+    if (count > 0) {
+        batchActions.style.display = 'block';
+        if (exportSelectedBtn) {
+            exportSelectedBtn.disabled = false;
+            exportSelectedBtn.style.opacity = '1';
+        }
+    } else {
+        batchActions.style.display = 'none';
+        if (exportSelectedBtn) {
+            exportSelectedBtn.disabled = true;
+            exportSelectedBtn.style.opacity = '0.5';
+        }
+    }
+}
+
+// Submit batch delete
+function submitBatchDelete() {
+    var checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('请至少选择一条记录');
+        return;
+    }
+    
+    if (!confirm('确定要删除选中的 ' + checkedBoxes.length + ' 条记录吗？此操作不可恢复！')) {
+        return;
+    }
+    
+    var form = document.getElementById('batchForm');
+    form.action = '/dingce/cost_review_result/batch_delete/';
+    form.submit();
+}
+
+// Submit batch export
+function submitBatchExport() {
+    var checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('请至少选择一条记录');
+        return;
+    }
+    
+    // Collect selected IDs
+    var ids = [];
+    for (var i = 0; i < checkedBoxes.length; i++) {
+        ids.push(checkedBoxes[i].value);
+    }
+    window.location.href = '/dingce/cost_review_result/export/?ids=' + ids.join(',');
+}
+
+// Cancel selection
+function cancelSelection() {
+    var checkboxes = document.querySelectorAll('.item-checkbox');
+    for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = false;
+    }
+    var selectAll = document.getElementById('selectAll');
+    if (selectAll) selectAll.checked = false;
+    updateBatchActions();
+    
+    // 禁用编辑按钮
+    var editBtn = document.getElementById('editSelectedBtn');
+    if (editBtn) {
+        editBtn.disabled = true;
+        editBtn.classList.add('disabled');
+        editBtn.style.opacity = '0.7';
+        editBtn.style.cursor = 'not-allowed';
+        editBtn.setAttribute('data-project-id', '');
+        editBtn.setAttribute('title', '请先选择表格中的一条记录');
+    }
+    
+    // 清除表格行的选中状态
+    var allRows = document.querySelectorAll('.clickable-row');
+    for (var i = 0; i < allRows.length; i++) {
+        allRows[i].classList.remove('active');
+    }
+}
+
+// 编辑选中的项目
+function editSelectedProject() {
+    var editBtn = document.getElementById('editSelectedBtn');
+    var projectId = editBtn ? editBtn.getAttribute('data-project-id') : null;
+    if (!projectId) {
+        alert('请先选择表格中的一条记录');
+        return;
+    }
+    window.location.href = '/dingce/cost_review_result/' + projectId + '/edit/';
+}
+
+// Initialize event listeners after page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all/deselect all
+    var selectAllCheckbox = document.getElementById('selectAll');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            var isChecked = this.checked;
+            var checkboxes = document.querySelectorAll('.item-checkbox');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = isChecked;
+            }
+            updateBatchActions();
+        });
+    }
+
+    // Update state when individual items are selected
+    var itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    for (var i = 0; i < itemCheckboxes.length; i++) {
+        (function(cb) {
+            cb.addEventListener('change', function(e) {
+                if (e) e.stopPropagation();
+                updateBatchActions();
+            });
+        })(itemCheckboxes[i]);
+    }
+
+    // Click to select project, double-click to view details
+    var clickableRows = document.querySelectorAll('.clickable-row');
+    
+    for (var i = 0; i < clickableRows.length; i++) {
+        (function(row) {
+            var clickTimeout = null;
+        
+        row.addEventListener('click', function(e) {
+            if (e.target.type === 'checkbox') {
+                return;
+            }
+            
+            if (clickTimeout) {
+                clearTimeout(clickTimeout);
+            }
+            
+            var projectId = this.getAttribute('data-project-id');
+            selectProject(projectId, this);
+            
+            clickTimeout = setTimeout(function() {
+                clickTimeout = null;
+            }, 300);
+        });
+        
+        row.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (clickTimeout) {
+                clearTimeout(clickTimeout);
+                clickTimeout = null;
+            }
+            var projectId = this.getAttribute('data-project-id');
+            window.location.href = '/dingce/cost_review_result/' + projectId + '/';
+        });
+        })(clickableRows[i]);
+    }
+    
+    // Highlight active row on page load
+    var activeRow = document.querySelector('.clickable-row.active');
+    if (activeRow) {
+        var projectId = activeRow.getAttribute('data-project-id');
+        if (projectId) {
+            selectProject(projectId, activeRow);
+        }
+    }
+    
+    // Auto-scroll to detail panel if needed
+    var showDetail = {{ show_detail|default:"false"|yesno:"true,false" }};
+    var currentPk = '{{ current_project.pk|default:"0" }}';
+    if (showDetail && currentPk && currentPk !== '0') {
+        var firstRow = document.querySelector('.clickable-row');
+        if (firstRow && !firstRow.classList.contains('active')) {
+            firstRow.classList.add('active');
+        }
+        
+        var detailPanel = document.getElementById('projectOverview');
+        if (detailPanel) {
+            setTimeout(function() {
+                detailPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
+        }
+    }
+});
+
+// Select project and update detail panel
+function selectProject(projectId, currentRow) {
+    var url = new URL(window.location);
+    url.searchParams.set('current_id', projectId);
+    window.history.pushState({}, '', url);
+    
+    var allRows = document.querySelectorAll('.clickable-row');
+    for (var i = 0; i < allRows.length; i++) {
+        allRows[i].classList.remove('active');
+    }
+    
+    currentRow.classList.add('active');
+    
+    // 激活编辑按钮
+    var editBtn = document.getElementById('editSelectedBtn');
+    if (editBtn) {
+        editBtn.disabled = false;
+        editBtn.classList.remove('disabled');
+        editBtn.style.opacity = '1';
+        editBtn.style.cursor = 'pointer';
+        editBtn.setAttribute('data-project-id', projectId);
+        editBtn.setAttribute('title', '编辑当前选中的项目');
+    }
+    
+    var overviewPanel = document.getElementById('projectOverview');
+    var overviewHint = document.getElementById('overviewHint');
+    var overviewContent = document.getElementById('overviewContent');
+    if (overviewPanel) overviewPanel.style.display = 'block';
+    if (overviewHint) overviewHint.style.display = 'none';
+    if (overviewContent) overviewContent.style.display = 'block';
+    
+    var data = {
+        project_id: projectId,
+        project_code: currentRow.getAttribute('data-project-code'),
+        project_name: currentRow.getAttribute('data-project-name'),
+        project_type: currentRow.getAttribute('data-project-type'),
+        compiler: currentRow.getAttribute('data-compiler'),
+        compilation_amount: currentRow.getAttribute('data-compilation-amount'),
+        first_reviewer: currentRow.getAttribute('data-first-reviewer'),
+        first_review_start: currentRow.getAttribute('data-first-review-start'),
+        first_review_duration: currentRow.getAttribute('data-first-review-duration'),
+        first_review_completion: currentRow.getAttribute('data-first-review-completion'),
+        second_reviewer: currentRow.getAttribute('data-second-reviewer'),
+        second_review_start: currentRow.getAttribute('data-second-review-start'),
+        second_review_duration: currentRow.getAttribute('data-second-review-duration'),
+        second_review_completion: currentRow.getAttribute('data-second-review-completion'),
+        third_reviewer: currentRow.getAttribute('data-third-reviewer'),
+        third_review_start: currentRow.getAttribute('data-third-review-start'),
+        third_review_duration: currentRow.getAttribute('data-third-review-duration'),
+        third_review_completion: currentRow.getAttribute('data-third-review-completion')
+    };
+    
+    updateDetailPanel(data);
+    
+    var editBtn = document.getElementById('detailEditBtn');
+    var viewBtn = document.getElementById('detailViewBtn');
+    if (editBtn) {
+        editBtn.href = '/dingce/cost_review_result/' + projectId + '/edit/';
+    }
+    if (viewBtn) {
+        viewBtn.href = '/dingce/cost_review_result/' + projectId + '/';
+    }
+    
+    var detailPanel = document.getElementById('projectOverview');
+    if (detailPanel) {
+        detailPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+// Update detail panel content
+function updateDetailPanel(data) {
+    var fieldMap = {
+        'detail-project-code': data.project_code || '-',
+        'detail-project-name': data.project_name || '-',
+        'detail-project-type': data.project_type || '-',
+        'detail-compiler': data.compiler || '-',
+        'detail-compilation-amount': data.compilation_amount ? '¥' + parseFloat(data.compilation_amount).toFixed(2) : '-',
+        'detail-first-reviewer': data.first_reviewer || '-',
+        'detail-first-review-start': data.first_review_start || '-',
+        'detail-first-review-duration': data.first_review_duration ? data.first_review_duration + ' 天' : '-',
+        'detail-first-review-completion': data.first_review_completion || '-',
+        'detail-second-reviewer': data.second_reviewer || '-',
+        'detail-second-review-start': data.second_review_start || '-',
+        'detail-second-review-duration': data.second_review_duration ? data.second_review_duration + ' 天' : '-',
+        'detail-second-review-completion': data.second_review_completion || '-',
+        'detail-third-reviewer': data.third_reviewer || '-',
+        'detail-third-review-start': data.third_review_start || '-',
+        'detail-third-review-duration': data.third_review_duration ? data.third_review_duration + ' 天' : '-',
+        'detail-third-review-completion': data.third_review_completion || '-'
+    };
+    
+    for (var key in fieldMap) {
+        if (fieldMap.hasOwnProperty(key)) {
+            var element = document.getElementById(key);
+            if (element) {
+                element.textContent = fieldMap[key];
+            }
+        }
+    }
+}
+
+// Show operation hints
+document.addEventListener('DOMContentLoaded', function() {
+    var clickableRows = document.querySelectorAll('.clickable-row');
+    for (var i = 0; i < clickableRows.length; i++) {
+        clickableRows[i].title = '双击查看项目详情';
+    }
+    
+    var disabledButtons = document.querySelectorAll('.btn-disabled-custom');
+    for (var i = 0; i < disabledButtons.length; i++) {
+        (function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            });
+        })(disabledButtons[i]);
+    }
+    
+    // Resizable table height
+    (function() {
+        var resizeHandle = document.getElementById('resizeHandle');
+        if (!resizeHandle) return;
+        
+        var scrollableSection = document.querySelector('.scrollable-table-section');
+        if (!scrollableSection) return;
+        
+        var fixedTopSection = document.querySelector('.fixed-top-section');
+        if (!fixedTopSection) return;
+        
+        var isResizing = false;
+        var startY = 0;
+        var startHeight = 0;
+        
+        // Load saved height from localStorage
+        var savedHeight = localStorage.getItem('costTaskPlanTableHeight');
+        if (savedHeight) {
+            scrollableSection.style.flex = 'none';
+            scrollableSection.style.height = savedHeight + 'px';
+        }
+        
+        function handleMouseDown(e) {
+            isResizing = true;
+            startY = e.clientY || e.pageY;
+            startHeight = scrollableSection.getBoundingClientRect().height;
+            
+            resizeHandle.classList.add('dragging');
+            document.body.style.cursor = 'ns-resize';
+            document.body.style.userSelect = 'none';
+            document.body.style.overflow = 'hidden';
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        function handleMouseMove(e) {
+            if (!isResizing) return;
+            
+            var deltaY = (e.clientY || e.pageY) - startY;
+            var newHeight = Math.max(150, startHeight + deltaY);
+            
+            scrollableSection.style.flex = 'none';
+            scrollableSection.style.height = newHeight + 'px';
+            
+            localStorage.setItem('costTaskPlanTableHeight', newHeight);
+        }
+        
+        function handleMouseUp() {
+            if (isResizing) {
+                isResizing = false;
+                resizeHandle.classList.remove('dragging');
+                
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.body.style.overflow = '';
+            }
+        }
+        
+        resizeHandle.addEventListener('mousedown', handleMouseDown);
+    })();
+});
+
+// ==================== 排序功能 (Django Admin 风格 - 多字段排序) ====================
+let sortFields = [];
+let sortOrders = [];
+
+// 初始化排序状态
+function initSortState() {
+    const url = new URL(window.location.href);
+    const fieldsStr = url.searchParams.get('sort_field');
+    const ordersStr = url.searchParams.get('sort_order');
+    
+    if (fieldsStr) {
+        sortFields = fieldsStr.split(',').map(f => f.trim());
+        sortOrders = ordersStr ? ordersStr.split(',').map(o => o.trim()) : new Array(sortFields.length).fill('asc');
+    } else {
+        sortFields = ['created_at'];
+        sortOrders = ['desc'];
+    }
+}
+
+function handleSort(field, event) {
+    if (!event) event = window.event;
+    
+    // 如果点击的是漏斗图标，不触发排序
+    if (event && (event.target.classList.contains('filter-indicator') || event.target.closest('.filter-indicator'))) {
+        console.log('点击了漏斗图标，不触发排序');
+        return;
+    }
+    
+    // 防止事件冒泡
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    const existingIndex = sortFields.indexOf(field);
+    
+    if (existingIndex !== -1) {
+        // 字段已存在，获取当前排序方向
+        const currentOrder = sortOrders[existingIndex];
+        // 将其移到末尾（最高优先级）
+        sortFields.splice(existingIndex, 1);
+        sortOrders.splice(existingIndex, 1);
+        sortFields.push(field);
+        // 切换排序方向并添加到末尾
+        sortOrders.push(currentOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+        // 新字段，添加到末尾（最后添加的优先级最高，显示为1）
+        sortFields.push(field);
+        sortOrders.push('asc');
+    }
+    
+    console.log('排序字段:', sortFields);
+    console.log('排序方向:', sortOrders);
+    
+    updateSortUrl();
+    // 注意：updateSortDisplay() 在页面重新加载后由 initSortState() 调用，所以这里不需要调用
+}
+
+function updateSortUrl() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort_field', sortFields.join(','));
+    url.searchParams.set('sort_order', sortOrders.join(','));
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString();
+}
+
+function updateSortDisplay() {
+    // 清除所有排序状态
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        const priority = th.querySelector('.sort-priority');
+        if (priority) priority.textContent = '';
+        const direction = th.querySelector('.sort-direction');
+        if (direction) direction.style.display = 'none';
+    });
+    
+    // 显示当前排序字段的优先级数字（最后点击的显示为1）
+    sortFields.forEach((field, index) => {
+        const th = document.querySelector(`th[data-field="${field}"]`);
+        if (th) {
+            const order = sortOrders[index];
+            th.classList.add(order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            
+            const priority = th.querySelector('.sort-priority');
+            if (priority) {
+                // 反转索引：最后一个元素显示1，倒数第二个显示2，以此类推
+                const displayPriority = sortFields.length - index;
+                priority.textContent = displayPriority;
+                priority.style.display = 'inline-block';
+            }
+            
+            const direction = th.querySelector('.sort-direction');
+            if (direction) {
+                direction.style.display = 'inline-block';
+            }
+        }
+    });
+    
+    // 检测并显示筛选图标
+    updateFilterIndicators();
+}
+
+function updateFilterIndicators() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    document.querySelectorAll('th.sortable').forEach(th => {
+        const field = th.dataset.field;
+        if (field) {
+            const filterKey = `filter_${field}`;
+            const hasFilter = urlParams.has(filterKey) && urlParams.get(filterKey).trim() !== '';
+            
+            if (hasFilter) {
+                th.classList.add('filtered');
+            } else {
+                th.classList.remove('filtered');
+            }
+        }
+    });
+}
+
+// ==================== 右键菜单功能 ====================
+let currentContextMenuField = null;
+let currentContextMenuElement = null;
+
+// 创建右键菜单HTML
+function createContextMenu() {
+    const menu = document.createElement('div');
+    menu.id = 'sort-context-menu';
+    menu.className = 'sort-context-menu';
+    menu.style.display = 'none';
+    
+    menu.innerHTML = `
+        <div class="menu-item" data-action="remove-sort">
+            <i class="bi bi-x-circle"></i>
+            <span>取消本字段排序</span>
+        </div>
+        <div class="menu-item" data-action="add-filter">
+            <i class="bi bi-funnel"></i>
+            <span>按此字段筛选</span>
+        </div>
+        <div class="menu-item disabled" data-action="remove-filter">
+            <i class="bi bi-funnel-fill"></i>
+            <span>取消此字段筛选</span>
+        </div>
+    `;
+    
+    document.body.appendChild(menu);
+    
+    // 绑定菜单项点击事件
+    menu.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (this.classList.contains('disabled')) {
+                return;
+            }
+            const action = this.dataset.action;
+            handleContextMenuAction(action);
+            hideContextMenu();
+        });
+    });
+    
+    return menu;
+}
+
+// 显示右键菜单
+function showContextMenu(event, field, thElement) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    currentContextMenuField = field;
+    currentContextMenuElement = thElement;
+    
+    let menu = document.getElementById('sort-context-menu');
+    if (!menu) {
+        menu = createContextMenu();
+    }
+    
+    // 检查该字段是否有筛选条件
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterKey = `filter_${field}`;
+    const hasFilter = urlParams.has(filterKey) && urlParams.get(filterKey).trim() !== '';
+    
+    // 更新"取消此字段筛选"菜单项的状态
+    const removeFilterItem = menu.querySelector('[data-action="remove-filter"]');
+    if (removeFilterItem) {
+        if (hasFilter) {
+            removeFilterItem.classList.remove('disabled');
+        } else {
+            removeFilterItem.classList.add('disabled');
+        }
+    }
+    
+    // 计算菜单位置
+    const rect = thElement.getBoundingClientRect();
+    const menuWidth = 200;
+    const menuHeight = 120;
+    
+    let left = rect.left + window.scrollX;
+    let top = rect.bottom + window.scrollY;
+    
+    // 确保菜单不超出视口
+    if (left + menuWidth > window.innerWidth) {
+        left = window.innerWidth - menuWidth - 10;
+    }
+    if (top + menuHeight > window.innerHeight + window.scrollY) {
+        top = rect.top + window.scrollY - menuHeight;
+    }
+    
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+    menu.style.display = 'block';
+}
+
+// 隐藏右键菜单
+function hideContextMenu() {
+    const menu = document.getElementById('sort-context-menu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
+    currentContextMenuField = null;
+    currentContextMenuElement = null;
+}
+
+// 处理右键菜单操作
+function handleContextMenuAction(action) {
+    if (!currentContextMenuField) return;
+    
+    switch(action) {
+        case 'remove-sort':
+            removeFieldFromSort(currentContextMenuField);
+            break;
+        case 'add-filter':
+            addFilterForField(currentContextMenuField);
+            break;
+        case 'remove-filter':
+            removeFilterForField(currentContextMenuField);
+            break;
+    }
+}
+
+// 从排序中移除字段
+function removeFieldFromSort(field) {
+    const index = sortFields.indexOf(field);
+    if (index !== -1) {
+        sortFields.splice(index, 1);
+        sortOrders.splice(index, 1);
+        updateSortUrl();
+        updateSortDisplay();
+    }
+}
+
+// 为字段添加筛选
+function addFilterForField(field) {
+    // 如果该字段已在排序列表中，将其优先级提升到最高（移动到数组末尾）
+    const existingIndex = sortFields.indexOf(field);
+    if (existingIndex !== -1) {
+        // 从当前位置移除
+        sortFields.splice(existingIndex, 1);
+        sortOrders.splice(existingIndex, 1);
+        // 添加到末尾（最高优先级）
+        sortFields.push(field);
+        sortOrders.push('asc');
+        // 更新URL和显示
+        updateSortUrl();
+        updateSortDisplay();
+    }
+    
+    const th = document.querySelector(`th[data-field="${field}"]`);
+    if (!th) return;
+    
+    const fieldName = th.textContent.trim().replace(/[▲▼]/g, '').trim();
+    
+    // 创建筛选对话框
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'filterModal';
+    modal.tabIndex = -1;
+    
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">筛选: ${fieldName}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">筛选条件</label>
+                        <select class="form-select" id="filter-operator">
+                            <option value="contains">包含</option>
+                            <option value="equals">等于</option>
+                            <option value="starts_with">开头是</option>
+                            <option value="ends_with">结尾是</option>
+                            <option value="not_contains">不包含</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">筛选值</label>
+                        <input type="text" class="form-control" id="filter-value" placeholder="输入筛选值...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="apply-filter-btn">应用筛选</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 添加拖动功能
+    (function() {
+        const modalDialog = modal.querySelector('.modal-dialog');
+        const modalHeader = modal.querySelector('.modal-header');
+        
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+        
+        modalHeader.style.cursor = 'move';
+        modalDialog.style.position = 'relative';
+        modalDialog.style.transition = 'none';
+        
+        modalHeader.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        
+        function dragStart(e) {
+            if (e.target.closest('.btn-close')) return;
+            
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            
+            if (e.target === modalHeader || e.target.closest('.modal-title')) {
+                isDragging = true;
+            }
+        }
+        
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                
+                xOffset = currentX;
+                yOffset = currentY;
+                
+                modalDialog.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            }
+        }
+        
+        function dragEnd() {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+        
+        // 模态框关闭时重置位置
+        modal.addEventListener('hidden.bs.modal', function() {
+            xOffset = 0;
+            yOffset = 0;
+            modalDialog.style.transform = '';
+        });
+    })();
+    
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    document.getElementById('apply-filter-btn').addEventListener('click', function() {
+        const operator = document.getElementById('filter-operator').value;
+        const value = document.getElementById('filter-value').value.trim();
+        
+        if (!value) {
+            alert('请输入筛选值');
+            return;
+        }
+        
+        const url = new URL(window.location.href);
+        const filterKey = `filter_${field}`;
+        const operatorKey = `filter_${field}_op`;
+        
+        url.searchParams.set(filterKey, value);
+        url.searchParams.set(operatorKey, operator);
+        url.searchParams.set('page', '1');
+        
+        window.location.href = url.toString();
+    });
+    
+    modal.addEventListener('hidden.bs.modal', function() {
+        document.body.removeChild(modal);
+    });
+}
+
+// 取消字段筛选
+function removeFilterForField(field) {
+    const url = new URL(window.location.href);
+    const filterKey = `filter_${field}`;
+    const operatorKey = `filter_${field}_op`;
+    
+    url.searchParams.delete(filterKey);
+    url.searchParams.delete(operatorKey);
+    url.searchParams.set('page', '1');
+    
+    window.location.href = url.toString();
+}
+
+// 为可排序表头添加事件
+document.addEventListener('DOMContentLoaded', function() {
+    initSortState();
+    updateSortDisplay();
+    updateFilterIndicators();
+    
+    // 为所有可排序表头添加点击事件（排序）
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', function(e) {
+            // 如果点击的是漏斗图标，不触发排序
+            if (e.target.classList.contains('filter-indicator') || e.target.closest('.filter-indicator')) {
+                return;
+            }
+            const field = this.dataset.field;
+            if (field) {
+                handleSort(field, e);
+            }
+        });
+        
+        // 为所有可排序表头添加右键事件
+        th.addEventListener('contextmenu', function(e) {
+            const field = this.dataset.field;
+            if (field) {
+                showContextMenu(e, field, this);
+            }
+        });
+    });
+    
+    // 点击其他地方关闭菜单
+    document.addEventListener('click', function() {
+        hideContextMenu();
+    });
+    
+    // ESC键关闭菜单
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideContextMenu();
+        }
+    });
+});
+
+// 注入右键菜单CSS样式
+const sortMenuStyle = document.createElement('style');
+sortMenuStyle.textContent = `
+    .sort-context-menu {
+        position: absolute;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        min-width: 200px;
+        padding: 0.5rem 0;
+        animation: fadeIn 0.15s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .sort-context-menu .menu-item {
+        padding: 0.6rem 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        color: #212529;
+    }
+    
+    .sort-context-menu .menu-item:hover {
+        background-color: #e9ecef;
+        color: #0d6efd;
+    }
+    
+    .sort-context-menu .menu-item i {
+        font-size: 1rem;
+        width: 16px;
+        text-align: center;
+    }
+    
+    .sort-context-menu .menu-item:first-child {
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    /* 禁用的菜单项样式 */
+    .sort-context-menu .menu-item.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        color: #6c757d;
+        pointer-events: none;
+    }
+    
+    .sort-context-menu .menu-item.disabled:hover {
+        background-color: transparent;
+        color: #6c757d;
+    }
+`;
+document.head.appendChild(sortMenuStyle);
+</script>
+{% endblock %}

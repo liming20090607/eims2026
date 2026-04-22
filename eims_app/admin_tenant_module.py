@@ -4,6 +4,7 @@
 from django.contrib import admin
 from .models.model_tenant import Tenant
 from .models.model_tenant_module import TenantModule, TenantModulePermission
+from .models.model_sub_module import TenantSubModulePermission, SubModule
 
 
 @admin.register(TenantModule)
@@ -42,6 +43,36 @@ class TenantModulePermissionInline(admin.TabularInline):
         return False
 
 
+class TenantSubModulePermissionInline(admin.TabularInline):
+    """租户子模块权限内联 - 在租户详情页编辑子模块权限"""
+    
+    model = TenantSubModulePermission
+    extra = 0
+    fields = ('sub_module', 'is_enabled')
+    can_delete = False
+    show_change_link = True
+    
+    def get_formset(self, request, obj=None, **kwargs):
+        """只显示属于已启用一级模块的子模块"""
+        formset = super().get_formset(request, obj, **kwargs)
+        if obj:  # 编辑租户时
+            # 获取该租户已启用的一级模块
+            enabled_modules = TenantModule.objects.filter(
+                tenant_permissions__tenant=obj,
+                tenant_permissions__is_enabled=True
+            )
+            # 过滤子模块，只显示属于已启用一级模块的子模块
+            formset.form.base_fields['sub_module'].queryset = SubModule.objects.filter(
+                parent_module__in=enabled_modules,
+                is_active=True
+            ).order_by('parent_module__sort_order', 'sort_order')
+        return formset
+    
+    def has_add_permission(self, request, obj=None):
+        """不允许手动添加，由系统自动创建"""
+        return False
+
+
 @admin.register(Tenant)
 class TenantAdmin(admin.ModelAdmin):
     """租户（公司）管理"""
@@ -66,7 +97,7 @@ class TenantAdmin(admin.ModelAdmin):
         }),
     )
     
-    inlines = [TenantModulePermissionInline]
+    inlines = [TenantModulePermissionInline, TenantSubModulePermissionInline]
     
     def get_user_count(self, obj):
         """获取活跃用户数量"""

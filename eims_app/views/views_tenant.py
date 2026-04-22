@@ -142,3 +142,38 @@ def tenant_switch(request):
     # 返回到来源页面
     referer = request.META.get('HTTP_REFERER', '/')
     return redirect(referer)
+
+
+@login_required
+def tenant_list(request):
+    """
+    租户（公司）管理页面 - Root超级管理员专属
+    查看所有和编辑公司信息
+    """
+    # 只有超级管理员才能访问
+    if not request.user.is_superuser:
+        messages.error(request, '您没有权限访问此页面')
+        return redirect('eims_app:eims_index')
+    
+    # 获取所有租户
+    tenants = Tenant.objects.all().order_by('code')
+    
+    # 统计每个公司的用户数和项目数
+    tenant_stats = []
+    for tenant in tenants:
+        stats = {
+            'id': tenant.id,
+            'code': tenant.code,
+            'name': tenant.name,
+            'short_name': tenant.short_name,
+            'is_active': tenant.is_active,
+            'user_count': tenant.get_active_user_count(),
+            'project_count': tenant.get_project_count(),
+            'create_time': tenant.create_time,
+        }
+        tenant_stats.append(stats)
+    
+    return render(request, 'eims_app/tenant_list.html', {
+        'tenants': tenant_stats,
+        'total_count': tenants.count(),
+    })

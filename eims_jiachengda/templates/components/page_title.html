@@ -1,0 +1,28 @@
+<!-- E:\EIMS\eims_app\templates\components\page_title.html -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0">
+      {% if icon %}
+        <i class="fas {{ icon }} me-2 text-primary"></i>
+      {% endif %}
+      {{ title }}
+    </h1>
+    {% if subtitle %}
+      <p class="text-muted mb-0 mt-1 small">{{ subtitle }}</p>
+    {% endif %}
+  </div>
+  {% if breadcrumb %}
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'eims_index' %}">首页</a></li>
+        {% for item in breadcrumb %}
+          {% if forloop.last %}
+            <li class="breadcrumb-item active" aria-current="page">{{ item }}</li>
+          {% else %}
+            <li class="breadcrumb-item"><a href="{{ item.url }}">{{ item.name }}</a></li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </nav>
+  {% endif %}
+</div>

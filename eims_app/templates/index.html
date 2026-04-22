@@ -51,31 +51,29 @@
         </div>
     </div>
     
-    <!-- 月度填报提醒 -->
+    <!-- 工程监理月度填报 -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <div class="card border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-calendar-check"></i> 月度填报
-                    </h5>
+            <div class="card" style="box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+                <div class="card-header" style="background: linear-gradient(135deg, #4A90E2 0%, #2C5F8D 100%); color: white; padding: 10px 20px; font-size: 1rem;">
+                    <i class="bi bi-calendar-check me-2"></i>月度填报
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="padding: 20px;">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <p class="lead mb-2">
+                            <p class="mb-2" style="font-size: 0.95rem;">
                                 <i class="bi bi-info-circle"></i> 
                                 每月<strong>25 日</strong>前填报项目动态信息
                             </p>
-                            <ul class="list-unstyled mb-0">
+                            <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
                                 <li><i class="bi bi-check-circle text-success"></i> 项目进度、项目状态</li>
                                 <li><i class="bi bi-check-circle text-success"></i> 本月完成产值、本月回款</li>
                                 <li><i class="bi bi-check-circle text-success"></i> 人员变动情况、请款情况</li>
                             </ul>
                         </div>
                         <div class="col-md-4 text-end">
-                            <a href="{% url 'eims_app:monthly_report_dashboard' %}" class="btn btn-warning btn-lg">
-                                <i class="bi bi-speedometer2"></i> 进入填报提醒
+                            <a href="{% url 'eims_app:monthly_report_dashboard' %}" class="btn btn-sm" style="background: linear-gradient(135deg, #007BFF 0%, #0056b3 100%); color: white; border: none; border-radius: 5px; padding: 8px 16px; font-weight: 500; font-size: 0.9rem;">
+                                <i class="bi bi-speedometer2 me-1"></i>进入填报提醒
                             </a>
                             <br>
                             <small class="text-muted">或</small>
@@ -83,10 +81,47 @@
                             {% load permission_tags %}
                             {% check_monthly_report_permission user as can_create_report %}
                             {% if can_create_report %}
-                            <a href="{% url 'eims_app:monthly_report_add' %}" class="btn btn-primary mt-2">
-                                <i class="bi bi-plus-circle"></i> 新建月度报告
+                            <a href="{% url 'eims_app:monthly_report_add' %}" class="btn btn-sm mt-2" style="background: linear-gradient(135deg, #3A7CA5 0%, #2C5F8D 100%); color: white; border: none; border-radius: 5px; padding: 8px 16px; font-weight: 500; font-size: 0.9rem;">
+                                <i class="bi bi-plus-circle me-1"></i>新建月度报告
                             </a>
                             {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 造价咨询月度填报 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card" style="box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+                <div class="card-header" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; padding: 10px 20px; font-size: 1rem;">
+                    <i class="bi bi-calculator me-2"></i>月度填报
+                </div>
+                <div class="card-body" style="padding: 20px;">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <p class="mb-2" style="font-size: 0.95rem;">
+                                <i class="bi bi-info-circle"></i> 
+                                每月<strong>25 日</strong>前填报造价项目动态信息
+                            </p>
+                            <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
+                                <li><i class="bi bi-check-circle text-success"></i> 造价项目进度、项目状态</li>
+                                <li><i class="bi bi-check-circle text-success"></i> 本月完成产值、本月回款</li>
+                                <li><i class="bi bi-check-circle text-success"></i> 人员变动情况、请款情况</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="#" class="btn btn-sm" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; border: none; border-radius: 5px; padding: 8px 16px; font-weight: 500; font-size: 0.9rem;">
+                                <i class="bi bi-speedometer2 me-1"></i>进入填报提醒
+                            </a>
+                            <br>
+                            <small class="text-muted">或</small>
+                            <br>
+                            <a href="#" class="btn btn-sm mt-2" style="background: linear-gradient(135deg, #218838 0%, #155724 100%); color: white; border: none; border-radius: 5px; padding: 8px 16px; font-weight: 500; font-size: 0.9rem;">
+                                <i class="bi bi-plus-circle me-1"></i>新建月度报告
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -97,8 +132,8 @@
     <div class="row">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">最近项目</h5>
+                <div class="card-header" style="background: linear-gradient(135deg, #4A90E2 0%, #2C5F8D 100%); color: white; padding: 10px 20px; font-size: 1rem;">
+                    工程监理最近项目
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -134,8 +169,8 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">最近合同</h5>
+                <div class="card-header" style="background: linear-gradient(135deg, #4A90E2 0%, #2C5F8D 100%); color: white; padding: 10px 20px; font-size: 1rem;">
+                    工程监理最近合同
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -161,6 +196,84 @@
                                 {% empty %}
                                 <tr>
                                     <td colspan="3" class="text-center">暂无合同数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 造价咨询最近项目和合同 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; padding: 10px 20px; font-size: 1rem;">
+                    造价咨询最近项目
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>项目名称</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in recent_cost_projects %}
+                                <tr>
+                                    <td>{{ project.project_name }}</td>
+                                    <td>
+                                        <span class="badge {% if project.project_status == 'in_progress' %}bg-primary{% elif project.project_status == 'completed' %}bg-success{% elif project.project_status == 'delayed' %}bg-warning{% elif project.project_status == 'cancelled' %}bg-danger{% endif %}">
+                                            {{ project.get_project_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ project.created_at|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">暂无造价咨询项目数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; padding: 10px 20px; font-size: 1rem;">
+                    造价咨询最近合同
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>合同名称</th>
+                                    <th>状态</th>
+                                    <th>签订日期</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract in recent_cost_contracts %}
+                                <tr>
+                                    <td>{{ contract.contract_name }}</td>
+                                    <td>
+                                    <span class="badge {% if contract.status == 'active' %}bg-success{% elif contract.status == 'expired' %}bg-secondary{% elif contract.status == 'terminated' %}bg-danger{% endif %}">
+                                        {{ contract.get_status_display }}
+                                    </span>
+                                    </td>
+                                    <td>{{ contract.signing_time|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">暂无造价咨询合同数据</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

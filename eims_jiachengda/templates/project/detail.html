@@ -1,0 +1,935 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{{ project }} - 详情{% endblock %}
+
+{% block extra_css %}
+<style>
+  .detail-card .card-header {
+    padding: 8px 12px;
+    font-size: 15px;
+  }
+  .detail-card .card-body {
+    padding: 12px;
+  }
+  .detail-card .card-body .row {
+    margin-bottom: 4px;
+  }
+  .detail-card .card-body .row > div {
+    padding: 2px 8px;
+    font-size: 14px;
+  }
+  .detail-card .card-body strong {
+    font-size: 12px;
+  }
+  .detail-card table {
+    font-size: 13px;
+    margin-bottom: 0;
+  }
+  .detail-card table th,
+  .detail-card table td {
+    padding: 4px 6px !important;
+  }
+  .detail-card .badge {
+    font-size: 12px;
+    padding: 2px 6px;
+  }
+  .detail-tabs .nav-link {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  /* 项目详情页按钮样式 */
+  .detail-btn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 0px;
+  }
+  
+  .detail-btn {
+    height: 26px !important;
+    line-height: 26px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+    min-width: 70px;
+    text-align: center;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    border-radius: 4px;
+    margin: 0 !important;
+  }
+  
+  .detail-btn-edit {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    color: #fff;
+  }
+  
+  .detail-btn-edit:hover {
+    background-color: #1a252f;
+    border-color: #1a252f;
+    color: #fff;
+  }
+  
+  .detail-btn-delete {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    color: #ff6b6b;
+  }
+  
+  .detail-btn-delete:hover {
+    background-color: #1a252f;
+    border-color: #1a252f;
+    color: #ff6b6b;
+  }
+  
+  .detail-btn-return {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    color: #fff;
+  }
+  
+  .detail-btn-return:hover {
+    background-color: #1a252f;
+    border-color: #1a252f;
+    color: #fff;
+  }
+  
+  .detail-btn i {
+    margin-right: 4px;
+  }
+  
+  /* 导航按钮样式 */
+  .detail-nav-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .detail-nav-btn {
+    height: 26px !important;
+    line-height: 26px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+    min-width: 28px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .detail-nav-btn i {
+    font-size: 11px;
+  }
+  .detail-tabs .badge {
+    font-size: 12px;
+  }
+  .action-btn {
+    height: 28px !important;
+    line-height: 28px !important;
+    padding: 0 4px !important;
+    font-size: 14px !important;
+    width: 80px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+  .action-btn i {
+    margin-right: 2px;
+  }
+  .search-input {
+    height: 26px !important;
+    line-height: 26px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+  }
+  .search-input::placeholder {
+    font-size: 11px;
+  }
+  .nav-btn {
+    padding: 1px 4px !important;
+    font-size: 10px !important;
+    min-width: 20px !important;
+  }
+  .nav-btn i {
+    font-size: 10px !important;
+  }
+  .nav-page {
+    padding: 1px 4px !important;
+    font-size: 10px !important;
+    min-width: 30px !important;
+  }
+  .th-month {
+    width: 150px !important;
+  }
+  .table-resizable th, .table-resizable td {
+    vertical-align: middle !important;
+  }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_list' %}">项目管理</a></li>
+<li class="breadcrumb-item active">项目详情</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-1">
+  
+  <!-- 顶部筛选+导航 -->
+  <div class="row g-1 align-items-center mb-1">
+    <div class="col-auto">
+      <select name="project_id" class="form-select form-select-sm" style="height:26px;" onchange="if(this.value){window.location.href='/projects/'+this.value+'/';}">
+        <option value="">-- 快速跳转项目 --</option>
+        {% for p in all_projects_list %}
+        <option value="{{ p.id }}" {% if p.id == project.id %}selected{% endif %}>{{ p.project_code }} - {{ p.project_name|truncatechars:20 }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <input type="text" name="q" class="form-control search-input" placeholder="搜索..." value="{{ request.GET.q|default:'' }}">
+    </div>
+    {% if prev_project or next_project %}
+    <div class="col-auto">
+      <div class="btn-group btn-group-sm" role="group">
+        <a href="{% url 'eims_app:project_ledger_detail' first_project.id %}" class="btn btn-outline-secondary nav-btn" title="第一条">
+          <i class="fas fa-angle-double-left"></i>
+        </a>
+        {% if prev_project %}
+        <a href="{% url 'eims_app:project_ledger_detail' prev_project.id %}" class="btn btn-outline-primary nav-btn" title="上一个">
+          <i class="fas fa-angle-left"></i>
+        </a>
+        {% else %}
+        <span class="btn btn-outline-secondary nav-btn disabled"><i class="fas fa-angle-left"></i></span>
+        {% endif %}
+        <span class="btn btn-outline-secondary nav-page disabled">{{ current_index }}/{{ total_projects }}</span>
+        {% if next_project %}
+        <a href="{% url 'eims_app:project_ledger_detail' next_project.id %}" class="btn btn-outline-primary nav-btn" title="下一个">
+          <i class="fas fa-angle-right"></i>
+        </a>
+        {% else %}
+        <span class="btn btn-outline-secondary nav-btn disabled"><i class="fas fa-angle-right"></i></span>
+        {% endif %}
+        <a href="{% url 'eims_app:project_ledger_detail' last_project.id %}" class="btn btn-outline-secondary nav-btn" title="最后一条">
+          <i class="fas fa-angle-double-right"></i>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  
+  <div class="row">
+    <!-- 项目基本信息 + 关联合同 + 操作按钮 -->
+    <div class="col-12">
+      <div class="d-flex align-items-start">
+        <!-- 左侧：项目信息 + 合同 -->
+        <div style="width: calc(100% - 90px);">
+          <!-- 项目基本信息 -->
+          <div class="card mb-2 detail-card">
+            <div class="card-header bg-primary text-white py-1">
+              <small class="mb-0">项目基本信息</small>
+            </div>
+            <div class="card-body py-2">
+              <div class="row">
+                <div class="col-md-3"><strong>编号：</strong>{{ project.project_code }}</div>
+                <div class="col-md-3"><strong>名称：</strong>{{ project.project_name }}</div>
+                <div class="col-md-3"><strong>状态：</strong>{{ project.get_project_status_display }}</div>
+                <div class="col-md-3"><strong>类别：</strong>{{ project.get_project_category_display }}</div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"><strong>投资(万)：</strong>{{ project.project_investment|default:"-" }}</div>
+                <div class="col-md-3"><strong>地址：</strong>{{ project.project_address|default:"-"|truncatechars:15 }}</div>
+                <div class="col-md-3"><strong>进场时间：</strong>{{ project.entry_time|date:"Y-m-d"|default:"-" }}</div>
+                <div class="col-md-3"><strong>预计竣工：</strong>{{ project.planned_completion_time|date:"Y-m-d"|default:"-" }}</div>
+              </div>
+              <div class="row">
+                <div class="col-md-3"><strong>现场负责人：</strong>{{ project.project_manager|default:"-" }}</div>
+                <div class="col-md-3"><strong>项目总监：</strong>{{ project.project_director|default:"-" }}</div>
+                <div class="col-md-3"><strong>实际负责人：</strong>{{ project.actual_manager|default:"-" }}</div>
+                <div class="col-md-3"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 关联合同 -->
+          <div class="card mb-2 detail-card">
+            <div class="card-header bg-success text-white py-1 d-flex justify-content-between align-items-center">
+              <small class="mb-0">关联合同 ({{ related_contracts.count }})</small>
+              {% if related_contracts.exists %}
+              <a href="{% url 'eims_app:contract_list' %}?q={{ project.project_code }}" class="btn btn-light btn-sm py-0">
+                <small>查看</small>
+              </a>
+              {% endif %}
+            </div>
+            <div class="card-body py-2">
+              {% if related_contracts.exists %}
+              <div class="table-responsive" style="max-height: 150px;">
+                <table class="table table-sm table-hover table-resizable" id="contracts-table">
+                  <thead>
+                    <tr>
+                      <th>合同编号</th>
+                      <th>合同名称</th>
+                      <th>甲方</th>
+                      <th>金额(元)</th>
+                      <th>状态</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for contract in related_contracts %}
+                    <tr>
+                      <td>{{ contract.contract_code }}</td>
+                      <td>{{ contract.contract_name|truncatechars:15 }}</td>
+                      <td>{{ contract.party_a|truncatechars:10 }}</td>
+                      <td class="text-end">{{ contract.contract_amount|floatformat:0 }}</td>
+                      <td>
+                        <span class="badge bg-{{ contract.get_contract_status_color }}">
+                          {{ contract.get_contract_status_display }}
+                        </span>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="text-center py-2">
+                <small class="text-muted">暂无关联合同</small>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <!-- 右侧：操作按钮 -->
+        <div style="width: 90px;">
+          <div class="detail-btn-group">
+            <a href="{% url 'eims_app:project_edit' project.pk %}" class="btn detail-btn detail-btn-edit">
+              <i class="fas fa-edit me-1"></i>编辑项目
+            </a>
+            <a href="{% url 'eims_app:project_delete' project.pk %}" class="btn detail-btn detail-btn-delete" onclick="return confirm('确定删除？')">
+              <i class="fas fa-trash me-1"></i>删除项目
+            </a>
+            <a href="{% url 'eims_app:project_list' %}" class="btn detail-btn detail-btn-return">
+              <i class="fas fa-arrow-left me-1"></i>返回列表
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 项目动态、产值回款、项目人员 Tab区域 -->
+    <div class="col-12 mt-2" style="margin-top: -20px;">
+      <div class="card detail-card">
+        <div class="card-header py-1">
+          <ul class="nav nav-tabs card-header-tabs detail-tabs" id="projectTabs" role="tablist">
+            <li class="nav-item">
+              <button class="nav-link active" id="dynamics-tab" data-bs-toggle="tab" data-bs-target="#dynamics" type="button" role="tab">
+                <i class="fas fa-chart-line me-1"></i>项目动态
+                <span class="badge bg-primary ms-1">{{ project.related_dynamics.count }}</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="output-tab" data-bs-toggle="tab" data-bs-target="#output" type="button" role="tab">
+                <i class="fas fa-cash-register me-1"></i>产值回款
+                <span class="badge bg-success ms-1">{{ project.related_output_payments.count }}</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="personnel-tab" data-bs-toggle="tab" data-bs-target="#personnel" type="button" role="tab">
+                <i class="fas fa-users me-1"></i>项目人员
+                <span class="badge bg-info ms-1">{{ project.related_personnel.count }}</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content" id="projectTabsContent">
+            
+            <!-- 项目动态 Tab -->
+            <div class="tab-pane fade show active" id="dynamics" role="tabpanel">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">项目动态列表</h6>
+                {% if user.is_superuser %}
+                <div class="d-flex gap-2">
+                  <button class="btn btn-primary action-btn" onclick="deleteSelected('dynamic')">
+                    <i class="fas fa-trash-alt me-1"></i>删除
+                  </button>
+                  <button class="btn btn-primary action-btn" data-bs-toggle="modal" data-bs-target="#importDynamicModal">
+                    <i class="fas fa-file-import me-1"></i>导入动态
+                  </button>
+                  <a href="#" class="btn btn-primary action-btn" data-bs-toggle="modal" data-bs-target="#addDynamicModal">
+                    <i class="fas fa-plus me-1"></i>添加动态
+                  </a>
+                </div>
+                {% endif %}
+              </div>
+              <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                <table class="table table-bordered table-hover table-sm table-resizable" id="dynamics-table">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th><input type="checkbox" id="selectAllDynamic" onclick="toggleSelectAll('dynamic')"></th>
+                      <th class="text-nowrap">更新时间</th>
+                      <th class="text-nowrap">操作人</th>
+                      <th class="text-nowrap">项目编号</th>
+                      <th class="text-nowrap">项目名称</th>
+                      <th class="text-nowrap">项目进度</th>
+                      <th class="text-nowrap">项目状态</th>
+                      <th class="text-nowrap">通知进场</th>
+                      <th class="text-nowrap">延期情况</th>
+                      <th class="text-nowrap">计划开工</th>
+                      <th class="text-nowrap">实际开工</th>
+                      <th class="text-nowrap">预计竣工</th>
+                      <th class="text-nowrap">本月人员变动</th>
+                      <th class="text-nowrap">备注</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if project.related_dynamics.exists %}
+                    {% for dynamic in project.related_dynamics %}
+                    <tr>
+                      <td><input type="checkbox" name="dynamic_ids" value="{{ dynamic.id }}"></td>
+                      <td>{{ dynamic.update_time|date:"Y-m-d H:i" }}</td>
+                      <td>{{ dynamic.operator|default:"-" }}</td>
+                      <td>{{ project.project_code }}</td>
+                      <td>{{ project.project_name }}</td>
+                      <td>{{ dynamic.project_progress|default:"-" }}</td>
+                      <td>{{ dynamic.get_project_status_display|default:"-" }}</td>
+                      <td>{{ dynamic.notice_entry|date:"Y-m-d"|default:"-" }}</td>
+                      <td>{{ dynamic.delay_status|default:"-" }}</td>
+                      <td>{{ dynamic.planned_start_time|date:"Y-m-d"|default:"-" }}</td>
+                      <td>{{ dynamic.actual_start_time|date:"Y-m-d"|default:"-" }}</td>
+                      <td>{{ dynamic.planned_completion|date:"Y-m-d"|default:"-" }}</td>
+                      <td>{{ dynamic.personnel_change|default:"-" }}</td>
+                      <td>{{ dynamic.remark|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td colspan="14" class="text-center text-muted py-3">
+                        <small>暂无项目动态记录</small>
+                      </td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- 产值回款 Tab -->
+            <div class="tab-pane fade" id="output" role="tabpanel">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">产值回款列表</h6>
+                {% if user.is_superuser %}
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success action-btn" onclick="deleteSelected('output')">
+                    <i class="fas fa-trash-alt me-1"></i>删除
+                  </button>
+                  <button class="btn btn-success action-btn" data-bs-toggle="modal" data-bs-target="#importOutputModal">
+                    <i class="fas fa-file-import me-1"></i>导入产值
+                  </button>
+                  <a href="#" class="btn btn-success action-btn" data-bs-toggle="modal" data-bs-target="#addOutputModal">
+                    <i class="fas fa-plus me-1"></i>添加产值
+                  </a>
+                </div>
+                {% endif %}
+              </div>
+              <div class="table-responsive" style="max-height: 330px; overflow-y: auto;">
+                <table class="table table-bordered table-hover table-sm table-resizable" id="output-table">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th><input type="checkbox" id="selectAllOutput" onclick="toggleSelectAll('output')"></th>
+                      <th class="text-nowrap th-month">月份</th>
+                      <th class="text-nowrap">操作人</th>
+                      <th class="text-nowrap">项目编号</th>
+                      <th class="text-nowrap">项目名称</th>
+                      <th class="text-nowrap">项目状态</th>
+                      <th class="text-nowrap">当月产值(万)</th>
+                      <th class="text-nowrap">累计产值(万)</th>
+                      <th class="text-nowrap">合同总额(元)</th>
+                      <th class="text-nowrap">累计已收款(元)</th>
+                      <th class="text-nowrap">合同应收款(元)</th>
+                      <th class="text-nowrap">近期待收款(元)</th>
+                      <th class="text-nowrap">合同付款依据</th>
+                      <th class="text-nowrap">上次回款情况</th>
+                      <th class="text-nowrap">近期请款情况</th>
+                      <th class="text-nowrap">本月实际回款(元)</th>
+                      <th class="text-nowrap">下个月请款</th>
+                      <th class="text-nowrap">下月计划收款(元)</th>
+                      <th class="text-nowrap">请款措施</th>
+                      <th class="text-nowrap">需要协助</th>
+                      <th class="text-nowrap">备注</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if project.related_output_payments.exists %}
+                    {% for output in project.related_output_payments %}
+                    <tr>
+                      <td><input type="checkbox" name="output_ids" value="{{ output.id }}"></td>
+                      <td>{{ output.month }}</td>
+                      <td>{{ output.operator|default:"-" }}</td>
+                      <td>{{ project.project_code }}</td>
+                      <td>{{ project.project_name }}</td>
+                      <td>{{ project.get_project_status_display }}</td>
+                      <td class="text-end">{{ output.monthly_output|floatformat:2 }}</td>
+                      <td class="text-end">{{ output.cumulative_output|floatformat:2 }}</td>
+                      <td class="text-end">{{ output.contract_total|floatformat:2 }}</td>
+                      <td class="text-end">{{ output.cumulative_received|floatformat:2 }}</td>
+                      <td class="text-end">{{ output.contract_receivable|floatformat:2 }}</td>
+                      <td class="text-end">{{ output.near_term_receivable|floatformat:2 }}</td>
+                      <td>{{ output.payment_basis|default:"-"|truncatechars:15 }}</td>
+                      <td>{{ output.last_payment_situation|default:"-"|truncatechars:15 }}</td>
+                      <td>{{ output.recent_payment_request|default:"-"|truncatechars:15 }}</td>
+                      <td class="text-end">{{ output.actual_payment|floatformat:2 }}</td>
+                      <td>{{ output.next_month_request|default:"-" }}</td>
+                      <td class="text-end">{{ output.next_month_plan|floatformat:2 }}</td>
+                      <td>{{ output.payment_measures|default:"-"|truncatechars:15 }}</td>
+                      <td>{{ output.need_assistance|default:"-"|truncatechars:15 }}</td>
+                      <td>{{ output.remark|default:"-"|truncatechars:15 }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td colspan="21" class="text-center text-muted py-3">
+                        <small>暂无产值回款记录</small>
+                      </td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- 项目人员 Tab -->
+            <div class="tab-pane fade" id="personnel" role="tabpanel">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">项目人员列表</h6>
+                {% if user.is_superuser %}
+                <div class="d-flex gap-2">
+                  <a href="{% url 'eims_app:allocation_visual' %}" class="btn btn-warning action-btn">
+                    <i class="fas fa-diagram-project me-1"></i>可视化分配
+                  </a>
+                  <button class="btn btn-info action-btn" onclick="deleteSelected('personnel')">
+                    <i class="fas fa-trash-alt me-1"></i>删除
+                  </button>
+                  <button class="btn btn-info action-btn" data-bs-toggle="modal" data-bs-target="#importPersonnelModal">
+                    <i class="fas fa-file-import me-1"></i>导入人员
+                  </button>
+                  <a href="#" class="btn btn-info action-btn" data-bs-toggle="modal" data-bs-target="#addPersonnelModal">
+                    <i class="fas fa-plus me-1"></i>添加人员
+                  </a>
+                </div>
+                {% endif %}
+              </div>
+              <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-bordered table-hover table-sm table-resizable" id="personnel-table">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th><input type="checkbox" id="selectAllPersonnel" onclick="toggleSelectAll('personnel')"></th>
+                      <th class="text-nowrap">人员编号</th>
+                      <th class="text-nowrap">操作人</th>
+                      <th class="text-nowrap">项目编号</th>
+                      <th class="text-nowrap">姓名</th>
+                      <th class="text-nowrap">所在项目</th>
+                      <th class="text-nowrap">入岗时间</th>
+                      <th class="text-nowrap">岗位</th>
+                      <th class="text-nowrap">离岗时间</th>
+                      <th class="text-nowrap">备注</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if project.related_personnel.exists %}
+                    {% for person in project.related_personnel %}
+                    <tr>
+                      <td><input type="checkbox" name="personnel_ids" value="{{ person.id }}"></td>
+                      <td>{{ person.personnel_code }}</td>
+                      <td>{{ person.operator|default:"-" }}</td>
+                      <td>{{ project.project_code }}</td>
+                      <td>{{ person.name }}</td>
+                      <td>{{ project.project_name }}</td>
+                      <td>{{ person.entry_time|date:"Y-m-d"|default:"-" }}</td>
+                      <td>{{ person.position|default:"-" }}</td>
+                      <td>{{ person.leave_time|date:"Y-m-d"|default:"-" }}</td>
+                      <td>{{ person.remark|default:"-"|truncatechars:20 }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td colspan="10" class="text-center text-muted py-3">
+                        <small>暂无项目人员记录</small>
+                      </td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 导入项目动态模态框 -->
+<div class="modal fade" id="importDynamicModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">导入项目动态</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'eims_app:import_project_dynamic' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">选择Excel文件</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls" required>
+            <div class="form-text">Excel文件需包含列：项目编号、项目进度、项目状态（必填），其他列可包含：通知进场、延期情况、计划开工时间、实际开工时间、预计竣工时间、本月人员变动、备注</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">导入</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 添加项目动态模态框 -->
+<div class="modal fade" id="addDynamicModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">添加项目动态</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'eims_app:add_dynamic' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">项目进度</label>
+              <input type="text" name="project_progress" class="form-control" placeholder="如：地基施工中/主体封顶">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">项目状态</label>
+              <select name="project_status" class="form-select">
+                <option value="">--请选择--</option>
+                <option value="not_started">未开工</option>
+                <option value="normal_construction">正常施工</option>
+                <option value="stopped">在停工</option>
+                <option value="completed">已完工</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">通知进场日期</label>
+              <input type="date" name="notice_entry" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">延期情况</label>
+              <input type="text" name="delay_status" class="form-control" placeholder="描述延期情况">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">计划开工时间</label>
+              <input type="date" name="planned_start_time" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">实际开工时间</label>
+              <input type="date" name="actual_start_time" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">预计竣工时间</label>
+              <input type="date" name="planned_completion" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">本月人员变动</label>
+              <input type="text" name="personnel_change" class="form-control" placeholder="如：新增3人/离职1人">
+            </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">备注</label>
+              <textarea name="remark" class="form-control" rows="2" placeholder="其他说明"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 导入产值回款模态框 -->
+<div class="modal fade" id="importOutputModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">导入产值回款</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'eims_app:import_output_payment' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">选择Excel文件</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls" required>
+            <div class="form-text">Excel文件列：月份（必填），其他列：当月产值、累计产值、合同总额、累计已收款、本月实际回款等</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-success">导入</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 添加产值回款模态框 -->
+<div class="modal fade" id="addOutputModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">添加产值回款</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'eims_app:add_output' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">月份</label>
+              <input type="month" name="month" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">当月产值(万元)</label>
+              <input type="number" name="monthly_output" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">累计产值(万元)</label>
+              <input type="number" name="cumulative_output" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">合同总额(元)</label>
+              <input type="number" name="contract_total" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">累计已收款(元)</label>
+              <input type="number" name="cumulative_received" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">合同应收款(元)</label>
+              <input type="number" name="contract_receivable" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">近期待收款(元)</label>
+              <input type="number" name="near_term_receivable" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">本月实际回款(元)</label>
+              <input type="number" name="actual_payment" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">回款日期</label>
+              <input type="date" name="payment_date" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">回款方式</label>
+              <input type="text" name="payment_method" class="form-control" placeholder="如银行转账、现金">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">下个月请款</label>
+              <input type="text" name="next_month_request" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">下月计划收款(元)</label>
+              <input type="number" name="next_month_plan" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">合同付款依据</label>
+              <textarea name="payment_basis" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">上次回款情况</label>
+              <textarea name="last_payment_situation" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">近期请款情况</label>
+              <textarea name="recent_payment_request" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">请款措施</label>
+              <textarea name="payment_measures" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">需要协助</label>
+              <textarea name="need_assistance" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">备注</label>
+              <textarea name="remark" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-success">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 导入项目人员模态框 -->
+<div class="modal fade" id="importPersonnelModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">导入项目人员</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'eims_app:import_personnel' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">选择Excel文件</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls" required>
+            <div class="form-text">Excel文件需包含列：人员编号、姓名（必填），其他列可包含：性别、手机号码、岗位、部门、入岗时间、离岗时间、邮箱、备注</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-info">导入</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 添加项目人员模态框 -->
+<div class="modal fade" id="addPersonnelModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">添加项目人员</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'eims_app:add_personnel' project.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">人员编号</label>
+              <input type="text" name="personnel_code" class="form-control" required placeholder="如：PER001">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">姓名</label>
+              <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">性别</label>
+              <select name="gender" class="form-select">
+                <option value="0">男</option>
+                <option value="1">女</option>
+                <option value="2">其他</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">手机号码</label>
+              <input type="text" name="phone" class="form-control" placeholder="如：13800000000">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">岗位</label>
+              <input type="text" name="position" class="form-control" placeholder="如：项目经理">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">部门</label>
+              <input type="text" name="department" class="form-control" required placeholder="如：工程部">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">入岗时间</label>
+              <input type="date" name="entry_time" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">离岗时间</label>
+              <input type="date" name="leave_time" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">邮箱</label>
+              <input type="email" name="email" class="form-control" placeholder="可选">
+            </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">备注</label>
+              <textarea name="remark" class="form-control" rows="2" placeholder="其他说明"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-info">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSelectAll(type) {
+    const selectAll = document.getElementById('selectAll' + type.charAt(0).toUpperCase() + type.slice(1));
+    const checkboxes = document.querySelectorAll('input[name="' + type + '_ids"]');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+}
+
+function deleteSelected(type) {
+    const checkboxes = document.querySelectorAll('input[name="' + type + '_ids"]:checked');
+    if (checkboxes.length === 0) {
+        alert('请先选择要删除的记录');
+        return;
+    }
+    
+    if (!confirm('确定要删除选中的 ' + checkboxes.length + ' 条记录吗？')) {
+        return;
+    }
+    
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    const projectId = {{ project.pk }};
+    
+    let url = '';
+    if (type === 'dynamic') url = '/projects/' + projectId + '/delete-dynamic/';
+    else if (type === 'output') url = '/projects/' + projectId + '/delete-output/';
+    else if (type === 'personnel') url = '/projects/' + projectId + '/delete-personnel/';
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken.value;
+        form.appendChild(csrfInput);
+    }
+    
+    ids.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+<script src="{% static 'js/table-resize.js' %}"></script>
+{% endblock %}

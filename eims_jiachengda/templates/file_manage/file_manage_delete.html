@@ -1,0 +1,42 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}删除文件{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>确认删除</h5>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-trash display-1 text-danger mb-3"></i>
+                    <h4 class="mb-3">确定要删除该文件吗？</h4>
+                    <div class="alert alert-warning" role="alert">
+                        <p class="mb-1"><strong>文件名称：</strong>{{ file.file_name }}</p>
+                        <p class="mb-1"><strong>文件类别：</strong>{{ file.file_category }}</p>
+                        <p class="mb-1"><strong>文件编号：</strong>{{ file.file_number|default:'-' }}</p>
+                        <p class="mb-0"><strong>上传人：</strong>{{ file.uploader }}</p>
+                    </div>
+                    <p class="text-muted">此操作将标记文件为已删除，但不会从服务器真正移除文件。</p>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'eims_app:file_manage_list' %}" class="btn btn-secondary px-4">
+                                <i class="bi bi-x-lg me-1"></i>取消
+                            </a>
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i class="bi bi-check-lg me-1"></i>确认删除
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

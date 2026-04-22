@@ -12,6 +12,14 @@ from eims_app.forms import NoticeForm
 # 通知公告列表（优化版 - 含关键字、上传人、文件预览）
 @login_required
 def notice_list(request):
+    
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     search_key = request.GET.get('search', '')
     keywords = request.GET.get('keywords', '')
     notice_status = request.GET.get('notice_status', '')

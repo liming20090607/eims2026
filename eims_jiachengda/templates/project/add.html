@@ -1,0 +1,198 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}新增项目{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_list' %}">项目管理</a></li>
+<li class="breadcrumb-item active">新增项目</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>新增项目信息</h5>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          
+          <!-- 消息区域（自动显示Django消息） -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <!-- 表单错误汇总 -->
+          {% if form.errors %}
+            <div class="alert alert-danger">
+              <strong>表单验证失败：</strong>
+              <ul class="mb-0 mt-2">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          
+          <!-- 表单字段（使用Bootstrap样式） -->
+          <div class="row g-3">
+            <!-- 第一行 -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">项目编号 <span class="text-danger">*</span></label>
+              {{ form.project_code|add_class:"form-control" }}
+              {% if form.project_code.errors %}<div class="text-danger small">{{ form.project_code.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-8">
+              <label class="form-label fw-bold">项目名称 <span class="text-danger">*</span></label>
+              {{ form.project_name|attr:"class:form-control"|attr:"placeholder:请输入完整项目名称" }}
+              {% if form.project_name.errors %}<div class="text-danger small">{{ form.project_name.errors }}</div>{% endif %}
+            </div>
+            
+            <!-- 第二行 -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">项目类别 <span class="text-danger">*</span></label>
+              {{ form.project_category|attr:"class:form-select" }}
+              {% if form.project_category.errors %}<div class="text-danger small">{{ form.project_category.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-8">
+              <label class="form-label fw-bold">项目地址 <span class="text-danger">*</span></label>
+              {{ form.project_address|attr:"class:form-control"|attr:"placeholder:省市区+详细地址" }}
+              {% if form.project_address.errors %}<div class="text-danger small">{{ form.project_address.errors }}</div>{% endif %}
+            </div>
+            
+            <!-- 第三行 -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">项目规模</label>
+              {{ form.project_scale|attr:"class:form-control"|attr:"placeholder:如 5万㎡" }}
+              {% if form.project_scale.errors %}<div class="text-danger small">{{ form.project_scale.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">投资(万元) <span class="text-danger">*</span></label>
+              {{ form.project_investment|attr:"class:form-control"|attr:"placeholder:纯数字，如 150.5" }}
+              {% if form.project_investment.errors %}<div class="text-danger small">{{ form.project_investment.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">项目状态 <span class="text-danger">*</span></label>
+              {{ form.project_status|attr:"class:form-select" }}
+              {% if form.project_status.errors %}<div class="text-danger small">{{ form.project_status.errors }}</div>{% endif %}
+            </div>
+            
+            <!-- 第四行 -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">进场通知书日期</label>
+              {{ form.entry_notice_date|attr:"class:form-control"|attr:"type:date" }}
+              {% if form.entry_notice_date.errors %}<div class="text-danger small">{{ form.entry_notice_date.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">进场时间 <span class="text-danger">*</span></label>
+              {{ form.entry_time|attr:"class:form-control"|attr:"type:date" }}
+              {% if form.entry_time.errors %}<div class="text-danger small">{{ form.entry_time.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">实际开工</label>
+              {{ form.actual_start_time|attr:"class:form-control"|attr:"type:date" }}
+              {% if form.actual_start_time.errors %}<div class="text-danger small">{{ form.actual_start_time.errors }}</div>{% endif %}
+            </div>
+            
+            <!-- 第五行 -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">预计竣工</label>
+              {{ form.planned_completion_time|attr:"class:form-control"|attr:"type:date" }}
+              {% if form.planned_completion_time.errors %}<div class="text-danger small">{{ form.planned_completion_time.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">是否延期</label>
+              <div class="form-check form-switch mt-2">
+                {{ form.is_delayed|attr:"class:form-check-input" }}
+                <label class="form-check-label" for="{{ form.is_delayed.id_for_label }}">启用延期状态</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">延期情况</label>
+              {{ form.delay_status|attr:"class:form-control"|attr:"placeholder:简要说明" }}
+              {% if form.delay_status.errors %}<div class="text-danger small">{{ form.delay_status.errors }}</div>{% endif %}
+            </div>
+            
+            <!-- 第六行 -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">现场负责人</label>
+              {{ form.project_manager|attr:"class:form-control"|attr:"placeholder:现场负责人" }}
+              {% if form.project_manager.errors %}<div class="text-danger small">{{ form.project_manager.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">项目总监 <span class="text-danger">*</span></label>
+              {{ form.project_director|attr:"class:form-control"|attr:"placeholder:监理方总监" }}
+              {% if form.project_director.errors %}<div class="text-danger small">{{ form.project_director.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">实际负责人 <span class="text-danger">*</span></label>
+              {{ form.actual_manager|attr:"class:form-control"|attr:"placeholder:现场执行负责人" }}
+              {% if form.actual_manager.errors %}<div class="text-danger small">{{ form.actual_manager.errors }}</div>{% endif %}
+            </div>
+            
+            <!-- 第七行 -->
+            <div class="col-12">
+              <label class="form-label fw-bold">延期说明</label>
+              {{ form.delay_description|attr:"class:form-control"|attr:"rows:3"|attr:"placeholder:详细说明延期原因、影响及应对措施" }}
+              {% if form.delay_description.errors %}<div class="text-danger small">{{ form.delay_description.errors }}</div>{% endif %}
+            </div>
+            
+            <!-- 第八行 -->
+            <div class="col-12">
+              <label class="form-label fw-bold">备注</label>
+              {{ form.remark|attr:"class:form-control"|attr:"rows:3"|attr:"placeholder:其他需要说明的事项" }}
+              {% if form.remark.errors %}<div class="text-danger small">{{ form.remark.errors }}</div>{% endif %}
+            </div>
+          </div>
+          
+          <!-- 操作按钮 -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <a href="{% url 'eims_app:project_list' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-1"></i>返回列表
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i>保存项目
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 表单验证增强 -->
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+  const requiredFields = document.querySelectorAll('[required]');
+  let isValid = true;
+  
+  requiredFields.forEach(field => {
+    if (!field.value.trim()) {
+      isValid = false;
+      field.classList.add('is-invalid');
+      field.addEventListener('input', () => field.classList.remove('is-invalid'), {once: true});
+    }
+  });
+  
+  if (!isValid) {
+    e.preventDefault();
+    alert('请填写所有必填字段（带*号）');
+  }
+});
+</script>
+{% endblock %} 

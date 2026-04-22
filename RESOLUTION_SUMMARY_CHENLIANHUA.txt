@@ -1,0 +1,168 @@
+================================================================================
+ISSUE RESOLUTION SUMMARY - Chen Lianhua Login & Recall Button Problems
+================================================================================
+
+Date: 2026-03-21
+Status: ✅ RESOLVED
+
+================================================================================
+PROBLEM 1: Login Failure - "Not Assigned to Company"
+================================================================================
+
+SYMPTOM:
+- Chen Lianhua appears in department personnel list (screenshot 1)
+- Login fails with error: "您还没有被分配到任何公司，请联系管理员"
+- Error message: "You haven't been assigned to any company, please contact administrator"
+
+ROOT CAUSE:
+- Chen Lianhua existed in Personnel table (ID:83, code: JCDRY-001, department: 总经办)
+- BUT there was NO corresponding User account in Django's authentication system
+- Personnel records (HR data) and User accounts (authentication) are separate systems
+- Login validation checks UserProfile.tenant, which requires a User account first
+
+SOLUTION APPLIED:
+- Created fix_chenlianhua_login.py script that:
+  1. Found Chen Lianhua's personnel record
+  2. Searched for existing User account (none found)
+  3. Created new User account with username 'jcdry001' (derived from personnel code)
+  4. Created/updated UserProfile linking to tenant ID 4 (嘉诚达)
+  5. Set default password to '123456'
+
+VERIFICATION:
+✓ User account exists: jcdry001
+✓ Name: 陈连华
+✓ Active: True
+✓ UserProfile configured
+✓ Tenant assigned: 广西嘉诚达工程造价咨询有限公司 (ID: 4)
+
+LOGIN CREDENTIALS:
+- Username: jcdry001
+- Password: 123456 (default password, should be changed after first login)
+- Company: 广西嘉诚达工程造价咨询有限公司
+
+================================================================================
+PROBLEM 2: Recall Button Returns JSON Parse Error
+================================================================================
+
+SYMPTOM:
+- Clicking "召回" (Recall) button on personnel record fails
+- Error message: "Unexpected token '<', "<!DOCTYPE "... is not valid JSON" (screenshot 2)
+
+ROOT CAUSE:
+- JavaScript functions used hardcoded URLs like `/personnel/allocations/recall/${id}/`
+- Application uses multi-tenant architecture with URL prefixes:
+  * /jiachengda/personnel/allocations/...
+  * /dingce/personnel/allocations/...
+  * /shengchang/personnel/allocations/...
+- Hardcoded URLs returned 404 HTML pages instead of JSON responses
+- JavaScript tried to parse HTML as JSON, causing the error
+
+SOLUTION APPLIED:
+- Replaced all hardcoded URLs with Django template tag pattern:
+  
+  BEFORE:
+    fetch(`/personnel/allocations/recall/${personnelId}/`, {
+  
+  AFTER:
+    fetch('{% url "eims_app:recall_personnel_ajax" 0 %}'.replace('/0/', `/${personnelId}/`), {
+
+FILES MODIFIED:
+1. eims_jiachengda/templates/personnel/allocation_visual.html
+   - Fixed 4 hardcoded URLs in functions:
+     * recallPersonnel()
+     * batchRecall()
+     * editPersonnelAllocation()
+     * updatePersonnelAllocation()
+     * deleteAllPersonnelAllocation()
+
+2. eims_app/templates/personnel/allocation_visual.html
+   - Fixed 5 hardcoded URLs in functions:
+     * recallPersonnel() (line ~1379)
+     * batchRecall() (line ~1414)
+     * editPersonnelAllocation() (line ~1534)
+     * updatePersonnelAllocation() (line ~1705)
+     * deleteAllPersonnelAllocation() (line ~1742)
+
+VERIFICATION:
+✓ No more hardcoded `/personnel/allocations/` URLs in either template
+✓ All AJAX calls now use tenant-aware URL generation
+✓ URLs will automatically include correct tenant prefix (/jiachengda/, /dingce/, etc.)
+
+================================================================================
+TESTING INSTRUCTIONS
+================================================================================
+
+1. Test Login:
+   - Visit http://127.0.0.1:8000/login/
+   - Enter username: jcdry001
+   - Enter password: 123456
+   - Should successfully login and redirect to /jiachengda/
+   - Should NOT see "not assigned to company" error
+
+2. Test Recall Button:
+   - Navigate to Personnel → Allocation Visual page
+   - Find Chen Lianhua in the department personnel list
+   - Click the "召回" (Recall) button
+   - Should show confirmation dialog
+   - Should successfully recall without JSON parse error
+   - Should see success message
+
+3. Test Other Personnel Functions:
+   - Try editing personnel allocation (编辑按钮)
+   - Try batch recall (批量召回)
+   - Try deleting all allocations (删除全部分配)
+   - All should work without errors
+
+================================================================================
+TECHNICAL NOTES
+================================================================================
+
+Multi-Tenant Architecture:
+- Single Django application serving multiple companies
+- Each company has URL path prefix: /{company_code}/
+- Templates must use {% url %} tags to generate correct URLs
+- Hardcoded absolute paths break tenant isolation
+
+URL Pattern Used:
+'{% url "eims_app:view_name" 0 %}'.replace('/0/', `/${dynamicId}/`)
+
+This pattern:
+1. Generates base URL with placeholder ID (0)
+2. Replaces placeholder with actual dynamic ID
+3. Ensures correct tenant prefix is included
+4. Works across all tenant namespaces
+
+Personnel vs User Models:
+- Personnel: HR records (name, department, position, etc.)
+- User: Authentication accounts (username, password, permissions)
+- UserProfile: Links User to Tenant and stores additional user info
+- Having a Personnel record does NOT automatically create a User account
+- Must explicitly create User account for login capability
+
+================================================================================
+RELATED FILES
+================================================================================
+
+Scripts Created:
+- fix_chenlianhua_login.py (diagnostic and fix script)
+- verify_chenlianhua.py (verification script)
+- search_chenlianhua.py (comprehensive search script)
+- fix_chenlianhua_tenant.py (initial diagnostic, not executed)
+
+Templates Modified:
+- eims_jiachengda/templates/personnel/allocation_visual.html
+- eims_app/templates/personnel/allocation_visual.html
+
+Views Referenced:
+- eims_app/views/views_custom_login.py (login logic)
+- eims_app/views/views_personnel.py (personnel management)
+
+Models Involved:
+- django.contrib.auth.models.User (authentication)
+- eims_app.models.UserProfile (user-tenant relationship)
+- eims_app.models.Personnel (HR records)
+- eims_app.models.Tenant (company information)
+
+================================================================================
+END OF SUMMARY
+================================================================================

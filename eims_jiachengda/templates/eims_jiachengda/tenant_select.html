@@ -1,0 +1,184 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}选择公司 - EIMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        选择公司
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        请选择您要操作的公司。不同公司的数据完全隔离，互不影响。
+                    </p>
+                    
+                    {% if require_password %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>安全验证：</strong>为了保障数据安全，切换公司需要输入您的登录密码。
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            {% for tenant in tenants %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 tenant-card {% if user.profile.tenant_id == tenant.id %}border-primary{% endif %}" 
+                                     style="cursor: pointer;"
+                                     onclick="selectTenant({{ tenant.id }})">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            {% if tenant.logo %}
+                                            <img src="{{ tenant.logo.url }}" alt="{{ tenant.name }}" 
+                                                 class="me-3" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                                            {% else %}
+                                            <div class="me-3 bg-light rounded d-flex align-items-center justify-content-center" 
+                                                 style="width: 50px; height: 50px;">
+                                                <i class="fas fa-building fa-lg text-primary"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <h5 class="mb-1">{{ tenant.name }}</h5>
+                                                <small class="text-muted">{{ tenant.short_name }}</small>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if tenant.contact_person %}
+                                        <p class="mb-1 small">
+                                            <i class="fas fa-user me-1 text-muted"></i>
+                                            {{ tenant.contact_person }}
+                                        </p>
+                                        {% endif %}
+                                        
+                                        {% if tenant.contact_phone %}
+                                        <p class="mb-1 small">
+                                            <i class="fas fa-phone me-1 text-muted"></i>
+                                            {{ tenant.contact_phone }}
+                                        </p>
+                                        {% endif %}
+                                        
+                                        {% if user.profile.tenant_id == tenant.id %}
+                                        <span class="badge bg-primary mt-2">
+                                            <i class="fas fa-check me-1"></i>当前公司
+                                        </span>
+                                        {% endif %}
+                                        
+                                        <input type="radio" name="tenant_id" value="{{ tenant.id }}" 
+                                               id="tenant_{{ tenant.id }}"
+                                               class="d-none"
+                                               {% if user.profile.tenant_id == tenant.id %}checked{% endif %}>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    您还没有分配任何公司，请联系管理员。
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3" {% if not require_password %}style="display:none;"{% endif %} id="passwordField">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>登录密码
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="请输入您的登录密码" required>
+                            <small class="form-text text-muted">请输入当前账号的登录密码以验证身份</small>
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% url 'eims_jiachengda:eims_index' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                返回首页
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                <i class="fas fa-check me-1"></i>
+                                确认选择
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 提示信息 -->
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>提示：</strong>
+                <ul class="mb-0 mt-2">
+                    <li>超级管理员可以访问所有公司的数据</li>
+                    <li>普通用户只能访问自己被分配的公司</li>
+                    <li>切换公司后，之前公司的数据将不可见</li>
+                    <li>您可以在侧边栏随时切换公司</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectTenant(tenantId) {
+    // 选中单选框
+    document.getElementById('tenant_' + tenantId).checked = true;
+    
+    // 如果需要密码验证，显示密码字段
+    const passwordField = document.getElementById('passwordField');
+    if (passwordField && passwordField.style.display !== 'none') {
+        document.getElementById('password').required = true;
+    }
+    
+    // 启用提交按钮
+    document.getElementById('submitBtn').disabled = false;
+    
+    // 移除所有卡片的边框高亮
+    document.querySelectorAll('.tenant-card').forEach(card => {
+        card.classList.remove('border-primary');
+    });
+    
+    // 添加当前选中卡片的边框高亮
+    event.currentTarget.classList.add('border-primary');
+}
+
+// 页面加载时检查是否有选中的项
+document.addEventListener('DOMContentLoaded', function() {
+    const checkedRadio = document.querySelector('input[name="tenant_id"]:checked');
+    if (checkedRadio) {
+        document.getElementById('submitBtn').disabled = false;
+        
+        // 如果需要密码验证，确保密码字段可见
+        const passwordField = document.getElementById('passwordField');
+        if (passwordField && passwordField.style.display !== 'none') {
+            document.getElementById('password').required = true;
+        }
+    }
+});
+</script>
+
+<style>
+.tenant-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.tenant-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.tenant-card.border-primary {
+    border-color: #0d6efd !important;
+    background-color: #f8f9ff;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if dept %}编辑部门{% else %}创建部门{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:department_list' %}">部门管理</a></li>
+<li class="breadcrumb-item active">{% if dept %}编辑部门{% else %}创建部门{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> {% if dept %}编辑部门信息{% else %}创建新部门{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- 基本信息 -->
+                        <fieldset class="mb-4">
+                            <legend class="fw-bold text-primary">基本信息</legend>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">部门编号 <span class="text-danger">*</span></label>
+                                    {{ form.department_code }}
+                                    {% if form.department_code.errors %}
+                                        <div class="text-danger small">{{ form.department_code.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">唯一部门标识，如：DEPT001</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">部门名称 <span class="text-danger">*</span></label>
+                                    {{ form.department_name }}
+                                    {% if form.department_name.errors %}
+                                        <div class="text-danger small">{{ form.department_name.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">部门全称，如：工程部</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">部门类型</label>
+                                    {{ form.department_type }}
+                                    {% if form.department_type.errors %}
+                                        <div class="text-danger small">{{ form.department_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">上级部门</label>
+                                    {{ form.parent_department }}
+                                    {% if form.parent_department.errors %}
+                                        <div class="text-danger small">{{ form.parent_department.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">如有上级部门请选择</small>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <!-- 管理信息 -->
+                        <fieldset class="mb-4">
+                            <legend class="fw-bold text-success">管理信息</legend>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">部门负责人</label>
+                                    {{ form.manager }}
+                                    {% if form.manager.errors %}
+                                        <div class="text-danger small">{{ form.manager.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">从系统用户中选择（适用于有账号的员工）</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">负责人姓名</label>
+                                    {{ form.manager_name }}
+                                    {% if form.manager_name.errors %}
+                                        <div class="text-danger small">{{ form.manager_name.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">直接填写姓名（适用于无账号的外部人员）</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">联系电话</label>
+                                    {{ form.contact_phone }}
+                                    {% if form.contact_phone.errors %}
+                                        <div class="text-danger small">{{ form.contact_phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">联系邮箱</label>
+                                    {{ form.contact_email }}
+                                    {% if form.contact_email.errors %}
+                                        <div class="text-danger small">{{ form.contact_email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <!-- 职能描述 -->
+                        <fieldset class="mb-4">
+                            <legend class="fw-bold text-info">职能描述</legend>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">部门描述</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small">{{ form.description.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">简要描述部门的主要职责</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">详细职能</label>
+                                {{ form.responsibilities }}
+                                {% if form.responsibilities.errors %}
+                                    <div class="text-danger small">{{ form.responsibilities.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">详细说明部门的工作范围和职能</small>
+                            </div>
+                        </fieldset>
+                        
+                        <!-- 其他信息 -->
+                        <fieldset class="mb-4">
+                            <legend class="fw-bold text-warning">其他信息</legend>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">部门状态</label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                        <div class="text-danger small">{{ form.status.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">成立日期</label>
+                                    {{ form.established_date }}
+                                    {% if form.established_date.errors %}
+                                        <div class="text-danger small">{{ form.established_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">排序顺序</label>
+                                {{ form.order }}
+                                {% if form.order.errors %}
+                                    <div class="text-danger small">{{ form.order.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">数字越小越靠前显示</small>
+                            </div>
+                        </fieldset>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:department_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> {% if dept %}保存修改{% else %}创建部门{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    fieldset {
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        background: #f9f9f9;
+    }
+    
+    legend {
+        width: auto;
+        padding: 0 10px;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}

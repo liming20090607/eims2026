@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字段映射快速参考</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .success-box h2 {
+            color: #155724;
+            margin-bottom: 15px;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .field-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .field-name {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .field-db {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .field-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #28a745;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.75em;
+            margin-left: 5px;
+        }
+        .field-badge-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        .info-box {
+            background: #e7f3fe;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .info-box h3 {
+            color: #31708f;
+            margin-bottom: 10px;
+        }
+        .info-box ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        .info-box li {
+            margin-bottom: 8px;
+        }
+        .info-box li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .highlight h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 字段映射快速参考</h1>
+            <p>你的 Excel → 系统数据库 完整映射表</p>
+        </div>
+        
+        <div class="content">
+            <div class="success-box">
+                <h2>✅ 更新完成！</h2>
+                <p><strong>字段总数：</strong>36 个字段（从你的 Excel 顺序）</p>
+                <p><strong>兼容性：</strong>支持 44 种字段名称（含历史格式）</p>
+                <p><strong>状态：</strong>已通过系统检查，可以立即导入</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>📋 你的 Excel 字段顺序（36 个）</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目月报</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同类别</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目编号</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同编号</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目名称</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目状态</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同状态</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">结算情况</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同甲方</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同乙方</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">签订日期</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同文本</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同总价（元）</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">付款约定</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">累计回款 (元)</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">合同余款 (元)</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目规模</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目总投资（万元）</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目地址</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">约定人员配备</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">服务周期</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">服务到期时间</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">延期约定</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">实际延期情况</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">报建情况</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">施工许可证</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">进场通知</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">进场时间</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">计划开工时间</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">实际开工时间</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">预计竣工时间</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">项目总监</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">现场负责人</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">联系电话</span>
+                    <span class="badge" style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">备注</span>
+                </div>
+            </div>
+            
+            <h2 style="margin-top: 30px; color: #667eea;">📊 完整字段映射表</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>Excel 字段</th>
+                        <th>数据库字段</th>
+                        <th>必填</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>项目月报</td><td>monthly_report_required</td><td>-</td><td>布尔值</td></tr>
+                    <tr><td>2</td><td>合同类别</td><td>contract_category</td><td>-</td><td>工程/采购/服务等</td></tr>
+                    <tr><td>3</td><td>项目编号</td><td>project_code</td><td>✅</td><td>唯一标识</td></tr>
+                    <tr><td>4</td><td>合同编号</td><td>contract_code</td><td>✅</td><td>唯一标识</td></tr>
+                    <tr><td>5</td><td>项目名称</td><td>project_name</td><td>✅</td><td>-</td></tr>
+                    <tr><td>6</td><td>项目状态</td><td>project_status</td><td>-</td><td>状态徽章</td></tr>
+                    <tr><td>7</td><td>合同状态</td><td>contract_status</td><td>-</td><td>状态徽章</td></tr>
+                    <tr><td>8</td><td>结算情况</td><td>settlement_status</td><td>-</td><td>状态徽章</td></tr>
+                    <tr><td>9</td><td>合同甲方</td><td>contract_party_a</td><td>✅</td><td>截断显示</td></tr>
+                    <tr><td>10</td><td>合同乙方</td><td>contract_party_b</td><td>✅</td><td>截断显示</td></tr>
+                    <tr><td>11</td><td>签订日期</td><td>signing_date</td><td>-</td><td>Y-m-d 格式</td></tr>
+                    <tr><td>12</td><td>合同文本</td><td>contract_text</td><td>-</td><td>新增字段</td></tr>
+                    <tr><td>13</td><td>合同总价（元）</td><td>contract_amount</td><td>-</td><td>金额，2 位小数</td></tr>
+                    <tr><td>14</td><td>付款约定</td><td>payment_agreement</td><td>-</td><td>文本</td></tr>
+                    <tr><td>15</td><td>累计回款</td><td>cumulative_payment</td><td>-</td><td>新增，金额</td></tr>
+                    <tr><td>16</td><td>合同余款</td><td>contract_balance</td><td>-</td><td>新增，金额</td></tr>
+                    <tr><td>17</td><td>项目规模</td><td>project_scale</td><td>-</td><td>文本</td></tr>
+                    <tr><td>18</td><td>项目总投资（万元）</td><td>project_investment</td><td>-</td><td>金额</td></tr>
+                    <tr><td>19</td><td>项目地址</td><td>project_address</td><td>-</td><td>文本</td></tr>
+                    <tr><td>20</td><td>约定人员配备</td><td>agreed_staffing</td><td>-</td><td>新增，文本</td></tr>
+                    <tr><td>21</td><td>服务周期</td><td>service_period</td><td>-</td><td>文本</td></tr>
+                    <tr><td>22</td><td>服务到期时间</td><td>service_deadline</td><td>-</td><td>日期</td></tr>
+                    <tr><td>23</td><td>延期约定</td><td>extension_agreement</td><td>-</td><td>文本</td></tr>
+                    <tr><td>24</td><td>实际延期情况</td><td>actual_extension_status</td><td>-</td><td>文本</td></tr>
+                    <tr><td>25</td><td>报建情况</td><td>construction_report_status</td><td>-</td><td>新增，文本</td></tr>
+                    <tr><td>26</td><td>施工许可证</td><td>construction_permit_status</td><td>-</td><td>文本</td></tr>
+                    <tr><td>27</td><td>进场通知</td><td>entry_notice</td><td>-</td><td>文本</td></tr>
+                    <tr><td>28</td><td>进场时间</td><td>entry_time</td><td>-</td><td>日期</td></tr>
+                    <tr><td>29</td><td>计划开工时间</td><td>planned_start_date</td><td>-</td><td>新增，日期</td></tr>
+                    <tr><td>30</td><td>实际开工时间</td><td>actual_start_date</td><td>-</td><td>日期</td></tr>
+                    <tr><td>31</td><td>预计竣工时间</td><td>estimated_completion_date</td><td>-</td><td>日期</td></tr>
+                    <tr><td>32</td><td>项目总监</td><td>project_director</td><td>-</td><td>新增，文本</td></tr>
+                    <tr><td>33</td><td>现场负责人</td><td>project_manager</td><td>-</td><td>文本</td></tr>
+                    <tr><td>34</td><td>联系电话</td><td>contact_phone</td><td>-</td><td>新增，文本</td></tr>
+                    <tr><td>35</td><td>备注</td><td>remark</td><td>-</td><td>文本</td></tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight">
+                <h3>💡 兼容性特性</h3>
+                <p>系统自动支持以下字段名的变体，无需修改你的 Excel：</p>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li>✅ <strong>合同总价</strong> 或 <strong>合同总价（元）</strong> → 同一字段</li>
+                    <li>✅ <strong>项目总投资</strong> 或 <strong>项目总投资（万元）</strong> → 同一字段</li>
+                    <li>✅ <strong>服务到期日期</strong> 或 <strong>服务到期时间</strong> → 同一字段</li>
+                    <li>✅ <strong>施工许可证状态</strong> 或 <strong>施工许可证</strong> → 同一字段</li>
+                    <li>✅ <strong>进场通知书</strong> 或 <strong>进场通知</strong> → 同一字段</li>
+                    <li>✅ <strong>计划开工日期</strong> 或 <strong>计划开工时间</strong> → 同一字段</li>
+                    <li>✅ <strong>实际开工日期</strong> 或 <strong>实际开工时间</strong> → 同一字段</li>
+                    <li>✅ <strong>预计竣工日期</strong> 或 <strong>预计竣工时间</strong> → 同一字段</li>
+                </ul>
+            </div>
+            
+            <div class="info-box">
+                <h3>🎯 必填字段（5 个）</h3>
+                <ul>
+                    <li><strong>项目编号</strong> - 项目的唯一标识符</li>
+                    <li><strong>合同编号</strong> - 合同的唯一标识符</li>
+                    <li><strong>项目名称</strong> - 项目的名称</li>
+                    <li><strong>合同甲方</strong> - 合同的甲方单位</li>
+                    <li><strong>合同乙方</strong> - 合同的乙方单位</li>
+                </ul>
+                <p style="margin-top: 15px; color: #856404;">
+                    <strong>⚠️ 注意：</strong>这 5 个字段在 Excel 中不能为空！
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <h3>🚀 立即开始导入</h3>
+                <br>
+                <a href="/project_ledger/import/" class="button">📊 项目台账导入</a>
+                <a href="/contract_management/import/" class="button">📄 合同管理导入</a>
+                <a href="/debug_import/" class="button" style="background: #6c757d;">🔧 调试工具</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

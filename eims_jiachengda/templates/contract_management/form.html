@@ -1,0 +1,212 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:contract_management_list' %}">合同管理</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 32px; margin-bottom: 24px; }
+    .form-section { margin-bottom: 32px; }
+    .section-title { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; }
+    .section-title i { margin-right: 8px; color: #667eea; }
+    .form-label { font-weight: 500; color: #1e293b; margin-bottom: 6px; }
+    .required::after { content: " *"; color: red; }
+    .form-control:focus, .form-select:focus { border-color: #667eea; box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25); }
+    .help-text { font-size: 0.875rem; color: #64748b; margin-top: 4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="mb-4">
+                <a href="{% url 'eims_app:contract_management_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+            
+            <div class="form-card">
+                <h3 class="mb-4">{{ title }}</h3>
+                
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="form-section">
+                        <div class="section-title"><i class="bi bi-file-earmark-text"></i>基础信息</div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">项目编号</label>
+                                {{ form.project_code }}
+                                {% if form.project_code.errors %}<div class="text-danger small mt-1">{{ form.project_code.errors }}</div>{% endif %}
+                                <small class="form-text text-muted">项目编号必须唯一</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">合同类别</label>
+                                {{ form.contract_category }}
+                                {% if form.contract_category.errors %}<div class="text-danger small mt-1">{{ form.contract_category.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">合同编号</label>
+                                {{ form.contract_code }}
+                                {% if form.contract_code.errors %}<div class="text-danger small mt-1">{{ form.contract_code.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">项目名称</label>
+                                {{ form.project_name }}
+                                {% if form.project_name.errors %}<div class="text-danger small mt-1">{{ form.project_name.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">合同状态</label>
+                                {{ form.contract_status }}
+                                {% if form.contract_status.errors %}<div class="text-danger small mt-1">{{ form.contract_status.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">结算情况</label>
+                                {{ form.settlement_status }}
+                                {% if form.settlement_status.errors %}<div class="text-danger small mt-1">{{ form.settlement_status.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">签订日期</label>
+                                {{ form.signing_date }}
+                                {% if form.signing_date.errors %}<div class="text-danger small mt-1">{{ form.signing_date.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label required">合同总价 (元)</label>
+                                {{ form.contract_amount }}
+                                {% if form.contract_amount.errors %}<div class="text-danger small mt-1">{{ form.contract_amount.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title"><i class="bi bi-people"></i>合同双方</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">合同甲方</label>
+                                {{ form.contract_party_a }}
+                                {% if form.contract_party_a.errors %}<div class="text-danger small mt-1">{{ form.contract_party_a.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">合同乙方</label>
+                                {{ form.contract_party_b }}
+                                {% if form.contract_party_b.errors %}<div class="text-danger small mt-1">{{ form.contract_party_b.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title"><i class="bi bi-cash-coin"></i>付款信息</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">付款约定</label>
+                                {{ form.payment_agreement }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">合同文本</label>
+                                {{ form.contract_text }}
+                                <div class="help-text">支持 PDF、Word 等格式文件</div>
+                                {% if form.contract_text.errors %}<div class="text-danger small mt-1">{{ form.contract_text.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title"><i class="bi bi-building"></i>项目属性</div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">项目规模</label>
+                                {{ form.project_scale }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">项目总投资 (万元)</label>
+                                {{ form.project_investment }}
+                                {% if form.project_investment.errors %}<div class="text-danger small mt-1">{{ form.project_investment.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">项目地址</label>
+                                {{ form.project_address }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">约定人员配备</label>
+                                {{ form.agreed_staffing }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">服务周期</label>
+                                {{ form.service_period_months }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">服务到期日期</label>
+                                {{ form.service_deadline }}
+                                {% if form.service_deadline.errors %}<div class="text-danger small mt-1">{{ form.service_deadline.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title"><i class="bi bi-calendar-event"></i>进度管理</div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">延期约定</label>
+                                {{ form.extension_agreement }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">计划开工日期</label>
+                                {{ form.planned_start_date }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">预计竣工日期</label>
+                                {{ form.estimated_completion_date }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title"><i class="bi bi-chat-left-text"></i>备注</div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">备注</label>
+                                {{ form.remark }}
+                                {% if form.remark.errors %}<div class="text-danger small mt-1">{{ form.remark.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>保存</button>
+                        <a href="{% url 'eims_app:contract_management_list' %}" class="btn btn-secondary"><i class="bi bi-x-circle me-1"></i>取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 数据列表 - 支持手动输入选项 -->
+    <datalist id="contract_category_list">
+        <option value="工程监理">
+        <option value="造价咨询">
+        <option value="检测">
+        <option value="全过程咨询">
+    </datalist>
+    <datalist id="contract_status_list">
+        <option value="待审核">
+        <option value="在执行">
+        <option value="已终止">
+        <option value="已解除">
+    </datalist>
+    <datalist id="settlement_status_list">
+        <option value="未结算">
+        <option value="已结算">
+    </datalist>
+</div>
+{% endblock %}

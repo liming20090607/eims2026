@@ -1,0 +1,256 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}编辑{% else %}新增{% endif %} - 审核成果{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container-fluid {
+        padding: 10px !important;
+        max-width: 1200px !important;
+    }
+    
+    .card {
+        margin-bottom: 10px !important;
+    }
+    
+    .card-header {
+        padding: 8px 12px !important;
+    }
+    
+    .card-body {
+        padding: 15px !important;
+    }
+    
+    .form-label {
+        font-size: 0.9rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .form-control, .form-select {
+        font-size: 0.9rem !important;
+        padding: 4px 8px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 面包屑导航 -->
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:module_cost' %}">造价咨询</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:cost_review_result_list' %}">审核成果</a></li>
+            <li class="breadcrumb-item active">{% if form.instance.pk %}编辑{% else %}新增{% endif %}</li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header">
+            <h6 class="mb-0">{% if form.instance.pk %}编辑审核成果{% else %}新增审核成果{% endif %}</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="reviewResultForm">
+                {% csrf_token %}
+                
+                <div class="row g-3">
+                    <!-- 项目信息 -->
+                    <div class="col-md-12">
+                        <h6 class="text-primary border-bottom pb-2">项目信息</h6>
+                    </div>
+                    
+                    <!-- 隐藏的项目选择字段 -->
+                    {{ form.selected_project }}
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">项目编号</label>
+                        <input type="text" class="form-control" value="{{ form.instance.project_code|default:'' }}" readonly 
+                               style="background-color: #f8f9fa;">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">项目名称</label>
+                        <input type="text" class="form-control" value="{{ form.instance.project_name|default:'' }}" readonly 
+                               style="background-color: #f8f9fa;">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">项目类型</label>
+                        <input type="text" class="form-control" value="{% if form.instance.project_type %}{{ form.instance.get_project_type_display }}{% else %}{% endif %}" readonly 
+                               style="background-color: #f8f9fa;">
+                    </div>
+                    
+                    <!-- 编制信息 -->
+                    <div class="col-md-12 mt-4">
+                        <h6 class="text-primary border-bottom pb-2">编制信息</h6>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">编制人</label>
+                        {{ form.review_compiler }}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">编制金额(万元)</label>
+                        {{ form.review_compilation_amount }}
+                    </div>
+                    
+                    <!-- 一审成果 -->
+                    <div class="col-md-12 mt-4">
+                        <h6 class="text-primary border-bottom pb-2">一审成果</h6>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">一审送审(万元)</label>
+                        {{ form.review_first_submission }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">一审结果</label>
+                        {{ form.review_first_result }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">一审审减(万元)</label>
+                        {{ form.review_first_reduction }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">一审减率(%)</label>
+                        {{ form.review_first_reduction_rate }}
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <label class="form-label">一审评价</label>
+                        {{ form.review_first_review_evaluation }}
+                    </div>
+                    
+                    <!-- 二审成果 -->
+                    <div class="col-md-12 mt-4">
+                        <h6 class="text-primary border-bottom pb-2">二审成果</h6>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">二审送审(万元)</label>
+                        {{ form.review_second_submission }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">二审结果</label>
+                        {{ form.review_second_result }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">二审审减(万元)</label>
+                        {{ form.review_second_reduction }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">二审减率(%)</label>
+                        {{ form.review_second_reduction_rate }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">二审人员</label>
+                        {{ form.review_second_reviewer }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">二审评价</label>
+                        {{ form.review_second_evaluation }}
+                    </div>
+                    
+                    <!-- 三审成果 -->
+                    <div class="col-md-12 mt-4">
+                        <h6 class="text-primary border-bottom pb-2">三审成果</h6>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">三审送审(万元)</label>
+                        {{ form.review_third_submission }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">三审结果</label>
+                        {{ form.review_third_result }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">三审审减(万元)</label>
+                        {{ form.review_third_reduction }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">三审减率(%)</label>
+                        {{ form.review_third_reduction_rate }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">三审人员</label>
+                        {{ form.review_third_reviewer }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">三审评价</label>
+                        {{ form.review_third_evaluation }}
+                    </div>
+                    
+                    <!-- 最终审定 -->
+                    <div class="col-md-12 mt-4">
+                        <h6 class="text-primary border-bottom pb-2">最终审定</h6>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">审定金额(万元)</label>
+                        {{ form.review_final_approved_amount }}
+                    </div>
+                </div>
+                
+                <div class="mt-3 d-flex justify-content-between">
+                    <a href="{% url 'eims_app:cost_review_result_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> 返回列表
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const projectSelect = document.getElementById('id_selected_project');
+    const projectCodeField = document.getElementById('id_display_project_code');
+    const projectNameField = document.getElementById('id_display_project_name');
+    
+    if (projectSelect) {
+        projectSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                // 从选项文本中提取项目编号和名称
+                const text = selectedOption.text;
+                const match = text.match(/^\[(.+?)\]\s*(.+)$/);
+                if (match) {
+                    projectCodeField.value = match[1];
+                    projectNameField.value = match[2];
+                } else {
+                    projectCodeField.value = '';
+                    projectNameField.value = text;
+                }
+            } else {
+                projectCodeField.value = '';
+                projectNameField.value = '';
+            }
+        });
+        
+        // 页面加载时，如果已有选中值，触发一次填充
+        if (projectSelect.value) {
+            projectSelect.dispatchEvent(new Event('change'));
+        }
+    }
+});
+</script>
+{% endblock %}

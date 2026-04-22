@@ -1,0 +1,93 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}分配详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:allocation_list' %}">人员分配管理</a></li>
+<li class="breadcrumb-item active">分配详情</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> 分配详细信息</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">分配编号</th>
+                            <td>{{ allocation.allocation_code }}</td>
+                        </tr>
+                        <tr>
+                            <th>人员编号</th>
+                            <td>{{ allocation.personnel_code }}</td>
+                        </tr>
+                        <tr>
+                            <th>原项目</th>
+                            <td>{{ allocation.from_project.project_name|default:"-" }} ({{ allocation.from_project_code|default:"-" }})</td>
+                        </tr>
+                        <tr>
+                            <th>分配项目</th>
+                            <td>{{ allocation.to_project.project_name|default:"-" }} ({{ allocation.to_project_code }})</td>
+                        </tr>
+                        <tr>
+                            <th>分配岗位</th>
+                            <td>{{ allocation.allocation_position }}</td>
+                        </tr>
+                        <tr>
+                            <th>分配日期</th>
+                            <td>{{ allocation.allocation_date|date:"Y-m-d" }}</td>
+                        </tr>
+                        <tr>
+                            <th>预计工期</th>
+                            <td>{{ allocation.expected_duration|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>分配状态</th>
+                            <td>
+                                {% if allocation.allocation_status == 'allocated' %}<span class="badge bg-success">已分配</span>
+                                {% elif allocation.allocation_status == 'pending' %}<span class="badge bg-warning">待分配</span>
+                                {% elif allocation.allocation_status == 'recalled' %}<span class="badge bg-secondary">已召回</span>
+                                {% elif allocation.allocation_status == 'transferred' %}<span class="badge bg-info">已调动</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>分配原因</th>
+                            <td>{{ allocation.allocation_reason|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>备注</th>
+                            <td>{{ allocation.remark|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>创建时间</th>
+                            <td>{{ allocation.create_time|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                        <tr>
+                            <th>更新时间</th>
+                            <td>{{ allocation.update_time|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'eims_app:allocation_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                        {% if user.is_superuser %}
+                        <a href="{% url 'eims_app:allocation_edit' allocation.pk %}" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,595 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- 页面标题 -->
+            {% include 'components/page_title.html' with title=title subtitle=subtitle|default:'填报项目月度动态信息' %}
+            
+            <!-- 表单卡片 -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- 基础信息 -->
+                        <h5 class="mb-3 text-primary">
+                            <i class="bi bi-info-circle"></i> 基础信息
+                        </h5>
+                        
+                        <!-- 项目编号（只读） -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.project_code_display.id_for_label }}" class="form-label">
+                                    {{ form.project_code_display.label }}
+                                </label>
+                                {{ form.project_code_display }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.reporter_display.id_for_label }}" class="form-label">
+                                    {{ form.reporter_display.label }}
+                                </label>
+                                {{ form.reporter_display }}
+                            </div>
+                        </div>
+                        
+                        <!-- 项目名称和填报时间 -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.project.id_for_label }}" class="form-label">
+                                    {{ form.project.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.project }}
+                                {% if form.project.errors %}
+                                    <div class="text-danger small mt-1">{{ form.project.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.report_time_display.id_for_label }}" class="form-label">
+                                    {{ form.report_time_display.label }}
+                                </label>
+                                {{ form.report_time_display }}
+                            </div>
+                        </div>
+                        
+                        <!-- 报告月份 -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.report_month.id_for_label }}" class="form-label">
+                                    {{ form.report_month.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.report_month }}
+                                {% if form.report_month.errors %}
+                                    <div class="text-danger small mt-1">{{ form.report_month.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">点击选择年月</small>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 项目进度信息 -->
+                        <h5 class="mb-3 text-primary">
+                            <i class="bi bi-bar-chart-line"></i> 项目进度信息
+                        </h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.current_status.id_for_label }}" class="form-label">
+                                    {{ form.current_status.label }}
+                                </label>
+                                {{ form.current_status }}
+                                {% if form.current_status.errors %}
+                                    <div class="text-danger small mt-1">{{ form.current_status.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.project_progress.id_for_label }}" class="form-label">
+                                {{ form.project_progress.label }}
+                            </label>
+                            {{ form.project_progress }}
+                            {% if form.project_progress.errors %}
+                                <div class="text-danger small mt-1">{{ form.project_progress.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 产值和回款信息 -->
+                        <h5 class="mb-3 text-primary">
+                            <i class="bi bi-currency-yen"></i> 产值和回款信息
+                        </h5>
+                        
+                        <!-- 产值信息 -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary"><i class="bi bi-graph-up"></i> 产值信息（元）</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.last_month_cumulative_output.id_for_label }}" class="form-label">
+                                            {{ form.last_month_cumulative_output.label }}
+                                        </label>
+                                        {{ form.last_month_cumulative_output }}
+                                        {% if form.last_month_cumulative_output.errors %}
+                                            <div class="text-danger small mt-1">{{ form.last_month_cumulative_output.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">自动从上月报告获取</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.monthly_output_value.id_for_label }}" class="form-label">
+                                            {{ form.monthly_output_value.label }} <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.monthly_output_value }}
+                                        {% if form.monthly_output_value.errors %}
+                                            <div class="text-danger small mt-1">{{ form.monthly_output_value.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.current_cumulative_output.id_for_label }}" class="form-label">
+                                            {{ form.current_cumulative_output.label }}
+                                        </label>
+                                        {{ form.current_cumulative_output }}
+                                        {% if form.current_cumulative_output.errors %}
+                                            <div class="text-danger small mt-1">{{ form.current_cumulative_output.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">自动计算：上月 + 本月</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 回款信息 -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title text-success"><i class="bi bi-cash-coin"></i> 回款信息（元）</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.last_month_cumulative_payment.id_for_label }}" class="form-label">
+                                            {{ form.last_month_cumulative_payment.label }}
+                                        </label>
+                                        {{ form.last_month_cumulative_payment }}
+                                        {% if form.last_month_cumulative_payment.errors %}
+                                            <div class="text-danger small mt-1">{{ form.last_month_cumulative_payment.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">自动从上月报告获取</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.monthly_payment.id_for_label }}" class="form-label">
+                                            {{ form.monthly_payment.label }} <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.monthly_payment }}
+                                        {% if form.monthly_payment.errors %}
+                                            <div class="text-danger small mt-1">{{ form.monthly_payment.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.current_cumulative_payment.id_for_label }}" class="form-label">
+                                            {{ form.current_cumulative_payment.label }}
+                                        </label>
+                                        {{ form.current_cumulative_payment }}
+                                        {% if form.current_cumulative_payment.errors %}
+                                            <div class="text-danger small mt-1">{{ form.current_cumulative_payment.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">自动计算：上月 + 本月</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.payment_description.id_for_label }}" class="form-label">
+                                {{ form.payment_description.label }}
+                            </label>
+                            {{ form.payment_description }}
+                            {% if form.payment_description.errors %}
+                                <div class="text-danger small mt-1">{{ form.payment_description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 人员变动情况 -->
+                        <h5 class="mb-3 text-primary">
+                            <i class="bi bi-people"></i> 人员变动情况
+                        </h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.total_personnel.id_for_label }}" class="form-label">
+                                    {{ form.total_personnel.label }}
+                                </label>
+                                {{ form.total_personnel }}
+                                {% if form.total_personnel.errors %}
+                                    <div class="text-danger small mt-1">{{ form.total_personnel.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.personnel_changes.id_for_label }}" class="form-label">
+                                {{ form.personnel_changes.label }}
+                            </label>
+                            {{ form.personnel_changes }}
+                            {% if form.personnel_changes.errors %}
+                                <div class="text-danger small mt-1">{{ form.personnel_changes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 请款情况 -->
+                        <h5 class="mb-3 text-primary">
+                            <i class="bi bi-receipt"></i> 本月请款情况
+                        </h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.current_payment_request.id_for_label }}" class="form-label">
+                                    {{ form.current_payment_request.label }}
+                                </label>
+                                {{ form.current_payment_request }}
+                                {% if form.current_payment_request.errors %}
+                                    <div class="text-danger small mt-1">{{ form.current_payment_request.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.payment_progress.id_for_label }}" class="form-label">
+                                    {{ form.payment_progress.label }}
+                                </label>
+                                {{ form.payment_progress }}
+                                {% if form.payment_progress.errors %}
+                                    <div class="text-danger small mt-1">{{ form.payment_progress.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.payment_issues.id_for_label }}" class="form-label">
+                                    {{ form.payment_issues.label }}
+                                </label>
+                                {{ form.payment_issues }}
+                                {% if form.payment_issues.errors %}
+                                    <div class="text-danger small mt-1">{{ form.payment_issues.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 下月工作计划 -->
+                        <h5 class="mb-3 text-primary">
+                            <i class="bi bi-calendar-event"></i> 下月工作计划
+                        </h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.next_month_plan_amount.id_for_label }}" class="form-label">
+                                    {{ form.next_month_plan_amount.label }}
+                                </label>
+                                {{ form.next_month_plan_amount }}
+                                {% if form.next_month_plan_amount.errors %}
+                                    <div class="text-danger small mt-1">{{ form.next_month_plan_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <label for="{{ form.next_month_plan_detail.id_for_label }}" class="form-label">
+                                    {{ form.next_month_plan_detail.label }}
+                                </label>
+                                {{ form.next_month_plan_detail }}
+                                {% if form.next_month_plan_detail.errors %}
+                                    <div class="text-danger small mt-1">{{ form.next_month_plan_detail.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.next_month_assistance.id_for_label }}" class="form-label">
+                                {{ form.next_month_assistance.label }}
+                            </label>
+                            {{ form.next_month_assistance }}
+                            {% if form.next_month_assistance.errors %}
+                                <div class="text-danger small mt-1">{{ form.next_month_assistance.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'eims_app:monthly_report_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 返回列表
+                            </a>
+                            <div>
+                                <!-- 保存按钮：默认禁用，有变化时启用 -->
+                                <button type="button" id="saveBtn" class="btn btn-warning btn-lg me-2" disabled>
+                                    <i class="bi bi-save"></i> 保存
+                                </button>
+                                <!-- 提交按钮：默认禁用，保存后启用 -->
+                                <button type="button" id="submitBtn" class="btn btn-primary btn-lg" disabled>
+                                    <i class="bi bi-check-circle"></i> 提交
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入公式计算功能 -->
+<script src="{% static 'js/formula-calculation.js' %}"></script>
+
+<!-- JavaScript 确保月份格式正确和自动计算 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化公式计算功能
+    if (window.formulaCalculation) {
+        window.formulaCalculation.init();
+        console.log('公式计算功能已初始化');
+    }
+    
+    // 在表单提交前确保所有字段都已计算公式
+    const paymentForm = document.querySelector('form');
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', function(e) {
+            // 获取所有需要计算的输入框
+            const numericInputs = paymentForm.querySelectorAll('input[type="number"], input[type="text"]');
+            numericInputs.forEach(function(input) {
+                const value = input.value.trim();
+                if (value && (value.includes('+') || value.includes('-') || 
+                    value.includes('*') || value.includes('/') || 
+                    value.includes('%') || value.startsWith('='))) {
+                    const result = window.formulaCalculation.safeCalculate(value);
+                    if (result !== null) {
+                        input.value = result.toFixed(2);
+                        console.log(`公式计算：${value} = ${input.value}`);
+                    }
+                }
+            });
+        });
+    }
+    
+    // ===== 月份字段验证 =====
+    const monthInput = document.querySelector('input[name="report_month"]');
+    if (monthInput) {
+        // 设置 HTML5 month input 的格式
+        monthInput.setAttribute('step', 'month');
+        
+        // 监听表单提交事件
+        monthInput.form.addEventListener('submit', function(e) {
+            const value = monthInput.value;
+            console.log('月份原始值:', value);
+            
+            // 如果是 HTML5 month input，值应该是 YYYY-MM 格式
+            if (!value || !/^\d{4}-\d{2}$/.test(value)) {
+                e.preventDefault();
+                alert('请选择有效的年月格式（YYYY-MM）');
+                return false;
+            }
+            
+            console.log('月份验证通过:', value);
+        });
+        
+        // 监听输入变化
+        monthInput.addEventListener('change', function(e) {
+            const value = e.target.value;
+            console.log('月份选择器值变化:', value);
+        });
+    }
+    
+    // ===== 自动计算累计产值和回款 =====
+    const lastMonthOutput = document.querySelector('input[name="last_month_cumulative_output"]');
+    const monthlyOutput = document.querySelector('input[name="monthly_output_value"]');
+    const currentOutput = document.querySelector('input[name="current_cumulative_output"]');
+    
+    const lastMonthPayment = document.querySelector('input[name="last_month_cumulative_payment"]');
+    const monthlyPayment = document.querySelector('input[name="monthly_payment"]');
+    const currentPayment = document.querySelector('input[name="current_cumulative_payment"]');
+    
+    // 解析数值（处理空字符串和 None）
+    function parseDecimal(value) {
+        if (!value || value === '' || value === null) {
+            return 0;
+        }
+        // 移除千分位逗号，转换为数字
+        const num = parseFloat(value.toString().replace(/,/g, ''));
+        return isNaN(num) ? 0 : num;
+    }
+    
+    // 格式化数值为 2 位小数
+    function formatDecimal(num) {
+        return num.toFixed(2);
+    }
+    
+    // 计算累计产值
+    function calculateCurrentOutput() {
+        if (lastMonthOutput && monthlyOutput && currentOutput) {
+            const lastMonthValue = parseDecimal(lastMonthOutput.value);
+            const monthlyValue = parseDecimal(monthlyOutput.value);
+            const currentValue = lastMonthValue + monthlyValue;
+            currentOutput.value = formatDecimal(currentValue);
+            console.log('产值计算:', lastMonthValue, '+', monthlyValue, '=', currentValue);
+        }
+    }
+    
+    // 计算累计回款
+    function calculateCurrentPayment() {
+        if (lastMonthPayment && monthlyPayment && currentPayment) {
+            const lastMonthValue = parseDecimal(lastMonthPayment.value);
+            const monthlyValue = parseDecimal(monthlyPayment.value);
+            const currentValue = lastMonthValue + monthlyValue;
+            currentPayment.value = formatDecimal(currentValue);
+            console.log('回款计算:', lastMonthValue, '+', monthlyValue, '=', currentValue);
+        }
+    }
+    
+    // 监听输入变化，实时计算
+    if (monthlyOutput) {
+        monthlyOutput.addEventListener('input', calculateCurrentOutput);
+        monthlyOutput.addEventListener('change', calculateCurrentOutput);
+    }
+    
+    if (monthlyPayment) {
+        monthlyPayment.addEventListener('input', calculateCurrentPayment);
+        monthlyPayment.addEventListener('change', calculateCurrentPayment);
+    }
+    
+    // 初始化计算一次
+    setTimeout(function() {
+        calculateCurrentOutput();
+        calculateCurrentPayment();
+    }, 500);
+    
+    // ===== 表单状态控制和按钮管理 =====
+    const form = document.querySelector('form');
+    const saveBtn = document.getElementById('saveBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    let hasChanges = false;
+    
+    // 获取所有需要监听的表单字段
+    const formFields = form.querySelectorAll('input, select, textarea');
+    
+    // 保存初始值
+    const initialValues = {};
+    formFields.forEach(field => {
+        initialValues[field.name] = field.value;
+    });
+    
+    // 监听表单变化
+    formFields.forEach(field => {
+        field.addEventListener('input', checkChanges);
+        field.addEventListener('change', checkChanges);
+    });
+    
+    // 检查是否有变化
+    function checkChanges() {
+        hasChanges = false;
+        formFields.forEach(field => {
+            if (field.type === 'checkbox' || field.type === 'radio') {
+                if (field.checked !== initialValues[field.name]) {
+                    hasChanges = true;
+                }
+            } else {
+                if (field.value !== initialValues[field.name]) {
+                    hasChanges = true;
+                }
+            }
+        });
+        
+        // 更新保存按钮状态
+        updateSaveButton();
+    }
+    
+    // 更新保存按钮状态
+    function updateSaveButton() {
+        if (hasChanges) {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('disabled');
+        } else {
+            saveBtn.disabled = true;
+            saveBtn.classList.add('disabled');
+        }
+    }
+    
+    // 页面加载时初始化按钮状态
+    window.addEventListener('load', function() {
+        console.log('页面加载完成');
+        console.log('saveBtn:', saveBtn);
+        console.log('submitBtn:', submitBtn);
+        console.log('初始 hasChanges:', hasChanges);
+        
+        // 提交按钮始终启用（因为用户可以直接提交）
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('disabled');
+        
+        // 保存按钮根据是否有变化来决定
+        updateSaveButton();
+        
+        // 如果是编辑已保存的草稿，禁用保存按钮
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('saved') === '1') {
+            console.log('检测到 saved=1 参数，已保存的草稿');
+            saveBtn.disabled = true;
+            saveBtn.classList.add('disabled');
+        }
+        
+        // 检查是否需要自动提交
+        if (sessionStorage.getItem('autoSubmitAfterSave') === 'true') {
+            console.log('检测到自动提交标记');
+            sessionStorage.removeItem('autoSubmitAfterSave');
+            // 自动点击提交按钮
+            setTimeout(() => {
+                console.log('自动点击提交按钮');
+                submitBtn.click();
+            }, 500);
+        }
+    });
+    
+    // 保存按钮点击事件
+    saveBtn.addEventListener('click', function() {
+        if (!hasChanges) {
+            alert('没有需要保存的更改');
+            return;
+        }
+        
+        // 临时修改表单 action 为保存
+        const originalAction = form.action;
+        form.action = originalAction + '?action=save';
+        
+        // 提交表单
+        form.submit();
+        
+        // 恢复原始 action
+        setTimeout(() => {
+            form.action = originalAction;
+        }, 100);
+    });
+    
+    // 提交按钮点击事件
+    submitBtn.addEventListener('click', function() {
+        console.log('提交按钮被点击');
+        console.log('hasChanges:', hasChanges);
+        
+        // 如果有未保存的更改，提示用户先保存
+        if (hasChanges) {
+            console.log('检测到有变化，提示用户');
+            if (confirm('您有未保存的更改，是否先保存再提交？')) {
+                console.log('用户确认先保存');
+                // 临时修改表单 action 为保存
+                const originalAction = form.action;
+                form.action = originalAction + '?action=save';
+                
+                console.log('设置自动提交标记');
+                // 设置标记，保存后自动提交
+                sessionStorage.setItem('autoSubmitAfterSave', 'true');
+                
+                // 提交表单
+                console.log('提交表单到保存');
+                form.submit();
+                
+                // 恢复原始 action
+                setTimeout(() => {
+                    form.action = originalAction;
+                }, 100);
+            } else {
+                console.log('用户取消操作');
+            }
+        } else {
+            console.log('没有变化，直接提交');
+            // 没有更改，直接提交
+            if (confirm('确定要提交这份月度报告吗？提交后将不能修改。')) {
+                console.log('用户确认提交');
+                // 临时修改表单 action 为提交
+                const originalAction = form.action;
+                form.action = originalAction + '?action=submit';
+                
+                // 提交表单
+                console.log('提交表单到提交');
+                form.submit();
+                
+                // 恢复原始 action
+                setTimeout(() => {
+                    form.action = originalAction;
+                }, 100);
+            } else {
+                console.log('用户取消提交');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

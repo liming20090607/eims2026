@@ -1,73 +1,106 @@
+"""
+为没有租户关联的用户分配默认租户
+"""
 import os
 import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 django.setup()
 
-from eims_app.models import (
-    Tenant, ProjectDetail, Contract, Personnel, Employee,
-    ContractApproval, ArchiveApproval, SealApproval,
-    ProjectDynamic, OutputPayment, Notice, FileManage,
-    PersonnelCertificate, PersonnelAllocation, Department
-)
+from django.contrib.auth import get_user_model
+from eims_app.models import Tenant, UserProfile, UserTenantRelation
 
-print("="*60)
-print("为现有数据分配默认租户")
-print("="*60)
-print()
+User = get_user_model()
 
-# 获取默认租户（甲公司）
-try:
-    default_tenant = Tenant.objects.get(code='COMPANY_A')
-    print(f"✅ 找到默认租户: {default_tenant.name} ({default_tenant.code})")
-except Tenant.DoesNotExist:
-    print("❌ 错误: 找不到默认租户（甲公司）")
-    print("请先运行: python manage.py migrate_tenants")
-    exit(1)
+print("=" * 80)
+print("为没有租户的用户分配默认租户")
+print("=" * 80)
 
-print()
+# 获取默认租户（广西鼎策工程顾问有限责任公司）
+default_tenant = Tenant.objects.get(id=2)
+print(f"\n默认租户: {default_tenant.name} (ID: {default_tenant.id})")
 
-# 定义需要迁移的模型列表
-models_to_migrate = [
-    ('ProjectDetail', ProjectDetail),
-    ('Contract', Contract),
-    ('Personnel', Personnel),
-    ('Employee', Employee),
-    ('ContractApproval', ContractApproval),
-    ('ArchiveApproval', ArchiveApproval),
-    ('SealApproval', SealApproval),
-    ('ProjectDynamic', ProjectDynamic),
-    ('OutputPayment', OutputPayment),
-    ('Notice', Notice),
-    ('FileManage', FileManage),
-    ('PersonnelCertificate', PersonnelCertificate),
-    ('PersonnelAllocation', PersonnelAllocation),
-    ('Department', Department),
-]
+# 找出所有没有租户关联的用户
+users_without_tenant = []
+users = User.objects.filter(is_active=True)
 
-total_updated = 0
-
-for model_name, model_class in models_to_migrate:
+for user in users:
+    has_relation = UserTenantRelation.objects.filter(user=user).exists()
+    has_profile_tenant = False
     try:
-        # 统计未分配租户的记录数
-        unassigned_count = model_class.objects.filter(tenant__isnull=True).count()
-        
-        if unassigned_count > 0:
-            # 更新这些记录
-            updated_count = model_class.objects.filter(
-                tenant__isnull=True
-            ).update(tenant=default_tenant)
-            
-            total_updated += updated_count
-            print(f"✅ {model_name}: {updated_count} 条记录已分配到 {default_tenant.name}")
-        else:
-            print(f"⏭️  {model_name}: 无需迁移（所有记录已有租户）")
+        profile = UserProfile.objects.get(user=user)
+        has_profile_tenant = profile.tenant is not None
+    except UserProfile.DoesNotExist:
+        pass
     
-    except Exception as e:
-        print(f"❌ {model_name}: 迁移失败 - {str(e)}")
+    if not has_relation and not has_profile_tenant:
+        users_without_tenant.append(user)
 
-print()
-print("="*60)
-print(f"✅ 数据迁移完成！共更新 {total_updated} 条记录")
-print(f"   所有数据现已归属于: {default_tenant.name}")
-print("="*60)
+print(f"\n需要分配租户的用户数: {len(users_without_tenant)}")
+
+# 为这些用户创建 UserProfile 和 UserTenantRelation
+created_profile = 0
+created_relation = 0
+skipped = 0
+
+for user in users_without_tenant:
+    try:
+        # 1. 确保有 UserProfile
+        profile, profile_created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={'tenant': default_tenant}
+        )
+        
+        if profile_created:
+            print(f"✓ {user.username}: 创建 UserProfile")
+            created_profile += 1
+        elif not profile.tenant:
+            profile.tenant = default_tenant
+            profile.save()
+            print(f"✓ {user.username}: 更新 UserProfile.tenant")
+        
+        # 2. 创建 UserTenantRelation
+        relation, relation_created = UserTenantRelation.objects.get_or_create(
+            user=user,
+            tenant=default_tenant,
+            defaults={
+                'is_primary': True,
+                'remark': '自动分配的默认公司'
+            }
+        )
+        
+        if relation_created:
+            print(f"✓ {user.username}: 创建 UserTenantRelation -> {default_tenant.name}")
+            created_relation += 1
+        else:
+            print(f"⊘ {user.username}: UserTenantRelation 已存在")
+            skipped += 1
+            
+    except Exception as e:
+        print(f"✗ {user.username}: 错误 - {e}")
+
+print("\n" + "=" * 80)
+print("完成统计:")
+print("=" * 80)
+print(f"✓ 创建/更新 UserProfile: {created_profile} 个")
+print(f"✓ 创建 UserTenantRelation: {created_relation} 条")
+print(f"⊘ 已存在跳过: {skipped} 个")
+print(f"总计处理: {len(users_without_tenant)} 个用户")
+
+# 验证
+print("\n验证结果:")
+print("-" * 80)
+final_check = User.objects.filter(is_active=True)
+with_relation = User.objects.filter(usertenantrelation__isnull=False).distinct()
+without_relation = User.objects.filter(usertenantrelation__isnull=True).distinct()
+
+print(f"活跃用户总数: {final_check.count()}")
+print(f"有 UserTenantRelation 的用户: {with_relation.count()}")
+print(f"没有 UserTenantRelation 的用户: {without_relation.count()}")
+
+if without_relation.count() > 0:
+    print("\n仍然没有关联的用户:")
+    for user in without_relation:
+        print(f"   - {user.username}")
+
+print("\n" + "=" * 80)

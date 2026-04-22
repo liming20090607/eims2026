@@ -1,0 +1,454 @@
+{% extends 'base/base.html' %}
+{% load monthly_tags %}
+
+{% block extra_css %}
+<style>
+    /* 月度填报提醒页面表格列宽优化 - 确保无滚动条 */
+    .monthly-report-table {
+        table-layout: fixed; /* 固定表格布局算法 */
+        width: 100%; /* 占满容器，不产生滚动条 */
+    }
+    
+    .monthly-report-table th:nth-child(1),
+    .monthly-report-table td:nth-child(1) {
+        width: 90px; /* 项目编号 - 紧凑宽度 */
+        white-space: nowrap;
+    }
+    
+    .monthly-report-table th:nth-child(2),
+    .monthly-report-table td:nth-child(2) {
+        width: 15%; /* 项目名称 - 缩小宽度 */
+        white-space: normal; /* 允许自动换行 */
+        overflow: visible;
+        text-overflow: clip;
+        vertical-align: top;
+        word-wrap: break-word;
+        word-break: break-word;
+    }
+    
+    .monthly-report-table th:nth-child(3),
+    .monthly-report-table td:nth-child(3) {
+        width: 100px; /* 截止日期 - 紧凑宽度 */
+        white-space: nowrap;
+    }
+    
+    .monthly-report-table th:nth-child(4),
+    .monthly-report-table td:nth-child(4) {
+        width: 85px; /* 剩余天数 - 紧凑宽度 */
+        white-space: nowrap;
+    }
+    
+    .monthly-report-table th:nth-child(5),
+    .monthly-report-table td:nth-child(5) {
+        width: 60px; /* 状态 - 紧凑宽度 */
+        white-space: nowrap;
+    }
+    
+    .monthly-report-table th:nth-child(6),
+    .monthly-report-table td:nth-child(6) {
+        width: 110px; /* 操作 - 确保按钮完全显示 */
+        white-space: nowrap;
+    }
+    
+    /* 所有项目表格列宽优化 */
+    .all-projects-table {
+        table-layout: fixed; /* 固定表格布局算法 */
+        width: 100%; /* 占满容器 */
+    }
+    
+    .all-projects-table th:nth-child(1),
+    .all-projects-table td:nth-child(1) {
+        width: 50px; /* 项目编号 - 减小到 50% */
+        white-space: nowrap;
+    }
+    
+    .all-projects-table th:nth-child(2),
+    .all-projects-table td:nth-child(2) {
+        width: 45%; /* 项目名称 - 增大到 3 倍 (原 15%) */
+        min-width: 200px;
+        white-space: normal; /* 允许自动换行 */
+        overflow: visible;
+        text-overflow: clip;
+        vertical-align: top;
+        word-wrap: break-word;
+        word-break: break-word;
+    }
+    
+    .all-projects-table th:nth-child(3),
+    .all-projects-table td:nth-child(3) {
+        width: 45px; /* 合同类别 - 减小到 50% (原 90px) */
+        white-space: nowrap;
+    }
+    
+    .all-projects-table th:nth-child(4),
+    .all-projects-table td:nth-child(4) {
+        width: 45px; /* 项目状态 - 减小到 50% (原 90px) */
+        white-space: nowrap;
+    }
+    
+    .all-projects-table th:nth-child(5),
+    .all-projects-table td:nth-child(5) {
+        width: 45px; /* 月报要求 - 减小到 50% (原 90px) */
+        white-space: nowrap;
+    }
+    
+    .all-projects-table th:nth-child(6),
+    .all-projects-table td:nth-child(6) {
+        width: 140px; /* 操作 - 固定宽度，确保完全显示 */
+        white-space: nowrap;
+    }
+    
+    /* 表格紧凑显示 */
+    .monthly-report-table td,
+    .all-projects-table td {
+        vertical-align: middle;
+        padding: 0.5rem;
+    }
+    
+    /* 项目名称提示框 */
+    .project-name-cell {
+        max-width: 100%;
+        overflow: visible; /* 允许溢出显示 */
+        text-overflow: clip; /* 不显示省略号 */
+        cursor: pointer;
+        white-space: normal; /* 允许换行 */
+        word-wrap: break-word; /* 长单词自动换行 */
+        word-break: break-word; /* 在任意字符间断行 */
+    }
+    
+    .project-name-cell:hover {
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 页面标题 -->
+    {% include 'components/page_title.html' with title=title subtitle='月度填报提醒 - 每月 25 日前完成填报' %}
+    
+    <!-- 当前月份提示 -->
+    <div class="alert alert-info mb-4" role="alert">
+        <i class="bi bi-calendar-event"></i>
+        <strong>当前月份：</strong>{{ current_month }} 
+        <span class="ms-3">
+            <i class="bi bi-clock"></i> 
+            距离月底还有：
+            {% days_in_month as days %}
+            <strong>{{ days|add:"-1" }}</strong> 天
+        </span>
+    </div>
+    
+    <!-- 待填报项目（重要提醒） -->
+    {% if needs_filling %}
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle"></i> 
+                待填报项目（{{ needs_filling|length }}个）
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover monthly-report-table">
+                    <thead>
+                        <tr>
+                            <th>项目编号</th>
+                            <th>项目名称</th>
+                            <th>截止日期</th>
+                            <th>剩余天数</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in needs_filling %}
+                        <tr class="{% if item.is_urgent %}table-danger{% endif %}">
+                            <td>{{ item.project.project_code }}</td>
+                            <td class="project-name-cell" title="{{ item.project.project_name }}">{{ item.project.project_name }}</td>
+                            <td>{{ item.due_date|date:"Y-m-d" }}</td>
+                            <td>
+                                {% if item.days_left <= 0 %}
+                                    <span class="text-danger fw-bold">已逾期 {{ item.days_left|abs }} 天</span>
+                                {% elif item.days_left <= 5 %}
+                                    <span class="text-danger fw-bold">{{ item.days_left }} 天</span>
+                                {% else %}
+                                    <span class="text-success">{{ item.days_left }} 天</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.is_urgent %}
+                                    <span class="badge bg-danger">紧急</span>
+                                {% else %}
+                                    <span class="badge bg-info">正常</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'eims_app:project_ledger_detail' item.project.pk %}"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-pencil"></i> 点击填报
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <!-- 草稿箱 -->
+        {% if drafts %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-text"></i> 
+                        草稿箱（{{ drafts.count }}个）
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for report in drafts %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ report.project.project_name }}</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ report.report_month }}
+                                    <i class="bi bi-pencil ms-2"></i> {{ report.operator }}
+                                </small>
+                            </div>
+                            <div>
+                                <a href="{% url 'eims_app:monthly_report_edit' report.pk %}" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </a>
+                                <a href="{% url 'eims_app:monthly_report_submit' report.pk %}" 
+                                   class="btn btn-sm btn-success">
+                                    <i class="bi bi-check-circle"></i> 提交
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 已逾期报告 -->
+        {% if overdue %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-octagon"></i> 
+                        已逾期报告（{{ overdue.count }}个）
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for report in overdue %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-danger">{{ report.project.project_name }}</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ report.report_month }}
+                                    <span class="ms-2 text-danger">
+                                        <i class="bi bi-clock"></i> 截止：{{ report.should_submit_date|date:"Y-m-d" }}
+                                    </span>
+                                </small>
+                            </div>
+                            <div>
+                                <a href="{% url 'eims_app:monthly_report_edit' report.pk %}" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> 补填
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 所有项目列表 -->
+    <div class="card mt-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-folder"></i> 
+                所有项目（{{ projects|length }}个）
+            </h5>
+        </div>
+        <div class="card-body">
+            <!-- 搜索框 -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <form method="GET" action="" id="searchForm">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="search" 
+                                   id="searchInput"
+                                   placeholder="搜索项目编号/名称/地址/甲方/乙方..." 
+                                   value="{{ search_query }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> 搜索
+                            </button>
+                            {% if search_query %}
+                            <a href="{% url 'eims_app:monthly_report_dashboard' %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> 清除
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                {% if search_query %}
+                <div class="col-md-6 text-end align-self-center">
+                    <small class="text-muted">
+                        搜索结果：找到 <strong>{{ projects|length }}</strong> 个项目
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover table-sm all-projects-table" id="projectsTable">
+                    <thead>
+                        <tr>
+                            <th>项目编号</th>
+                            <th>项目名称</th>
+                            <th>合同类别</th>
+                            <th>项目状态</th>
+                            <th>月报要求</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr>
+                            <td>{{ project.project_code }}</td>
+                            <td class="project-name-cell" title="{{ project.project_name }}">{{ project.project_name }}</td>
+                            <td>
+                                {% if project.contract_category == 'engineering_supervision' %}
+                                    <span class="badge bg-info">工程监理</span>
+                                {% elif project.contract_category == 'cost_consulting' %}
+                                    <span class="badge bg-success">造价咨询</span>
+                                {% elif project.contract_category == 'testing' %}
+                                    <span class="badge bg-warning">工程检测</span>
+                                {% elif project.contract_category == 'whole_process_consulting' %}
+                                    <span class="badge bg-primary">全过程咨询</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ project.contract_category }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if project.project_status == 'not_started' %}
+                                    <span class="badge bg-secondary">未开工</span>
+                                {% elif project.project_status == 'under_construction' %}
+                                    <span class="badge bg-success">在施工</span>
+                                {% elif project.project_status == 'stopped' %}
+                                    <span class="badge bg-warning">在停工</span>
+                                {% elif project.project_status == 'completed' %}
+                                    <span class="badge bg-primary">已完工</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ project.project_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if project.monthly_report_required %}
+                                    <span class="badge bg-danger">需要填报</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">不需要</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'eims_app:project_ledger_detail' project.pk %}"
+                                   class="btn btn-sm btn-info me-1">
+                                    <i class="bi bi-eye"></i> 详情
+                                </a>
+                                <a href="{% url 'eims_app:project_ledger_detail' project.pk %}"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-pencil"></i> 填报
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 填报说明 -->
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-book"></i> 填报说明
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="bi bi-calendar-check"></i> 填报时间要求</h6>
+                    <ul>
+                        <li>每月<strong>25 日</strong>前完成当月报告填报</li>
+                        <li>建议提前 2-3 天填报，避免网络拥堵</li>
+                        <li>如遇节假日，请提前完成填报</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="bi bi-list-check"></i> 填报内容要求</h6>
+                    <ul>
+                        <li>项目进度：详细描述当前施工进展</li>
+                        <li>产值回款：如实填写本月完成产值和实际回款</li>
+                        <li>人员变动：准确统计人员增减情况</li>
+                        <li>请款情况：及时上报请款需求和计划</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="alert alert-warning mb-0" role="alert">
+                <i class="bi bi-info-circle"></i>
+                <strong>注意事项：</strong>
+                <ul class="mb-0 mt-2">
+                    <li>报告提交后将不能再次编辑，请务必确认信息准确</li>
+                    <li>逾期未填报将影响项目考核，请及时完成</li>
+                    <li>如有疑问，请联系系统管理员或相关部门</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// 实时搜索功能（可选增强）
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const projectsTable = document.getElementById('projectsTable');
+    
+    if (searchInput && projectsTable) {
+        // 按 Enter 键立即搜索
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('searchForm').submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% endblock %}

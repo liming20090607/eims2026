@@ -1,0 +1,132 @@
+/*
+=========================================
+ Django Admin 自定义样式
+ 功能：优化权限选择框（filter_horizontal）的显示
+=========================================
+*/
+
+/* 权限选择框整体容器 - 加大宽度 */
+.selector {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 左右两个选择框容器 */
+.selector-available,
+.selector-chosen {
+    width: 48% !important;
+    min-width: 400px !important;
+}
+
+/* 选择框内的select元素 - 加大高度和宽度 */
+.selector select {
+    width: 100% !important;
+    height: 400px !important;  /* 增加高度到400px */
+    font-size: 15px !important;  /* 增大字体 */
+    line-height: 1.6 !important;
+    padding: 8px !important;
+}
+
+/* 选择框标题 - 增大字体 */
+.selector h2 {
+    font-size: 16px !important;
+    padding: 10px !important;
+    margin-bottom: 8px !important;
+}
+
+/* 过滤器输入框 */
+.selector .selector-filter input {
+    width: 100% !important;
+    font-size: 14px !important;
+    padding: 8px 10px !important;
+    margin-bottom: 8px !important;
+    border-radius: 4px !important;
+}
+
+/* 过滤器标签 */
+.selector .selector-filter label {
+    font-size: 14px !important;
+}
+
+/* 中间的按钮区域 - 增大容器尺寸，保持原始图标 */
+.selector .selector-chooser {
+    width: 80px !important;
+    padding: 20px 5px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 15px !important;
+}
+
+/* 按钮样式优化 - 只增大点击区域，不改变图标显示 */
+.selector .selector-chooser a {
+    display: block !important;
+    width: 50px !important;
+    height: 50px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* 隐藏按钮内的文字，只显示背景图 */
+    text-indent: -9999px !important;
+    overflow: hidden !important;
+    /* 完全保留Django原有的背景图样式，只增大可点击区域 */
+    transition: all 0.2s ease !important;
+}
+
+.selector .selector-chooser a:hover {
+    background-color: rgba(121, 174, 200, 0.2) !important;
+    border-radius: 4px !important;
+}
+
+/* 选择框容器之间的间距 */
+.selector .selector-available {
+    margin-right: 10px !important;
+}
+
+.selector .selector-chosen {
+    margin-left: 10px !important;
+}
+
+/* 底部说明文字 */
+.selector .selector select[multiple] + .help {
+    font-size: 13px !important;
+    margin-top: 10px !important;
+}
+
+/* 全选和删除全部链接 - 保持原始图标样式 */
+.selector a.selector-chooseall,
+.selector a.selector-clearall {
+    font-size: 14px !important;
+    padding: 6px 12px !important;
+    margin-top: 8px !important;
+    /* 不修改任何background或line-height属性 */
+}
+
+/* 响应式设计 - 在小屏幕上调整 */
+@media (max-width: 1200px) {
+    .selector-available,
+    .selector-chosen {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+    
+    .selector select {
+        height: 300px !important;
+    }
+}
+
+/* 确保表单字段标签也增大 */
+.form-row label {
+    font-size: 14px !important;
+}
+
+/* 输入框字体增大 */
+.form-row input[type="text"],
+.form-row input[type="email"],
+.form-row input[type="password"],
+.form-row input[type="number"],
+.form-row textarea,
+.form-row select {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+}

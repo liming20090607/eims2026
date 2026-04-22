@@ -1,0 +1,970 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}合同管理{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_jiachengda:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">合同管理</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 表格容器 - 启用水平滚动 */
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        flex: 1;
+        min-height: 0;
+    }
+    
+    /* 自定义滚动条样式 */
+    .table-responsive::-webkit-scrollbar {
+        height: 12px;
+        width: 8px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    .table-wrapper {
+        position: relative;
+    }
+    
+    /* 表格基础样式 - 强制宽度触发滚动 */
+    .table-wrapper table {
+        min-width: 2800px;
+        width: max-content;
+    }
+    
+    /* 表格单元格样式 - 允许自动换行 */
+    .table-wrapper table tbody td {
+        font-size: 13px;
+        vertical-align: top; /* 顶部对齐，适应不同行高 */
+        padding: 8px 6px;
+        white-space: normal; /* 允许自动换行 */
+        word-wrap: break-word; /* 长单词自动换行 */
+        word-break: break-all; /* 强制换行 */
+        line-height: 1.5; /* 舒适行高 */
+    }
+    
+    /* 操作列 - 保持一行不换行 */
+    .table-wrapper table tbody td:last-child {
+        white-space: nowrap !important;
+        vertical-align: middle; /* 操作按钮垂直居中 */
+        min-width: 120px; /* 设置最小宽度确保按钮一行显示 */
+    }
+    
+    /* 操作列内的按钮容器 */
+    .table-wrapper table tbody td:last-child .btn-group,
+    .table-wrapper table tbody td:last-child .d-flex,
+    .table-wrapper table tbody td:last-child > * {
+        white-space: nowrap !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    .table-wrapper table thead th:last-child,
+    .table-wrapper table tbody td:last-child {
+        position: sticky;
+        right: 0;
+        background: #fff;
+    }
+    .table-wrapper table thead th:last-child {
+        z-index: 30;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    }
+    .table-wrapper table tbody td:last-child {
+        z-index: 20;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+    }
+    
+    .status-badge {
+        padding: 0.25em 0.75em;
+        border-radius: 0.375rem;
+        font-size: 0.875em;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .status-draft { background-color: #fff3cd; color: #997404; }
+    .status-signed { background-color: #cfe2ff; color: #084298; }
+    .status-executing { background-color: #d1e7dd; color: #0f5132; }
+    .status-completed { background-color: #e2e3e5; color: #41464b; }
+    .status-terminated { background-color: #f8d7da; color: #842029; }
+    .status-cancelled { background-color: #e2e3e5; color: #41464b; }
+    .table-actions a {
+        margin: 0 3px;
+        color: #6c757d;
+        text-decoration: none;
+    }
+    .table-actions a:hover {
+        color: #0d6efd;
+    }
+    .filter-chip {
+        display: inline-block;
+        padding: 2px 8px;
+        background-color: #e9ecef;
+        border-radius: 1rem;
+        margin: 0 2px;
+        font-size: 12px;
+    }
+    .filter-chip.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+    /* 选中行的深色背景 */
+    .table tbody tr.table-active,
+    .table tbody tr.selected {
+        background-color: #d1e7dd !important;
+    }
+    .action-buttons .btn {
+        margin-left: 0.25rem;
+        padding: 2px 8px;
+        font-size: 12px;
+    }
+    .import-modal .form-check {
+        margin: 0.75rem 0;
+    }
+    .stats-container {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    @media (max-width: 768px) {
+        .stats-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .action-buttons {
+            margin-top: 1rem;
+            width: 100%;
+        }
+        .action-buttons .btn {
+            margin-left: 0;
+            margin-bottom: 0.5rem;
+        }
+    }
+    /* 单元格文字自动换行 */
+    .wrap-text {
+        word-wrap: break-word;
+        white-space: normal !important;
+        word-break: break-all;
+    }
+    /* 列宽拖动样式 */
+    .resize-col {
+        position: relative;
+        cursor: col-resize;
+        user-select: none;
+    }
+    .resize-col::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        cursor: col-resize;
+        background: transparent;
+    }
+    .resize-col:hover::after {
+        background: #0d6efd;
+    }
+    th.resize-col:active::after {
+        background: #0d6efd;
+    }
+    /* 防止拖动时选中文本 */
+    .contract-table-resizing {
+        user-select: none;
+        pointer-events: none;
+    }
+    .contract-table-resizing td,
+    .contract-table-resizing th {
+        pointer-events: none;
+    }
+    
+    /* 紧凑按钮样式 */
+    #statusFilter, #typeFilter, #reset-filters {
+        font-size: 13px !important;
+        height: 26px;
+    }
+    #batch-delete, #export-selected, #cancel-selection {
+        font-size: 12px !important;
+        height: 26px;
+    }
+    #export-all {
+        font-size: 12px !important;
+        height: 26px;
+    }
+    button[data-bs-target="#importModal"] {
+        font-size: 12px !important;
+        height: 26px;
+    }
+    .btn-primary.btn-sm {
+        font-size: 14px !important;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .filter-chip {
+        font-size: 12px;
+        padding: 2px 8px;
+    }
+    .quick-filter {
+        min-height: 24px;
+        line-height: 24px;
+        padding-top: 8px;
+        border-top: 1px solid #eee;
+    }
+    /* 搜索框高度调整 */
+    #contract-search-input {
+        height: 30px !important;
+        font-size: 14px !important;
+    }
+    #search-btn {
+        height: 30px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .input-group-sm .btn {
+        font-size: 11px;
+        height: 26px !important;
+        padding: 10px 20px;
+        width: 30px;
+    }
+    
+    /* ========== 筛选按钮组样式 ========== */
+    /* 状态筛选按钮 */
+    #statusFilter {
+        height: 28px !important;
+        font-size: 12px !important;
+        padding: 2px 10px !important;
+    }
+    /* 类别筛选按钮 */
+    #typeFilter {
+        height: 28px !important;
+        font-size: 12px !important;
+        padding: 2px 10px !important;
+    }
+    /* 重置按钮 */
+    #reset-filters {
+        height: 30px !important;
+        width: 80px !important;
+        font-size: 13px !important;
+        padding: 2px 8px !important;
+    }
+    
+    /* 快捷筛选标签 */
+    .filter-chip {
+        font-size: 13px !important;
+        padding: 2px 8px !important;
+    }
+    
+    /* 快捷筛选区域容器 */
+    .quick-filter {
+        font-size: 13px !important;      /* 快捷筛选文字大小 */
+        font-weight: 400 !important;     /* 文字粗细 */
+        font-family: inherit !important;   /* 字体 */
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;             /* 按钮间距 */
+    }
+    
+    /* 快捷筛选文字标签 */
+    .quick-filter small {
+        font-size: 13px !important;      /* "快捷筛选"文字大小 */
+        font-weight: 600 !important;     /* 加粗 */
+        font-family: inherit !important;   /* 字体 */
+        margin-right: 8px !important;
+    }
+    
+    .action-buttons .btn {
+        font-size: 0.75rem !important;
+        padding: 0.2rem 0.5rem !important;
+        transform: scale(0.8);
+        transform-origin: center;
+        height: 30px !important;
+    }
+    
+    /* ========== 表格样式 ========== */
+    /* 表头样式 */
+    #contract-table thead th {
+        font-size: 13px !important;      /* 文字大小 */
+        font-weight: 700 !important;     /* 加粗：400正常，700加粗 */
+        font-family: inherit !important;  /* 字体继承 */
+        white-space: nowrap !important;
+        background-color: #e3f2fd !important;
+        color: #1565c0 !important;
+    }
+    
+    /* 表头复选框列特殊处理 */
+    #contract-table thead th:first-child {
+        font-size: 14px !important;
+    }
+    
+    /* 表格行样式 */
+    #contract-table tbody td {
+        font-size: 14px !important;      /* 文字大小 */
+        font-weight: 400 !important;     /* 文字粗细：400正常，700加粗 */
+        font-family: inherit !important;  /* 字体继承 */
+        padding: 6px 8px !important;      /* 单元格内边距 */
+        vertical-align: middle !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-1">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-2">
+                <div class="card-header py-1">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <h6 class="mb-0">合同管理</h6>
+                        {% if user.is_superuser %}
+                        <a href="{% url 'eims_jiachengda:contract_add' %}" class="btn btn-primary btn-sm py-0">
+                            <i class="bi bi-plus-lg me-1"></i>新建合同
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body py-2" style="display: flex; flex-direction: column; height: calc(100vh - 120px);">
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-md-5">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" placeholder="搜索..." 
+                                       value="{{ keyword|default:'' }}" name="keyword" id="contract-search-input">
+                                <button class="btn btn-primary" type="button" id="search-btn">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-7 text-md-end ps-3">
+                            <div class="d-flex flex-wrap justify-content-md-end gap-1">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm py-0 dropdown-toggle" type="button" 
+                                            id="statusFilter" data-bs-toggle="dropdown">
+                                        <i class="fas fa-filter me-1"></i>
+                                        {{ selected_status_label|default:"全部状态" }}
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="statusFilter">
+                                        <li><a class="dropdown-item" href="{% url 'eims_jiachengda:contract_list' %}{% if keyword or selected_type %}?{% endif %}{% if keyword %}keyword={{ keyword }}{% endif %}{% if keyword and selected_type %}&{% endif %}{% if selected_type %}contract_type={{ selected_type }}{% endif %}">全部状态</a></li>
+                                        {% for value, label in status_choices %}
+                                        <li><a class="dropdown-item" href="?status={{ value }}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ label }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm py-0 dropdown-toggle" type="button" 
+                                            id="typeFilter" data-bs-toggle="dropdown">
+                                        <i class="fas fa-tag me-1"></i>
+                                        {{ selected_type_label|default:"全部类别" }}
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="typeFilter">
+                                        <li><a class="dropdown-item" href="{% url 'eims_jiachengda:contract_list' %}{% if keyword or selected_status %}?{% endif %}{% if keyword %}keyword={{ keyword }}{% endif %}{% if keyword and selected_status %}&{% endif %}{% if selected_status %}status={{ selected_status }}{% endif %}">全部类别</a></li>
+                                        {% for value, label in type_choices %}
+                                        <li><a class="dropdown-item" href="?contract_type={{ value }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ label }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                
+                                <button class="btn btn-outline-secondary btn-sm py-0" id="reset-filters">
+                                    <i class="fas fa-redo me-1"></i>重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+                        <div class="quick-filter">
+                            <small class="text-muted me-2">快捷筛选:</small>
+                            <a href="{% url 'eims_jiachengda:contract_list' %}" class="filter-chip {% if not selected_status and not selected_type %}active{% endif %}">
+                                全部
+                            </a>
+                            {% for value, label in status_choices %}
+                            <a href="?status={{ value }}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" class="filter-chip {% if selected_status == value %}active{% endif %}">
+                                {{ label }}
+                            </a>
+                            {% endfor %}
+                            {% for value, label in type_choices %}
+                            <a href="?contract_type={{ value }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" class="filter-chip {% if selected_type == value %}active{% endif %}">
+                                {{ label }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% if user.is_superuser %}
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-danger py-0" id="batch-delete" disabled>
+                                <i class="fas fa-trash-alt me-1"></i>删除
+                            </button>
+                            <button class="btn btn-sm btn-outline-success py-0" id="export-selected" disabled>
+                                <i class="fas fa-file-export me-1"></i>导出
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary py-0" id="cancel-selection" style="display: none;">
+                                <i class="fas fa-times me-1"></i>取消
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#importModal">
+                                <i class="fas fa-file-import me-1"></i>导入
+                            </button>
+                            <button class="btn btn-sm btn-outline-success py-0" id="export-all">
+                                <i class="fas fa-file-export me-1"></i>导出全部
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                    
+                    <div class="px-4 py-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-muted">
+                                    <i class="fas fa-clipboard-list me-1"></i>
+                                    共 <strong class="text-primary">{{ total_contracts }}</strong> 条合同
+                                </span>
+                                <span class="text-muted">
+                                    <i class="fas fa-check-circle text-success me-1"></i>执行中: <strong class="text-success">{{ active_contracts }}</strong>
+                                </span>
+                                <span class="text-muted">
+                                    <i class="fas fa-check-circle text-info me-1"></i>已完成: <strong class="text-info">{{ expired_contracts }}</strong>
+                                </span>
+                                <span class="text-muted">
+                                    已选择 <strong id="selected-count">0</strong> 条
+                                </span>
+                            </div>
+                            
+                            {% if page_obj.paginator.num_pages > 1 %}
+                            <nav class="d-flex align-items-center gap-2">
+                                <ul class="pagination pagination-sm mb-0">
+                                    {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Previous">
+                                            <span aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'4' %}
+                                            {% if page_obj.number == num %}
+                                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                            {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Next">
+                                            <span aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                                <span class="text-muted small">第 {{ page_obj.number }}/{{ page_obj.paginator.num_pages }} 页</span>
+                            </nav>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive p-1" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                    <div class="table-wrapper">
+                        <table class="table table-sm align-items-center mb-0" id="contract-table">
+                            <thead style="position: sticky; top: 0; z-index: 100;">
+                                <tr class="resize-handle">
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1" style="width: 40px; min-width: 40px;">
+                                        <input class="form-check-input" type="checkbox" id="select-all" style="margin: 0 auto;">
+                                    </th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 50px;">序号</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 80px;">类别</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 100px;">编号</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 150px;">项目名称</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 70px;">状态</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 100px;">甲方</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 100px;">乙方</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 80px;">合同总价</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 80px;">签订时间</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 120px;">地址</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 70px;">总监</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 70px;">负责人</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1 resize-col" style="min-width: 100px;">备注</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder py-1" style="min-width: 80px; position: sticky; right: 0;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if page_obj %}
+                                    {% for contract in page_obj %}
+                                    <tr>
+                                        <td class="align-middle text-center">
+                                            <div class="form-check justify-content-center">
+                                                <input class="form-check-input contract-checkbox" type="checkbox" 
+                                                       value="{{ contract.id }}" data-contract-id="{{ contract.id }}">
+                                            </div>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ forloop.counter0|add:page_obj.start_index }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.get_contract_type_display|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.contract_code|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.project_name|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            {% if contract.status == 'draft' %}
+                                            <span class="status-badge status-draft">草稿</span>
+                                            {% elif contract.status == 'signed' %}
+                                            <span class="status-badge status-signed">已签署</span>
+                                            {% elif contract.status == 'executing' %}
+                                            <span class="status-badge status-executing">执行中</span>
+                                            {% elif contract.status == 'completed' %}
+                                            <span class="status-badge status-completed">已完成</span>
+                                            {% elif contract.status == 'terminated' %}
+                                            <span class="status-badge status-terminated">已终止</span>
+                                            {% elif contract.status == 'cancelled' %}
+                                            <span class="status-badge status-cancelled">已取消</span>
+                                            {% else %}
+                                            <span class="status-badge status-draft">{{ contract.status|default:"草稿" }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.contract_party_a|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.contract_party_b|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.contract_amount_10k|floatformat:2|default:"0.00" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.signing_time|date:"Y-m-d"|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.project_address|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.project_director|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.actual_manager|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-sm text-center wrap-text">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ contract.remark|default:"-" }}</span>
+                                        </td>
+                                        <td class="align-middle text-center table-actions">
+                                            <a href="{% url 'eims_jiachengda:contract_detail' contract.id %}" class="text-secondary font-weight-bold text-xs" data-bs-toggle="tooltip" data-bs-placement="top" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if user.is_superuser %}
+                                            <a href="{% url 'eims_jiachengda:contract_edit' contract.id %}" class="text-secondary font-weight-bold text-xs" data-bs-toggle="tooltip" data-bs-placement="top" title="编辑">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if user.is_superuser %}
+                                            <a href="javascript:void(0)" class="text-secondary font-weight-bold text-xs delete-contract" 
+                                               data-id="{{ contract.id }}"
+                                               data-delete-url="{% url 'eims_jiachengda:contract_delete' contract.id %}"
+                                               data-contract-code="{{ contract.contract_code|default:'未命名合同' }}">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="11" class="text-center py-5">
+                                            <div class="text-center">
+                                                <i class="fas fa-inbox fa-3x text-secondary mb-3"></i>
+                                                <p class="text-muted mb-0">暂无合同数据</p>
+                                                {% if user.is_superuser %}
+                                                <p class="text-muted small">当前没有合同记录，您可以点击"新建合同"按钮添加第一条记录</p>
+                                                <a href="{% url 'eims_jiachengda:contract_add' %}" class="btn btn-primary btn-sm mt-3">
+                                                    <i class="fas fa-plus me-1"></i>新建合同
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                    
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="border-top py-2 px-3" style="flex-shrink: 0; background: #f8f9fa;">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <span class="text-muted small">
+                                显示 {{ page_obj.start_index }}-{{ page_obj.end_index }} 条， 共 {{ page_obj.paginator.count }} 条记录
+                            </span>
+                            <ul class="pagination pagination-sm mb-0">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Previous">
+                                        <span aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if num > page_obj.number|add:'-4' and num < page_obj.number|add:'5' %}
+                                        {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_type %}&contract_type={{ selected_type }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}" aria-label="Next">
+                                        <span aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导入合同模态框 -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">导入合同数据</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>支持 Excel (.xlsx) 格式，文件大小不超过 10MB</p>
+                <div class="mb-3">
+                    <label for="excelFile" class="form-label">选择Excel文件</label>
+                    <input class="form-control" type="file" id="excelFile" accept=".xlsx">
+                    <div class="form-text">
+                        请下载<a href="{% url 'eims_jiachengda:contract_import_template' %}" class="text-primary">模板文件</a>参照格式
+                    </div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="overwriteExisting">
+                    <label class="form-check-label" for="overwriteExisting">
+                        覆盖已存在的合同记录
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="start-import">开始导入</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除单个合同模态框 -->
+<div class="modal fade" id="deleteContractModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要删除合同 <strong id="contract-name-to-delete"></strong> 吗？</p>
+                <p class="text-danger small">此操作不可恢复，相关数据将被永久删除</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认批量删除模态框 -->
+<div class="modal fade" id="batchDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批量删除确认</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要删除选中的 <strong id="batch-delete-count">0</strong> 条合同记录吗？</p>
+                <p class="text-danger small">此操作不可恢复，相关数据将被永久删除</p>
+                <p class="text-warning small">
+                    <i class="fas fa-exclamation-triangle me-1"></i>提示： 建议先导出备份数据再执行批量删除
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirm-batch-delete">确认批量删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/table-resize.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var selectedContractIds = new Set();
+    
+    var selectAllCheckbox = document.getElementById('select-all');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            var checkboxes = document.querySelectorAll('.contract-checkbox');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = selectAllCheckbox.checked;
+                var contractId = checkbox.getAttribute('data-contract-id');
+                if (selectAllCheckbox.checked) {
+                    selectedContractIds.add(contractId);
+                } else {
+                    selectedContractIds.delete(contractId);
+                }
+            });
+            updateSelectionUI();
+        });
+    }
+    
+    function updateSelectionUI() {
+        var el = document.getElementById('selected-count');
+        if (el) el.textContent = selectedContractIds.size;
+        
+        var batchDeleteBtn = document.getElementById('batch-delete');
+        var exportSelectedBtn = document.getElementById('export-selected');
+        if (batchDeleteBtn) batchDeleteBtn.disabled = selectedContractIds.size === 0;
+        if (exportSelectedBtn) exportSelectedBtn.disabled = selectedContractIds.size === 0;
+    }
+    
+    var searchInput = document.getElementById('contract-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                var keyword = this.value.trim();
+                var url = new URL(window.location.href);
+                if (keyword) url.searchParams.set('keyword', keyword);
+                else url.searchParams.delete('keyword');
+                window.location.href = url.toString();
+            }
+        });
+    }
+    
+    var searchBtn = document.getElementById('search-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            var keyword = document.getElementById('contract-search-input').value.trim();
+            var url = new URL(window.location.href);
+            if (keyword) url.searchParams.set('keyword', keyword);
+            else url.searchParams.delete('keyword');
+            window.location.href = url.toString();
+        });
+    }
+    
+    var resetBtn = document.getElementById('reset-filters');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            window.location.href = '{% url "eims_jiachengda:contract_list" %}';
+        });
+    }
+    
+    var checkboxes = document.querySelectorAll('.contract-checkbox');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            var contractId = this.getAttribute('data-contract-id');
+            if (this.checked) selectedContractIds.add(contractId);
+            else {
+                selectedContractIds.delete(contractId);
+                if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            }
+            updateSelectionUI();
+        });
+    });
+    
+    var deleteBtns = document.querySelectorAll('.delete-contract');
+    deleteBtns.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var contractCode = this.getAttribute('data-contract-code');
+            var deleteUrl = this.getAttribute('data-delete-url');
+            var el = document.getElementById('contract-name-to-delete');
+            if (el) el.textContent = contractCode;
+            
+            var confirmBtn = document.getElementById('confirm-delete');
+            if (confirmBtn) {
+                confirmBtn.onclick = function() {
+                    window.location.href = deleteUrl;
+                };
+            }
+            
+            var modalEl = document.getElementById('deleteContractModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                var modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        });
+    });
+    
+    var batchDeleteBtn = document.getElementById('batch-delete');
+    if (batchDeleteBtn) {
+        batchDeleteBtn.onclick = function() {
+            if (selectedContractIds.size > 0) {
+                var el = document.getElementById('batch-delete-count');
+                if (el) el.textContent = selectedContractIds.size;
+                var modalEl = document.getElementById('batchDeleteModal');
+                if (modalEl) {
+                    modalEl.style.display = 'block';
+                    modalEl.classList.add('show');
+                    document.body.classList.add('modal-open');
+                }
+            }
+            return false;
+        };
+    }
+    
+    var confirmBatchDelete = document.getElementById('confirm-batch-delete');
+    if (confirmBatchDelete) {
+        confirmBatchDelete.onclick = function() {
+            if (selectedContractIds.size > 0) {
+                var ids = Array.from(selectedContractIds).join(',');
+                var url = '{% url "eims_jiachengda:contract_batch_delete" %}?ids=' + ids;
+                window.location.href = url;
+            }
+            return false;
+        };
+    }
+    
+    var exportSelectedBtn = document.getElementById('export-selected');
+    if (exportSelectedBtn) {
+        exportSelectedBtn.onclick = function() {
+            if (selectedContractIds.size > 0) {
+                var ids = Array.from(selectedContractIds).join(',');
+                var url = '{% url "eims_jiachengda:contract_export" %}?ids=' + ids;
+                window.location.href = url;
+            } else {
+                alert('请先选择要导出的合同');
+            }
+            return false;
+        };
+    }
+    
+    var exportAllBtn = document.getElementById('export-all');
+    if (exportAllBtn) {
+        exportAllBtn.onclick = function() {
+            var url = '{% url "eims_jiachengda:contract_export" %}';
+            window.location.href = url;
+            return false;
+        };
+    }
+    
+    var startImportBtn = document.getElementById('start-import');
+    if (startImportBtn) {
+        startImportBtn.addEventListener('click', function() {
+            var fileInput = document.getElementById('excelFile');
+            if (fileInput && fileInput.files.length > 0) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.enctype = 'multipart/form-data';
+                form.action = '{% url "eims_jiachengda:contract_import" %}';
+                form.style.display = 'none';
+                
+                var csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = '{{ csrf_token }}';
+                
+                fileInput.name = 'excel_file';
+                
+                form.appendChild(csrfInput);
+                form.appendChild(fileInput);
+                document.body.appendChild(form);
+                form.submit();
+            } else {
+                alert('请先选择要导入的Excel文件');
+            }
+        });
+    }
+    
+    var cancelSelBtn = document.getElementById('cancel-selection');
+    if (cancelSelBtn) {
+        cancelSelBtn.addEventListener('click', function() {
+            if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            checkboxes.forEach(function(cb) { cb.checked = false; });
+            selectedContractIds.clear();
+            updateSelectionUI();
+        });
+    }
+    
+    // 双击行跳转到编辑页面，单击获得焦点
+    var tableRows = document.querySelectorAll('#contract-table tbody tr');
+    tableRows.forEach(function(row) {
+        // 单击获得焦点
+        row.addEventListener('click', function(e) {
+            // 排除复选框和操作列
+            if (e.target.tagName === 'INPUT' || e.target.closest('.table-actions')) {
+                return;
+            }
+            // 移除其他行的焦点
+            tableRows.forEach(function(r) {
+                r.classList.remove('table-active', 'selected');
+            });
+            // 添加焦点到当前行
+            row.classList.add('table-active', 'selected');
+        });
+        
+        // 双击跳转到编辑页面
+        row.addEventListener('dblclick', function(e) {
+            // 排除复选框和操作列
+            if (e.target.tagName === 'INPUT' || e.target.closest('.table-actions')) {
+                return;
+            }
+            var checkbox = row.querySelector('.contract-checkbox');
+            if (checkbox) {
+                var contractId = checkbox.getAttribute('data-contract-id');
+                window.location.href = '/contract/' + contractId + '/edit/';
+            }
+        });
+        row.style.cursor = 'pointer';
+    });
+    
+    // 复选框选中时也添加焦点样式
+    var checkboxes = document.querySelectorAll('.contract-checkbox');
+    checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            var row = cb.closest('tr');
+            if (cb.checked) {
+                row.classList.add('table-active', 'selected');
+            } else {
+                row.classList.remove('table-active', 'selected');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

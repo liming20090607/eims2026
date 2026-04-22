@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排序功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0b5ed7;
+        }
+        .log {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-top: 10px;
+            border-left: 3px solid #0d6efd;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        th {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border: 1px solid #dee2e6;
+        }
+        th:hover {
+            background-color: #bbdefb;
+        }
+    </style>
+</head>
+<body>
+    <h1>排序功能测试</h1>
+    
+    <div class="test-section">
+        <h2>测试1：模拟点击表头</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="sortable" data-field="project_code" onclick="handleSort('project_code', event)">项目编号</th>
+                    <th class="sortable" data-field="project_name" onclick="handleSort('project_name', event)">项目名称</th>
+                    <th class="sortable" data-field="created_at" onclick="handleSort('created_at', event)">创建时间</th>
+                </tr>
+            </thead>
+        </table>
+        <div id="log1" class="log">等待操作...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试2：手动调用函数</h2>
+        <button onclick="testSort('project_code')">点击 project_code</button>
+        <button onclick="testSort('project_code')">再次点击 project_code</button>
+        <button onclick="testSort('project_name')">点击 project_name</button>
+        <div id="log2" class="log">等待操作...</div>
+    </div>
+
+    <script>
+        // 复制实际的排序逻辑
+        let sortFields = [];
+        let sortOrders = [];
+
+        function initSortState() {
+            const url = new URL(window.location.href);
+            const fieldsStr = url.searchParams.get('sort_field');
+            const ordersStr = url.searchParams.get('sort_order');
+            
+            if (fieldsStr) {
+                sortFields = fieldsStr.split(',').map(f => f.trim());
+                sortOrders = ordersStr ? ordersStr.split(',').map(o => o.trim()) : new Array(sortFields.length).fill('asc');
+            } else {
+                sortFields = ['created_at'];
+                sortOrders = ['desc'];
+            }
+            updateLog();
+        }
+
+        function handleSort(field, event) {
+            if (!event) event = window.event;
+            
+            const existingIndex = sortFields.indexOf(field);
+            
+            if (existingIndex !== -1) {
+                // 字段已存在，获取当前排序方向
+                const currentOrder = sortOrders[existingIndex];
+                // 将其移到末尾（最高优先级）
+                sortFields.splice(existingIndex, 1);
+                sortOrders.splice(existingIndex, 1);
+                sortFields.push(field);
+                // 切换排序方向并添加到末尾
+                sortOrders.push(currentOrder === 'asc' ? 'desc' : 'asc');
+            } else {
+                // 新字段，添加到末尾（最后添加的优先级最高，显示为1）
+                sortFields.push(field);
+                sortOrders.push('asc');
+            }
+            
+            console.log('排序字段:', sortFields);
+            console.log('排序方向:', sortOrders);
+            
+            updateLog();
+        }
+
+        function testSort(field) {
+            handleSort(field, null);
+        }
+
+        function updateLog() {
+            const log1 = document.getElementById('log1');
+            const log2 = document.getElementById('log2');
+            const message = `sortFields: [${sortFields.join(', ')}]\nsortOrders: [${sortOrders.join(', ')}]\n\nURL参数:\nsort_field=${sortFields.join(',')}\nsort_order=${sortOrders.join(',')}`;
+            if (log1) log1.textContent = message;
+            if (log2) log2.textContent = message;
+        }
+
+        // 初始化
+        initSortState();
+    </script>
+</body>
+</html>

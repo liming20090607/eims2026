@@ -30,10 +30,11 @@ class TenantMiddleware:
         if hasattr(request, 'session'):
             tenant_id = request.session.get('tenant_id')
         
-        # 查询租户对象
+        # 查询租户对象（Tenant表只在root_admin数据库中存在）
         if tenant_id:
             try:
-                request.tenant = Tenant.objects.get(id=tenant_id, is_active=True)
+                # 明确指定使用root_admin数据库，避免数据库路由器误判
+                request.tenant = Tenant.objects.using('root_admin').get(id=tenant_id, is_active=True)
             except Tenant.DoesNotExist:
                 # 租户不存在或已禁用，清除 session
                 request.tenant = None

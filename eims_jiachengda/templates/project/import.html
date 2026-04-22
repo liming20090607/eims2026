@@ -1,0 +1,100 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}导入项目数据{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_list' %}">项目管理</a></li>
+<li class="breadcrumb-item active">导入数据</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-file-import me-2"></i>导入项目数据</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>使用说明：</strong> 下载模板填写后上传，系统将严格匹配预定义类别
+        </div>
+        
+        <div class="mb-4 p-3 bg-light rounded">
+          <strong class="d-block mb-2">✅ 有效项目类别：</strong>
+          <div class="d-flex flex-wrap gap-2">
+            {% for category in valid_categories %}
+              <span class="badge bg-info">{{ category }}</span>
+            {% endfor %}
+          </div>
+          
+          <strong class="d-block mt-3 mb-2">✅ 有效项目状态：</strong>
+          <div class="d-flex flex-wrap gap-2">
+            {% for status in valid_statuses %}
+              <span class="badge bg-secondary">{{ status }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        
+        <div class="mb-4 text-center">
+          <a href="{% static 'templates/project_template.xlsx' %}" 
+             class="btn btn-outline-primary" download>
+            <i class="fas fa-download me-1"></i>下载Excel模板
+          </a>
+          <p class="text-muted mt-2 mb-0">文件格式：.xlsx（Excel 2007+）</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <div class="mb-4">
+            <label class="form-label fw-bold">1. 选择Excel文件</label>
+            <input type="file" name="file" class="form-control" accept=".xlsx" required>
+            <div class="form-text">
+              <i class="fas fa-check-circle text-success me-1"></i> 
+              必填列：项目编号、项目名称、项目类别、项目地址、投资(万元)、进场时间
+            </div>
+          </div>
+          
+          <div class="mb-4 p-3 bg-light rounded">
+            <label class="form-label fw-bold">2. 数据要求</label>
+            <ul class="mb-0">
+              <li>项目类别：必须为上方列出的有效类别（严格匹配）</li>
+              <li>日期格式：YYYY-MM-DD（如 2026-02-16）</li>
+              <li>投资金额：纯数字（如 150.5）</li>
+              <li>非必填列：留空即可，系统自动处理</li>
+            </ul>
+          </div>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'eims_app:project_list' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-1"></i>返回列表
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-upload me-1"></i>开始导入
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 验证文件类型
+document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    if (file.name.endsWith('.xlsx')) {
+      return;
+    }
+    alert('仅支持Excel 2007+格式文件(.xlsx)');
+    e.target.value = '';
+  }
+});
+</script>
+{% endblock %}

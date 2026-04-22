@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponseRedirect
 from eims_app.views.views_custom_login import custom_login
+from eims_app.views.views_router import route_selector
 
 def profile_redirect(request):
     return HttpResponseRedirect('/')
@@ -20,11 +21,17 @@ urlpatterns = [
     path('accounts/login/', custom_login, name='login'),
     path('accounts/profile/', profile_redirect, name='user_profile'),
     
-    # ✅ 包含eims_app的URL并设置命名空间
-    path('', include('eims_app.urls', namespace='eims_app')),
+    # ===== 多系统路由 =====
+    # 智能路由入口（推荐）
+    path('', route_selector, name='route_selector'),
     
-    # 如有其他应用，继续添加...
-    # path('other_app/', include('other_app.urls', namespace='other_app')),
+    # 各公司系统 - 使用独立命名空间
+    path('dingce/', include(('eims_app.urls', 'eims_app'), namespace='dingce')),
+    path('shengchang/', include(('eims_app.urls', 'eims_app'), namespace='shengchang')),
+    path('jiachengda/', include(('eims_app.urls', 'eims_app'), namespace='jiachengda')),
+    
+    # Root超级管理员后台
+    path('root/', include(('eims_app.urls', 'eims_app'), namespace='root')),
 ]
 
 # 媒体文件配置（开发环境）

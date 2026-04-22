@@ -1,0 +1,2560 @@
+Fixed Python path: ['/var/www', '/var/www/eims/venv', '/var/www/eims', '/usr/local/lib/python310.zip', '/usr/local/lib/python3.10', '/usr/local/lib/python3.10/lib-dynload', '/var/www/eims/venv/lib/python3.10/site-packages']
+[
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$cDDk3f4hnBkGpcTiZNCsor$DifRckXpk8rvq71ULp5cNhDiLU5VfoaDBSoBYTgL7i8=",
+    "last_login": "2026-04-04T12:49:22.990Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "51610143@qq.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-03T15:50:36.670Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ZVF9G8nLhOX5fiIGRI1FJV$9rspQzytSMjIrB6ioo7e7zZoTVb+wdQBDnxAZkka/mw=",
+    "last_login": "2026-04-04T14:42:08.313Z",
+    "is_superuser": false,
+    "username": "秦林",
+    "first_name": "秦林",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:29:57.862Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$xJaH4RCZPGYjfsDt9TFErJ$P+dN7bIkXQMy1GE3PDkywnaeIrl2s9NSJEDhWk00Mzs=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "桂华",
+    "first_name": "桂华",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:30:32.197Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$iNhTZ7m65rZvH1xNz9QI0v$SuL9LNogq6b/b/e12ucN9y8ODK2YtBBacWPVXE/izuo=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "林漓",
+    "first_name": "林漓",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:30:44.572Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ZUrbA3JJmQMXQecdUkRcsj$Azt+649FVg9zMf6AZmLS8sUxolFeoXqoNZWPy9z63hw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "方永明",
+    "first_name": "方永明",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:30:49.557Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$gqqALKPVvIUUgkC0Xlq0P5$OkgENseXjHbVSLOZ4PphQtSILClBcQoqrXH5WNAuU5Q=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "唐薇薇",
+    "first_name": "唐薇薇",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:30:53.042Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 8,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$dD4wAidGEoBE87IK29OHi9$IZCYaEuWh1EwWyOCO43SKV08xTvt8Ru/05xrzVvhnrY=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "宋弦弦",
+    "first_name": "宋弦弦",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:30:56.403Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 9,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$SrhXlXAUV0HKEqjc97coiN$0dYAPt9/Gc6vuzY058Xoj5JHJu/CINLRtjpyUVthwDc=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "黄建波",
+    "first_name": "黄建波",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:30:59.804Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 10,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$w2xft1KEg3r4QxzzVaL5mc$9t00k8z/zGf50YGzc+EfrtCQ5lleyB/0A4w4OhhWdEk=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "廖志红",
+    "first_name": "廖志红",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:31:03.330Z",
+    "groups": [
+      2
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 11,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$acITftSGAgP0bdedGGvtg4$8q/JM0p2JPeQ1ncKATdS5i0XJjjtTqUHwrZ3CgPpIoo=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "银雪",
+    "first_name": "银雪",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:31:06.896Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 13,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$GKTS7NHWL3huZbj28qrjnT$b2hgFO7by4VoijbUu9KuKtbYAvjeUrNhk2nvErBhmPg=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "程慧慧",
+    "first_name": "程慧慧",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:31:20.256Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 14,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$1437t2wilWAnHHpGs8LiTa$zuoReIVEzzPhscRfwrQaz2ZnWQikthrBma28QNi4Q0c=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "庞黎明",
+    "first_name": "庞黎明",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:31:40.460Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 15,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$MAhjcYkQs3sPuaKEBaf9kI$v+suFRAKdmNh8USa/aP+FjWvxt5JtsPuhc2a5Yeselo=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "龙欢",
+    "first_name": "龙欢",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:31:44.283Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 16,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$a7syusOZA1XaLPn72tpRR5$c4JQsbOt2Wx7WXCQO4O3kHNKBbwEWb3000h0t3uW5II=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "周林松",
+    "first_name": "周林松",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:31:48.294Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 17,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$VyjzX5V79Zo2ubhlVD7Wy3$ORUDnX5R5R7sI/rXYPmUfkqLXPR1diJgxBy8BXwLlWA=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "甘丽春",
+    "first_name": "甘丽春",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:31:52.611Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 28,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$NFJmpjPYhFmJXEXfK2QVwS$hLoP2Ll+1mT94+3CI/E2h9tAiRDQ1rSYzU6rYfGQK5Q=",
+    "last_login": "2026-04-04T14:45:34.084Z",
+    "is_superuser": true,
+    "username": "18978383227",
+    "first_name": "黎绍昆",
+    "last_name": "",
+    "email": "51610143@qq.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:36:00Z",
+    "groups": [],
+    "user_permissions": [
+      1,
+      2,
+      3,
+      4,
+      9,
+      10,
+      11,
+      12,
+      5,
+      6,
+      7,
+      8,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      93,
+      94,
+      95,
+      96,
+      69,
+      70,
+      71,
+      72,
+      133,
+      134,
+      135,
+      136,
+      73,
+      74,
+      75,
+      76,
+      33,
+      34,
+      35,
+      36,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      89,
+      90,
+      91,
+      92,
+      137,
+      138,
+      139,
+      140,
+      97,
+      98,
+      99,
+      100,
+      141,
+      142,
+      143,
+      144,
+      113,
+      114,
+      115,
+      116,
+      101,
+      102,
+      103,
+      104,
+      25,
+      26,
+      27,
+      28,
+      105,
+      106,
+      107,
+      108,
+      57,
+      58,
+      59,
+      60,
+      29,
+      30,
+      31,
+      32,
+      109,
+      110,
+      111,
+      112,
+      53,
+      54,
+      55,
+      56,
+      41,
+      42,
+      43,
+      44,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      37,
+      38,
+      39,
+      40,
+      117,
+      118,
+      119,
+      120,
+      45,
+      46,
+      47,
+      48,
+      61,
+      62,
+      63,
+      64,
+      77,
+      78,
+      79,
+      80,
+      65,
+      66,
+      67,
+      68,
+      145,
+      146,
+      147,
+      148,
+      49,
+      50,
+      51,
+      52,
+      21,
+      22,
+      23,
+      24
+    ]
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 29,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ghOCUsuUpsvoXkANonf2d6$oAPjkFFtuBI2/dRdm3HWc8Egk4eFmOcstDGcI9NVqK0=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "王敏志",
+    "first_name": "王敏志",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:36:52.767Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 30,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$BO2P4YAWFDZovXMHhUTEFk$x9CxdkjP+gwKPvznRD9ty/gX91Q7OYEkv8zaCtqcELg=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "柏翔",
+    "first_name": "柏翔",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:36:58.155Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 31,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$tqBkIM1bTh6uAW57Nr04KO$miCuM8xqYAc/39bcN76LR/rfC/BHz0SsJS4lXS1/YwM=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "吉定斌",
+    "first_name": "吉定斌",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:02.608Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 32,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$iHHH5QslfcAvbeCOa72iL5$erEkfvkUkGPZ2ksmLnfqTcrYsYVGNlUfRABMma4SqF0=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "李闰",
+    "first_name": "李闰",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:06.692Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 33,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$2nkc7XBKSUkhAgYbL4gk4g$hocG79z6PeEzSHJnfSgkh1USlZ7/yNFJsnpD+ieVvrI=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "廖成刚",
+    "first_name": "廖成刚",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:12.243Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 34,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ebKCjJUyXr6TMkzyjDDoHV$poVBABdJNM19M2u5h48o5GWKWfHIT+paOKn/4qzxFrs=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "龙庆香",
+    "first_name": "龙庆香",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:17.380Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 35,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$6veVQZYBD0WSOA0CPemSLz$8ucRrqucjtSzaKdWnmUnEScsBzf236grZu1JGPo5IxE=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "张中立",
+    "first_name": "张中立",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:22.344Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 36,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$gx3iOLrFKDXltZojopQbkT$SjkhO8J0j2aJuBbiSykf1CymyCk3z+KSxL3JaH1m7xU=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "唐昌罗",
+    "first_name": "唐昌罗",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:26.512Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 37,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$L0nmPYB9Bbg4xoPjMnmZrf$I5DueC7BlDMRK+tZ1MLY2hVrfWR/1jeCFazcknErCm8=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "罗龙辉",
+    "first_name": "罗龙辉",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:30.356Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 38,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$FhoPfY5pUwlNH5CHdVsyCd$gKOeYYotBZ/2NSCKQ56LTvNtNYO+xgu5E0QF3nc82js=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "秦方玉",
+    "first_name": "秦方玉",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:34.419Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 39,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$qTcQO6G9paMW2jz7Cx8ABv$JJgqLAMaBMOdORog4Vk1xZ0JAm1sIWfWeV5gWlfD0Rc=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "秦养付",
+    "first_name": "秦养付",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:38.534Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 40,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$m19xpaXeVJ0ADm8WqvAzAi$jV7A6we0zehdaXgyyPYmdeM0JnpScol51gXPizBo2ys=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "谭军",
+    "first_name": "谭军",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:42.717Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 41,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$RPiXtHOX3W6TRq6fHEzdSv$WbI0QNc1scOvUhOy/wNysXDscsVAXOPN5DsQu95Go7g=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "唐昌成",
+    "first_name": "唐昌成",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:47.460Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 42,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ayOFQZpUhLGeIrhwSppWWC$sEA3vjnYfVhRexrdPcUO91t1CdWOGbshPpGVJdfPbIU=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "唐满东",
+    "first_name": "唐满东",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:52.830Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 43,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$zd7WjnB52w1s8ooboSA8U8$+x1hmIV/SxBVis/A7eXs0g7IoyUdfaxCgcadoT0sKt4=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "易强",
+    "first_name": "易强",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:37:57.083Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 44,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$1wH0MiZOycVyMoRhftI3Qn$WkTevgCCWpW+UZnPPjIf63gGXzhNgITtOKf6Vn1S3Dg=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "唐鹏",
+    "first_name": "唐鹏",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:38:01.132Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 45,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$Lnm7jrQQfNbdk9l8ckdp1S$LUyVQ6hdA8qGu3jgOrbCmH04PTmKU3aca5i2u3EqAg4=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "谢荣明",
+    "first_name": "谢荣明",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:38:04.870Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 46,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ekOAprreYNSy7jmmnbO4Yb$69RpVeXy1dWWv+MlyUvO28WrgkmIYiqI+WOCib6unY8=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "汪勇",
+    "first_name": "汪勇",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:38:09.167Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 47,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$N7X8RnuPvS8w6qBsVnMwO1$owm4oLBOTeJ91+bYiFgjkQyWsM5Y3Gdin9QaE6PZTtM=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "吴向南",
+    "first_name": "吴向南",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:38:13.590Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 48,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$Ep6FnpMiBQG558Y3LZdFrm$0ESPl8lNIjmxSjM9qszmHXar5kbTED8yfat/3DI29rQ=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "王璐",
+    "first_name": "王璐",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:38:18.123Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 49,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$PMS6tG5i5HUbtEByDu1kEW$ut7k5lydodSiiUYPiv5We5xBY2mZL2EV95ucvyDPlbo=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "王立明",
+    "first_name": "王立明",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:38:23.113Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 50,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$a5rWYDfZLRfWUWn3RExXys$syk9IGL8UQ5yw6wgzljXCLqxU8Zbb/jXrDcEzs+wxlU=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "阳著平",
+    "first_name": "阳著平",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T14:38:27.848Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 51,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$FTlQ5InJKJCv2gbCa9SlNw$dr0F3xmYZ9cJDCJJvA5qGnaK/dR2GQNcmST+y3JA4+4=",
+    "last_login": "2026-04-04T23:03:10.641Z",
+    "is_superuser": false,
+    "username": "gxsc",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T22:49:49.683Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 52,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$3kxCmciulndtxjzeQSKDdf$wO7mXepsvXH3K8b6HZzNOX/q4WLgSVZFyU37TtqzCTI=",
+    "last_login": "2026-04-04T23:49:36.709Z",
+    "is_superuser": false,
+    "username": "陈连华",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-04T23:45:46.594Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 1,
+  "fields": {
+    "name": "超级管理员",
+    "permissions": [
+      1,
+      2,
+      3,
+      4,
+      9,
+      10,
+      11,
+      12,
+      5,
+      6,
+      7,
+      8,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      93,
+      94,
+      95,
+      96,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      33,
+      34,
+      35,
+      36,
+      89,
+      90,
+      91,
+      92,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      25,
+      26,
+      27,
+      28,
+      105,
+      106,
+      107,
+      108,
+      57,
+      58,
+      59,
+      60,
+      29,
+      30,
+      31,
+      32,
+      53,
+      54,
+      55,
+      56,
+      41,
+      42,
+      43,
+      44,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      37,
+      38,
+      39,
+      40,
+      45,
+      46,
+      47,
+      48,
+      61,
+      62,
+      63,
+      64,
+      77,
+      78,
+      79,
+      80,
+      65,
+      66,
+      67,
+      68,
+      49,
+      50,
+      51,
+      52,
+      21,
+      22,
+      23,
+      24
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 2,
+  "fields": {
+    "name": "管理员",
+    "permissions": [
+      1,
+      2,
+      3,
+      4,
+      9,
+      10,
+      11,
+      12,
+      5,
+      6,
+      7,
+      8,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      93,
+      94,
+      95,
+      96,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      33,
+      34,
+      35,
+      36,
+      89,
+      90,
+      91,
+      92,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      25,
+      26,
+      27,
+      28,
+      105,
+      106,
+      107,
+      108,
+      57,
+      58,
+      59,
+      60,
+      29,
+      30,
+      31,
+      32,
+      53,
+      54,
+      55,
+      56,
+      41,
+      42,
+      43,
+      44,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      37,
+      38,
+      39,
+      40,
+      45,
+      46,
+      47,
+      48,
+      61,
+      62,
+      63,
+      64,
+      77,
+      78,
+      79,
+      80,
+      65,
+      66,
+      67,
+      68,
+      49,
+      50,
+      51,
+      52,
+      21,
+      22,
+      23,
+      24
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 3,
+  "fields": {
+    "name": "一般用户",
+    "permissions": [
+      1,
+      4,
+      9,
+      12,
+      5,
+      8,
+      13,
+      16,
+      17,
+      20,
+      93,
+      96,
+      69,
+      72,
+      73,
+      76,
+      33,
+      36,
+      89,
+      92,
+      97,
+      100,
+      101,
+      104,
+      25,
+      28,
+      105,
+      57,
+      60,
+      29,
+      32,
+      53,
+      56,
+      41,
+      44,
+      81,
+      84,
+      85,
+      88,
+      37,
+      40,
+      45,
+      48,
+      61,
+      64,
+      77,
+      80,
+      65,
+      68,
+      49,
+      52,
+      21,
+      24
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 4,
+  "fields": {
+    "name": "游客",
+    "permissions": [
+      4,
+      12,
+      8,
+      16,
+      20,
+      96,
+      72,
+      76,
+      36,
+      92,
+      100,
+      104,
+      28,
+      108,
+      60,
+      32,
+      56,
+      44,
+      84,
+      88,
+      40,
+      48,
+      64,
+      80,
+      68,
+      52,
+      24
+    ]
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": 1,
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": 1,
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": 1,
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": 1,
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": 2,
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": 2,
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": 2,
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": 2,
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": 3,
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": 3,
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": 3,
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": 3,
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add user",
+    "content_type": 4,
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change user",
+    "content_type": 4,
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete user",
+    "content_type": 4,
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view user",
+    "content_type": 4,
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": 5,
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": 5,
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": 5,
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": 5,
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add session",
+    "content_type": 6,
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change session",
+    "content_type": 6,
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": 6,
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view session",
+    "content_type": 6,
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add 文件",
+    "content_type": 7,
+    "codename": "add_filemanage"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change 文件",
+    "content_type": 7,
+    "codename": "change_filemanage"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete 文件",
+    "content_type": 7,
+    "codename": "delete_filemanage"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view 文件",
+    "content_type": 7,
+    "codename": "view_filemanage"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Can add 通知公告",
+    "content_type": 8,
+    "codename": "add_notice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can change 通知公告",
+    "content_type": 8,
+    "codename": "change_notice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can delete 通知公告",
+    "content_type": 8,
+    "codename": "delete_notice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can view 通知公告",
+    "content_type": 8,
+    "codename": "view_notice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 33,
+  "fields": {
+    "name": "Can add 合同信息",
+    "content_type": 9,
+    "codename": "add_contract"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 34,
+  "fields": {
+    "name": "Can change 合同信息",
+    "content_type": 9,
+    "codename": "change_contract"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 35,
+  "fields": {
+    "name": "Can delete 合同信息",
+    "content_type": 9,
+    "codename": "delete_contract"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 36,
+  "fields": {
+    "name": "Can view 合同信息",
+    "content_type": 9,
+    "codename": "view_contract"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 37,
+  "fields": {
+    "name": "Can add 项目",
+    "content_type": 10,
+    "codename": "add_project"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 38,
+  "fields": {
+    "name": "Can change 项目",
+    "content_type": 10,
+    "codename": "change_project"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 39,
+  "fields": {
+    "name": "Can delete 项目",
+    "content_type": 10,
+    "codename": "delete_project"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 40,
+  "fields": {
+    "name": "Can view 项目",
+    "content_type": 10,
+    "codename": "view_project"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 41,
+  "fields": {
+    "name": "Can add 项目人员",
+    "content_type": 11,
+    "codename": "add_personnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 42,
+  "fields": {
+    "name": "Can change 项目人员",
+    "content_type": 11,
+    "codename": "change_personnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 43,
+  "fields": {
+    "name": "Can delete 项目人员",
+    "content_type": 11,
+    "codename": "delete_personnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 44,
+  "fields": {
+    "name": "Can view 项目人员",
+    "content_type": 11,
+    "codename": "view_personnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 45,
+  "fields": {
+    "name": "Can add 项目动态",
+    "content_type": 12,
+    "codename": "add_projectdynamic"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 46,
+  "fields": {
+    "name": "Can change 项目动态",
+    "content_type": 12,
+    "codename": "change_projectdynamic"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 47,
+  "fields": {
+    "name": "Can delete 项目动态",
+    "content_type": 12,
+    "codename": "delete_projectdynamic"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 48,
+  "fields": {
+    "name": "Can view 项目动态",
+    "content_type": 12,
+    "codename": "view_projectdynamic"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 49,
+  "fields": {
+    "name": "Can add 用户资料",
+    "content_type": 13,
+    "codename": "add_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 50,
+  "fields": {
+    "name": "Can change 用户资料",
+    "content_type": 13,
+    "codename": "change_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 51,
+  "fields": {
+    "name": "Can delete 用户资料",
+    "content_type": 13,
+    "codename": "delete_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 52,
+  "fields": {
+    "name": "Can view 用户资料",
+    "content_type": 13,
+    "codename": "view_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 53,
+  "fields": {
+    "name": "Can add 产值回款",
+    "content_type": 14,
+    "codename": "add_outputpayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 54,
+  "fields": {
+    "name": "Can change 产值回款",
+    "content_type": 14,
+    "codename": "change_outputpayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 55,
+  "fields": {
+    "name": "Can delete 产值回款",
+    "content_type": 14,
+    "codename": "delete_outputpayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 56,
+  "fields": {
+    "name": "Can view 产值回款",
+    "content_type": 14,
+    "codename": "view_outputpayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 57,
+  "fields": {
+    "name": "Can add 月度报告",
+    "content_type": 15,
+    "codename": "add_monthlyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 58,
+  "fields": {
+    "name": "Can change 月度报告",
+    "content_type": 15,
+    "codename": "change_monthlyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 59,
+  "fields": {
+    "name": "Can delete 月度报告",
+    "content_type": 15,
+    "codename": "delete_monthlyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 60,
+  "fields": {
+    "name": "Can view 月度报告",
+    "content_type": 15,
+    "codename": "view_monthlyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 61,
+  "fields": {
+    "name": "Can add 项目填报人员",
+    "content_type": 16,
+    "codename": "add_projectreporter"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 62,
+  "fields": {
+    "name": "Can change 项目填报人员",
+    "content_type": 16,
+    "codename": "change_projectreporter"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 63,
+  "fields": {
+    "name": "Can delete 项目填报人员",
+    "content_type": 16,
+    "codename": "delete_projectreporter"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 64,
+  "fields": {
+    "name": "Can view 项目填报人员",
+    "content_type": 16,
+    "codename": "view_projectreporter"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 65,
+  "fields": {
+    "name": "Can add 角色",
+    "content_type": 17,
+    "codename": "add_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 66,
+  "fields": {
+    "name": "Can change 角色",
+    "content_type": 17,
+    "codename": "change_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 67,
+  "fields": {
+    "name": "Can delete 角色",
+    "content_type": 17,
+    "codename": "delete_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 68,
+  "fields": {
+    "name": "Can view 角色",
+    "content_type": 17,
+    "codename": "view_role"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 69,
+  "fields": {
+    "name": "Can add 审批流程",
+    "content_type": 18,
+    "codename": "add_approvalflow"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 70,
+  "fields": {
+    "name": "Can change 审批流程",
+    "content_type": 18,
+    "codename": "change_approvalflow"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 71,
+  "fields": {
+    "name": "Can delete 审批流程",
+    "content_type": 18,
+    "codename": "delete_approvalflow"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 72,
+  "fields": {
+    "name": "Can view 审批流程",
+    "content_type": 18,
+    "codename": "view_approvalflow"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 73,
+  "fields": {
+    "name": "Can add 审批记录",
+    "content_type": 19,
+    "codename": "add_approvalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 74,
+  "fields": {
+    "name": "Can change 审批记录",
+    "content_type": 19,
+    "codename": "change_approvalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 75,
+  "fields": {
+    "name": "Can delete 审批记录",
+    "content_type": 19,
+    "codename": "delete_approvalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 76,
+  "fields": {
+    "name": "Can view 审批记录",
+    "content_type": 19,
+    "codename": "view_approvalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 77,
+  "fields": {
+    "name": "Can add 项目角色",
+    "content_type": 20,
+    "codename": "add_projectrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 78,
+  "fields": {
+    "name": "Can change 项目角色",
+    "content_type": 20,
+    "codename": "change_projectrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 79,
+  "fields": {
+    "name": "Can delete 项目角色",
+    "content_type": 20,
+    "codename": "delete_projectrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 80,
+  "fields": {
+    "name": "Can view 项目角色",
+    "content_type": 20,
+    "codename": "view_projectrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 81,
+  "fields": {
+    "name": "Can add 人员分配",
+    "content_type": 21,
+    "codename": "add_personnelallocation"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 82,
+  "fields": {
+    "name": "Can change 人员分配",
+    "content_type": 21,
+    "codename": "change_personnelallocation"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 83,
+  "fields": {
+    "name": "Can delete 人员分配",
+    "content_type": 21,
+    "codename": "delete_personnelallocation"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 84,
+  "fields": {
+    "name": "Can view 人员分配",
+    "content_type": 21,
+    "codename": "view_personnelallocation"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 85,
+  "fields": {
+    "name": "Can add 人员证书",
+    "content_type": 22,
+    "codename": "add_personnelcertificate"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 86,
+  "fields": {
+    "name": "Can change 人员证书",
+    "content_type": 22,
+    "codename": "change_personnelcertificate"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 87,
+  "fields": {
+    "name": "Can delete 人员证书",
+    "content_type": 22,
+    "codename": "delete_personnelcertificate"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 88,
+  "fields": {
+    "name": "Can view 人员证书",
+    "content_type": 22,
+    "codename": "view_personnelcertificate"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 89,
+  "fields": {
+    "name": "Can add 部门",
+    "content_type": 23,
+    "codename": "add_department"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 90,
+  "fields": {
+    "name": "Can change 部门",
+    "content_type": 23,
+    "codename": "change_department"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 91,
+  "fields": {
+    "name": "Can delete 部门",
+    "content_type": 23,
+    "codename": "delete_department"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 92,
+  "fields": {
+    "name": "Can view 部门",
+    "content_type": 23,
+    "codename": "view_department"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 93,
+  "fields": {
+    "name": "Can add 审批链配置",
+    "content_type": 24,
+    "codename": "add_approvalchain"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 94,
+  "fields": {
+    "name": "Can change 审批链配置",
+    "content_type": 24,
+    "codename": "change_approvalchain"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 95,
+  "fields": {
+    "name": "Can delete 审批链配置",
+    "content_type": 24,
+    "codename": "delete_approvalchain"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 96,
+  "fields": {
+    "name": "Can view 审批链配置",
+    "content_type": 24,
+    "codename": "view_approvalchain"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 97,
+  "fields": {
+    "name": "Can add 部门角色",
+    "content_type": 25,
+    "codename": "add_departmentrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 98,
+  "fields": {
+    "name": "Can change 部门角色",
+    "content_type": 25,
+    "codename": "change_departmentrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 99,
+  "fields": {
+    "name": "Can delete 部门角色",
+    "content_type": 25,
+    "codename": "delete_departmentrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 100,
+  "fields": {
+    "name": "Can view 部门角色",
+    "content_type": 25,
+    "codename": "view_departmentrole"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 101,
+  "fields": {
+    "name": "Can add 文件访问权限",
+    "content_type": 26,
+    "codename": "add_fileaccesspermission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 102,
+  "fields": {
+    "name": "Can change 文件访问权限",
+    "content_type": 26,
+    "codename": "change_fileaccesspermission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 103,
+  "fields": {
+    "name": "Can delete 文件访问权限",
+    "content_type": 26,
+    "codename": "delete_fileaccesspermission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 104,
+  "fields": {
+    "name": "Can view 文件访问权限",
+    "content_type": 26,
+    "codename": "view_fileaccesspermission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 105,
+  "fields": {
+    "name": "Can add 文件版本",
+    "content_type": 27,
+    "codename": "add_filemanageversion"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 106,
+  "fields": {
+    "name": "Can change 文件版本",
+    "content_type": 27,
+    "codename": "change_filemanageversion"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 107,
+  "fields": {
+    "name": "Can delete 文件版本",
+    "content_type": 27,
+    "codename": "delete_filemanageversion"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 108,
+  "fields": {
+    "name": "Can view 文件版本",
+    "content_type": 27,
+    "codename": "view_filemanageversion"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 109,
+  "fields": {
+    "name": "Can add 通知附件",
+    "content_type": 28,
+    "codename": "add_noticeattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 110,
+  "fields": {
+    "name": "Can change 通知附件",
+    "content_type": 28,
+    "codename": "change_noticeattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 111,
+  "fields": {
+    "name": "Can delete 通知附件",
+    "content_type": 28,
+    "codename": "delete_noticeattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 112,
+  "fields": {
+    "name": "Can view 通知附件",
+    "content_type": 28,
+    "codename": "view_noticeattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 113,
+  "fields": {
+    "name": "Can add 员工信息",
+    "content_type": 29,
+    "codename": "add_employee"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 114,
+  "fields": {
+    "name": "Can change 员工信息",
+    "content_type": 29,
+    "codename": "change_employee"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 115,
+  "fields": {
+    "name": "Can delete 员工信息",
+    "content_type": 29,
+    "codename": "delete_employee"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 116,
+  "fields": {
+    "name": "Can view 员工信息",
+    "content_type": 29,
+    "codename": "view_employee"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 117,
+  "fields": {
+    "name": "Can add 监理项目信息",
+    "content_type": 30,
+    "codename": "add_projectdetail"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 118,
+  "fields": {
+    "name": "Can change 监理项目信息",
+    "content_type": 30,
+    "codename": "change_projectdetail"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 119,
+  "fields": {
+    "name": "Can delete 监理项目信息",
+    "content_type": 30,
+    "codename": "delete_projectdetail"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 120,
+  "fields": {
+    "name": "Can view 监理项目信息",
+    "content_type": 30,
+    "codename": "view_projectdetail"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 121,
+  "fields": {
+    "name": "Can add 合同审批",
+    "content_type": 31,
+    "codename": "add_contractapproval"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 122,
+  "fields": {
+    "name": "Can change 合同审批",
+    "content_type": 31,
+    "codename": "change_contractapproval"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 123,
+  "fields": {
+    "name": "Can delete 合同审批",
+    "content_type": 31,
+    "codename": "delete_contractapproval"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 124,
+  "fields": {
+    "name": "Can view 合同审批",
+    "content_type": 31,
+    "codename": "view_contractapproval"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 125,
+  "fields": {
+    "name": "Can add 合同审批记录",
+    "content_type": 32,
+    "codename": "add_contractapprovalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 126,
+  "fields": {
+    "name": "Can change 合同审批记录",
+    "content_type": 32,
+    "codename": "change_contractapprovalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 127,
+  "fields": {
+    "name": "Can delete 合同审批记录",
+    "content_type": 32,
+    "codename": "delete_contractapprovalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 128,
+  "fields": {
+    "name": "Can view 合同审批记录",
+    "content_type": 32,
+    "codename": "view_contractapprovalrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 129,
+  "fields": {
+    "name": "Can add 合同附件",
+    "content_type": 33,
+    "codename": "add_contractattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 130,
+  "fields": {
+    "name": "Can change 合同附件",
+    "content_type": 33,
+    "codename": "change_contractattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 131,
+  "fields": {
+    "name": "Can delete 合同附件",
+    "content_type": 33,
+    "codename": "delete_contractattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 132,
+  "fields": {
+    "name": "Can view 合同附件",
+    "content_type": 33,
+    "codename": "view_contractattachment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 133,
+  "fields": {
+    "name": "Can add 审批流程配置",
+    "content_type": 34,
+    "codename": "add_approvalflowconfig"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 134,
+  "fields": {
+    "name": "Can change 审批流程配置",
+    "content_type": 34,
+    "codename": "change_approvalflowconfig"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 135,
+  "fields": {
+    "name": "Can delete 审批流程配置",
+    "content_type": 34,
+    "codename": "delete_approvalflowconfig"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 136,
+  "fields": {
+    "name": "Can view 审批流程配置",
+    "content_type": 34,
+    "codename": "view_approvalflowconfig"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 137,
+  "fields": {
+    "name": "Can add 部门主管",
+    "content_type": 35,
+    "codename": "add_departmentmanager"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 138,
+  "fields": {
+    "name": "Can change 部门主管",
+    "content_type": 35,
+    "codename": "change_departmentmanager"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 139,
+  "fields": {
+    "name": "Can delete 部门主管",
+    "content_type": 35,
+    "codename": "delete_departmentmanager"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 140,
+  "fields": {
+    "name": "Can view 部门主管",
+    "content_type": 35,
+    "codename": "view_departmentmanager"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 141,
+  "fields": {
+    "name": "Can add 动态选项",
+    "content_type": 36,
+    "codename": "add_dynamicchoice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 142,
+  "fields": {
+    "name": "Can change 动态选项",
+    "content_type": 36,
+    "codename": "change_dynamicchoice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 143,
+  "fields": {
+    "name": "Can delete 动态选项",
+    "content_type": 36,
+    "codename": "delete_dynamicchoice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 144,
+  "fields": {
+    "name": "Can view 动态选项",
+    "content_type": 36,
+    "codename": "view_dynamicchoice"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 145,
+  "fields": {
+    "name": "Can add 短信验证记录",
+    "content_type": 37,
+    "codename": "add_smsverificationrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 146,
+  "fields": {
+    "name": "Can change 短信验证记录",
+    "content_type": 37,
+    "codename": "change_smsverificationrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 147,
+  "fields": {
+    "name": "Can delete 短信验证记录",
+    "content_type": 37,
+    "codename": "delete_smsverificationrecord"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 148,
+  "fields": {
+    "name": "Can view 短信验证记录",
+    "content_type": 37,
+    "codename": "view_smsverificationrecord"
+  }
+}
+]

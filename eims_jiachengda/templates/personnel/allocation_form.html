@@ -1,0 +1,156 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if allocation %}编辑分配{% else %}添加分配{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:allocation_list' %}">人员分配管理</a></li>
+<li class="breadcrumb-item active">{% if allocation %}编辑分配{% else %}添加分配{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> {% if allocation %}编辑分配信息{% else %}添加新分配{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.allocation_code.label }}</label>
+                                {{ form.allocation_code }}
+                                {% if form.allocation_code.errors %}
+                                    <div class="text-danger small">{{ form.allocation_code.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">{{ form.allocation_code.help_text }}</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.personnel.label }}</label>
+                                {{ form.personnel }}
+                                {% if form.personnel.errors %}
+                                    <div class="text-danger small">{{ form.personnel.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">{{ form.personnel.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.personnel_code.label }}</label>
+                                {{ form.personnel_code }}
+                                {% if form.personnel_code.errors %}
+                                    <div class="text-danger small">{{ form.personnel_code.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.from_project.label }}</label>
+                                {{ form.from_project }}
+                                {% if form.from_project.errors %}
+                                    <div class="text-danger small">{{ form.from_project.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">{{ form.from_project.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.from_project_code.label }}</label>
+                                {{ form.from_project_code }}
+                                {% if form.from_project_code.errors %}
+                                    <div class="text-danger small">{{ form.from_project_code.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.to_project.label }}</label>
+                                {{ form.to_project }}
+                                {% if form.to_project.errors %}
+                                    <div class="text-danger small">{{ form.to_project.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">{{ form.to_project.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.to_project_code.label }}</label>
+                                {{ form.to_project_code }}
+                                {% if form.to_project_code.errors %}
+                                    <div class="text-danger small">{{ form.to_project_code.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.allocation_position.label }}</label>
+                                {{ form.allocation_position }}
+                                {% if form.allocation_position.errors %}
+                                    <div class="text-danger small">{{ form.allocation_position.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">{{ form.allocation_position.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.allocation_date.label }}</label>
+                                {{ form.allocation_date }}
+                                {% if form.allocation_date.errors %}
+                                    <div class="text-danger small">{{ form.allocation_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.expected_duration.label }}</label>
+                                {{ form.expected_duration }}
+                                {% if form.expected_duration.errors %}
+                                    <div class="text-danger small">{{ form.expected_duration.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">{{ form.expected_duration.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.allocation_status.label }}</label>
+                                {{ form.allocation_status }}
+                                {% if form.allocation_status.errors %}
+                                    <div class="text-danger small">{{ form.allocation_status.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.allocation_reason.label }}</label>
+                                {{ form.allocation_reason }}
+                                {% if form.allocation_reason.errors %}
+                                    <div class="text-danger small">{{ form.allocation_reason.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">{{ form.allocation_reason.help_text }}</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.remark.label }}</label>
+                            {{ form.remark }}
+                            {% if form.remark.errors %}
+                                <div class="text-danger small">{{ form.remark.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.remark.help_text }}</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:allocation_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> 保存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

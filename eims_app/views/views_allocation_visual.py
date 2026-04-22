@@ -28,31 +28,54 @@ def has_personnel_permission(user):
 def allocation_visual(request):
     """可视化人员分配页面 - 支持复选、双击等交互方式"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 获取筛选参数
     search_key = request.GET.get('keyword', '')
     department_filter = request.GET.get('department', '')
     
-    # 查询未分配到项目的人员（优先显示）
-    # 条件：project 为空 且 department 为"未分配"或空
-    unassigned_personnel = Personnel.objects.filter(
-        is_deleted=False
-    ).filter(
-        Q(project__isnull=True) & Q(department__in=[None, '', '未分配'])
-    ).order_by('personnel_code')  # 按编号升序
+    # 查询所有人员（按租户过滤）
+    personnel_filter = {'is_deleted': False}
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
     
-    # 部门人员：所有有部门的人（包括已分配到项目的）
-    department_personnel = Personnel.objects.filter(
-        is_deleted=False,
+    all_personnel = Personnel.objects.filter(**personnel_filter).order_by('personnel_code')
+    
+    # 分类逻辑：
+    # 1. 待分配人员：所有5个项目都为空，且部门为空或"未分配"
+    # 2. 部门人员：有部门的人员（无论是否有项目）
+    # 3. 项目人员：有任一项目的人员（用于单独显示）
+    
+    # 待分配人员：所有项目字段都为空，且部门为空/未分配
+    unassigned_personnel = all_personnel.filter(
+        Q(project__isnull=True) &
+        Q(project2__isnull=True) &
+        Q(project3__isnull=True) &
+        Q(project4__isnull=True) &
+        Q(project5__isnull=True) &
+        (Q(department__isnull=True) | Q(department='') | Q(department='未分配'))
+    ).order_by('personnel_code')
+    
+    # 部门人员：有部门的人员（包括已分配项目和未分配项目的）
+    department_personnel = all_personnel.filter(
         department__isnull=False
     ).exclude(
         department__in=[None, '', '未分配']
-    ).order_by('personnel_code')  # 按编号升序
+    ).order_by('personnel_code')
     
-    # 项目人员：project 不为空
-    project_personnel = Personnel.objects.filter(
-        is_deleted=False,
-        project__isnull=False
-    ).order_by('project', 'department')
+    # 项目人员：有任一项目的人员
+    project_personnel = all_personnel.filter(
+        Q(project__isnull=False) |
+        Q(project2__isnull=False) |
+        Q(project3__isnull=False) |
+        Q(project4__isnull=False) |
+        Q(project5__isnull=False)
+    ).order_by('personnel_code')
     
     # 筛选处理
     if search_key:
@@ -76,12 +99,21 @@ def allocation_visual(request):
         department_personnel = department_personnel.filter(department=department_filter)
     
     # 获取所有部门（从组织管理模块）
-    all_departments = Department.objects.filter(
-        is_deleted=False,
-        status='active'
-    ).order_by('order', 'department_code')
+    dept_filter = {
+        'is_deleted': False,
+        'status': 'active'
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        dept_filter['tenant_id'] = request.tenant.id
     
-    projects = ProjectDetail.objects.order_by('project_code')
+    all_departments = Department.objects.filter(**dept_filter).order_by('order', 'department_code')
+    
+    # 获取项目列表，按租户过滤
+    proj_filter = {}
+    if hasattr(request, 'tenant') and request.tenant:
+        proj_filter['tenant_id'] = request.tenant.id
+    
+    projects = ProjectDetail.objects.filter(**proj_filter).order_by('project_code')
     
     context = {
         'unassigned_personnel': unassigned_personnel[:50],  # 限制显示数量
@@ -290,17 +322,28 @@ def assign_to_department_ajax(request):
 @login_required
 @user_passes_test(has_personnel_permission)
 def recall_personnel_ajax(request, pk):
-    """AJAX 接口：召回人员（从项目撤回）"""
+    """AJAX 接口：召回人员（从部门召回公司，待分配状态）"""
     try:
         personnel = get_object_or_404(Personnel, pk=pk)
         old_project = personnel.project
         old_department = personnel.department
         
-        # 更新人员状态 - 只清空项目，保留部门
+        # 更新人员状态 - 清空所有部门和项目信息（所有5个项目字段）
+        personnel.department = ''
+        personnel.position = ''
         personnel.project = None
         personnel.project_code = ''
-        # 保留部门和岗位，因为人员仍然属于部门
-        personnel.save(update_fields=['project', 'project_code'])
+        personnel.project2 = None
+        personnel.project_code2 = ''
+        personnel.project3 = None
+        personnel.project_code3 = ''
+        personnel.project4 = None
+        personnel.project_code4 = ''
+        personnel.project5 = None
+        personnel.project_code5 = ''
+        personnel.save(update_fields=['department', 'position', 'project', 'project_code', 
+                                      'project2', 'project_code2', 'project3', 'project_code3', 
+                                      'project4', 'project_code4', 'project5', 'project_code5'])
         
         # 创建分配记录（召回）
         PersonnelAllocation.objects.create(
@@ -315,13 +358,13 @@ def recall_personnel_ajax(request, pk):
             allocation_department=old_department,  # 记录原部门
             allocation_date=timezone.now(),
             allocation_status='recalled',
-            allocation_reason='人员召回',
+            allocation_reason='从部门召回公司',
             operator=request.user.username if request.user.is_authenticated else '',
         )
         
         return JsonResponse({
             'success': True,
-            'message': f'已成功召回人员 {personnel.name}，保留部门归属'
+            'message': f'已成功召回人员 {personnel.name}，回到待分配状态'
         })
         
     except Exception as e:
@@ -577,10 +620,14 @@ def department_personnel(request):
     department_filter = request.GET.get('department', '')
     
     # 查询部门人员：department 不为空且 project 为空
-    department_personnel_qs = Personnel.objects.filter(
-        is_deleted=False,
-        department__isnull=False
-    ).exclude(
+    personnel_filter = {
+        'is_deleted': False,
+        'department__isnull': False
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    department_personnel_qs = Personnel.objects.filter(**personnel_filter).exclude(
         department__in=[None, '', '未分配']
     ).filter(
         project__isnull=True
@@ -598,12 +645,20 @@ def department_personnel(request):
         department_personnel_qs = department_personnel_qs.filter(department=department_filter)
     
     # 获取所有部门和项目
-    all_departments = Department.objects.filter(
-        is_deleted=False,
-        status='active'
-    ).order_by('order', 'department_code')
+    dept_filter = {
+        'is_deleted': False,
+        'status': 'active'
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        dept_filter['tenant_id'] = request.tenant.id
     
-    projects = ProjectDetail.objects.order_by('project_code')
+    all_departments = Department.objects.filter(**dept_filter).order_by('order', 'department_code')
+    
+    proj_filter = {}
+    if hasattr(request, 'tenant') and request.tenant:
+        proj_filter['tenant_id'] = request.tenant.id
+    
+    projects = ProjectDetail.objects.filter(**proj_filter).order_by('project_code')
     
     context = {
         'department_personnel': department_personnel_qs[:100],  # 限制显示数量
@@ -629,10 +684,14 @@ def project_personnel(request):
     project_filter = request.GET.get('project', '')
     
     # 查询项目人员：project 不为空
-    project_personnel_qs = Personnel.objects.filter(
-        is_deleted=False,
-        project__isnull=False
-    ).order_by('project', 'department')
+    personnel_filter = {
+        'is_deleted': False,
+        'project__isnull': False
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    project_personnel_qs = Personnel.objects.filter(**personnel_filter).order_by('project', 'department')
     
     # 筛选处理
     if search_key:
@@ -646,7 +705,11 @@ def project_personnel(request):
         project_personnel_qs = project_personnel_qs.filter(project_code=project_filter)
     
     # 获取所有项目
-    projects = ProjectDetail.objects.order_by('project_code')
+    proj_filter = {}
+    if hasattr(request, 'tenant') and request.tenant:
+        proj_filter['tenant_id'] = request.tenant.id
+    
+    projects = ProjectDetail.objects.filter(**proj_filter).order_by('project_code')
     
     context = {
         'project_personnel': project_personnel_qs[:100],  # 限制显示数量
@@ -794,12 +857,22 @@ def recall_to_company_ajax(request):
         for pid in personnel_ids:
             try:
                 personnel = Personnel.objects.get(pk=pid)
-                # 清空部门和项目信息
+                # 清空部门和项目信息（包括所有5个项目字段）
                 personnel.department = ''
                 personnel.position = ''
                 personnel.project = None
                 personnel.project_code = ''
-                personnel.save(update_fields=['department', 'position', 'project', 'project_code'])
+                personnel.project2 = None
+                personnel.project_code2 = ''
+                personnel.project3 = None
+                personnel.project_code3 = ''
+                personnel.project4 = None
+                personnel.project_code4 = ''
+                personnel.project5 = None
+                personnel.project_code5 = ''
+                personnel.save(update_fields=['department', 'position', 'project', 'project_code',
+                                              'project2', 'project_code2', 'project3', 'project_code3',
+                                              'project4', 'project_code4', 'project5', 'project_code5'])
                 updated_count += 1
             except Personnel.DoesNotExist:
                 continue

@@ -20,13 +20,21 @@ from datetime import datetime
 def project_ledger_list(request):
     """项目台账列表 - 显示所有项目信息"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 检查是否需要自动跳转到第一个项目的详情页
     auto_open_detail = request.GET.get('auto_open_detail', '0') == '1'
     
     if auto_open_detail:
         # 获取第一个项目（按租户过滤）
         if hasattr(request, 'tenant') and request.tenant:
-            first_project = ProjectDetail.objects.filter(tenant=request.tenant).order_by('project_code').first()
+            # 使用 tenant_id 而不是 tenant 对象来避免跨数据库 JOIN
+            first_project = ProjectDetail.objects.filter(tenant_id=request.tenant.id).order_by('project_code').first()
         else:
             first_project = ProjectDetail.objects.order_by('project_code').first()
         
@@ -41,6 +49,13 @@ def project_ledger_list(request):
     search_key = request.GET.get('search', '')
     project_status = request.GET.get('project_status', '')
     contract_status = request.GET.get('contract_status', '')
+    
+    # 获取排序参数
+    sort_field = request.GET.get('sort_field', 'project_code')  # 默认按项目编号排序
+    sort_order = request.GET.get('sort_order', 'asc')  # 默认升序
+    
+    # 构建排序字段（支持降序）
+    order_by = sort_field if sort_order == 'asc' else f'-{sort_field}'
     
     # 基础查询集 - 使用辅助函数按租户过滤
     queryset = ProjectDetail.objects.select_related().all()
@@ -63,8 +78,8 @@ def project_ledger_list(request):
     if contract_status:
         queryset = queryset.filter(contract_status=contract_status)
     
-    # 排序 - 按项目编号升序
-    queryset = queryset.order_by('project_code')
+    # 排序 - 按指定字段和方向排序
+    queryset = queryset.order_by(order_by)
     
     # 分页
     paginator = Paginator(queryset, 20)
@@ -100,6 +115,8 @@ def project_ledger_list(request):
         'current_project': current_project,
         'show_detail': show_detail,  # 传递自动滚动标志
         'total_count': total_count,  # 添加总记录数
+        'sort_field': sort_field,  # 排序字段
+        'sort_order': sort_order,  # 排序方向
         'PROJECT_STATUS_CHOICES': ProjectDetail.PROJECT_STATUS_CHOICES,
         'CONTRACT_STATUS_CHOICES': ProjectDetail.CONTRACT_STATUS_CHOICES,
     }
@@ -217,10 +234,14 @@ def project_ledger_detail(request, pk):
     
     # 获取关联的项目人员记录（带分页）
     from eims_app.models.model_personnel import Personnel
-    personnel_list_all = Personnel.objects.filter(
-        project_code=project_detail.project_code,
-        is_deleted=False
-    ).order_by('-update_time')  # 按更新时间倒序
+    personnel_filter = {
+        'project_code': project_detail.project_code,
+        'is_deleted': False
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    personnel_list_all = Personnel.objects.filter(**personnel_filter).order_by('-update_time')  # 按更新时间倒序
     
     # 处理分页
     page = request.GET.get('page', 1)
@@ -782,7 +803,11 @@ def project_ledger_export(request):
         project_ids = [int(id) for id in ids_param.split(',') if id.isdigit()]
         queryset = ProjectDetail.objects.filter(id__in=project_ids)
     else:
-        queryset = ProjectDetail.objects.all()
+        # 按租户过滤
+        filter_dict = {'is_deleted': False}
+        if hasattr(request, 'tenant') and request.tenant:
+            filter_dict['tenant_id'] = request.tenant.id
+        queryset = ProjectDetail.objects.filter(**filter_dict)
     
     # 创建工作簿
     wb = openpyxl.Workbook()
@@ -956,8 +981,11 @@ def project_search_api(request):
         return JsonResponse({'success': False, 'error': '请输入搜索关键词'})
     
     try:
-        # 基础查询集
-        queryset = ProjectDetail.objects.all()
+        # 基础查询集（按租户过滤）
+        filter_dict = {'is_deleted': False}
+        if hasattr(request, 'tenant') and request.tenant:
+            filter_dict['tenant_id'] = request.tenant.id
+        queryset = ProjectDetail.objects.filter(**filter_dict)
         
         # 多条件模糊搜索（返回第一个匹配的结果）
         project = queryset.filter(

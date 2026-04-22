@@ -1,0 +1,40 @@
+<div class="modal-content&quot;&gt;  <!-- 样式与common.css中modal-content对应 -->
+    <h3>{% if contract_id %}编辑合同{% else %}新增合同{% endif %}</h3>
+    <button onclick="closeModal()" style="float: right; border: none; background: none; cursor: pointer;&quot;&gt;×&lt;/button&gt;  <!-- 调用common.js中的closeModal()方法 -->
+    
+    &lt;form class=&quot;modal-form&quot;&gt;  <!-- 样式与common.css中modal-form对应 -->
+        &lt;div class=&quot;form-item&quot;&gt;  <!-- 样式与common.css中form-item对应 -->
+            <label>合同编号：</label>
+            <input type="text" name="contract_code" value="HT2024001" required>
+        </div>
+        <div class="form-item">
+            <label>合同名称：</label>
+            <input type="text" name="contract_name" value="XX项目施工合同" required>
+        </div>
+        <div class="form-item">
+            <label>甲方：</label>
+            <input type="text" name="party_a" value="XX建设有限公司" required>
+        </div>
+        <div class="form-item">
+            <label>乙方：</label>
+            <input type="text" name="party_b" value="XX工程有限公司" required>
+        </div>
+        <div class="form-item">
+            <label>签订日期：</label>
+            <input type="date" name="sign_date" value="2024-01-01" required>
+        </div>
+        <div class="form-item">
+            <label>金额：</label>
+            <input type="number" name="amount" value="1000000" required>
+        </div>
+        <div class="form-item">
+            <label>合同内容：</label>
+            <textarea name="content" rows="5" required>XX项目施工相关事宜，包含工程范围、工期、质量标准、付款方式等...</textarea>
+        </div>
+        
+        <div class=&quot;modal-btn-group&quot;&gt;  <!-- 样式与common.css中modal-btn-group对应 -->
+            <button type="submit">保存</button>
+            <button type="button&quot; onclick=&quot;closeModal()&quot;&gt;取消&lt;/button&gt;  <!-- 调用common.js中的closeModal()方法 -->
+        </div>
+    </form>
+</div>

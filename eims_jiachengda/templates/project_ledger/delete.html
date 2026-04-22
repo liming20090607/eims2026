@@ -1,0 +1,80 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}确认删除{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目台账</a></li>
+<li class="breadcrumb-item active">确认删除</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+        padding: 48px;
+        max-width: 600px;
+        margin: 48px auto;
+        text-align: center;
+    }
+    .warning-icon {
+        font-size: 64px;
+        color: #ffc107;
+        margin-bottom: 24px;
+    }
+    .project-name {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 16px 0;
+    }
+    .action-buttons {
+        margin-top: 32px;
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- 删除确认卡片 -->
+            <div class="delete-card">
+                <i class="bi bi-exclamation-triangle warning-icon"></i>
+                <h3 class="mb-3">确认删除</h3>
+                <p class="text-muted mb-2">确定要删除以下项目吗？</p>
+                <div class="project-name">{{ project_detail.project_name }}</div>
+                <p class="text-muted small">
+                    <i class="bi bi-hash me-1"></i>{{ project_detail.project_code }}
+                    <span class="ms-3">
+                        <i class="bi bi-file-text me-1"></i>{{ project_detail.contract_code }}
+                    </span>
+                </p>
+                
+                <div class="alert alert-warning mt-4 text-start">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>警告：</strong>此操作不可恢复，删除后所有相关数据将永久丢失！
+                </div>
+                
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="bi bi-trash me-1"></i>确认删除
+                        </button>
+                        <a href="{% url 'eims_app:project_ledger_list' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle me-1"></i>取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

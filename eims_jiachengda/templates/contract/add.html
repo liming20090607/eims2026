@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>添加合同</title>
+    {% load static %}
+    <style>
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .errorlist {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>添加新合同</h1>
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- 自动渲染所有21个字段 -->
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %} *{% endif %}
+                </label>
+                {{ field }}
+                {{ field.errors }}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn">提交保存</button>
+            <a href="{% url 'eims_jiachengda:contract_list' %}" class="btn" style="background-color: #6c757d;">取消返回</a>
+        </form>
+    </div>
+</body>
+</html>

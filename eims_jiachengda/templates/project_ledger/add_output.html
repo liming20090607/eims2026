@@ -1,0 +1,291 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}新增产值回款 - {{ project.project_name }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目台账</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_detail' project.pk %}">{{ project.project_name|truncatechars:10 }}</a></li>
+<li class="breadcrumb-item active">新增产值回款</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 30px;
+        border-top: 4px solid #28a745;
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 25px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .form-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #28a745;
+        margin-bottom: 20px;
+        padding-left: 10px;
+        border-left: 4px solid #28a745;
+    }
+    
+    .readonly-field {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+        font-weight: 600;
+    }
+    
+    .calculated-field {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        font-weight: 600;
+    }
+    
+    .currency-symbol {
+        color: #28a745;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="form-container">
+                <h4 class="mb-4">
+                    <i class="bi bi-currency-yen"></i> 新增产值回款
+                </h4>
+                
+                <form method="post" id="outputForm">
+                    {% csrf_token %}
+                    
+                    <!-- 项目基本信息（自动填充） -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-file-text"></i> 项目基本信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">项目编号 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ project.project_code }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">项目名称 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ project.project_name }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">合同总价 (元) <span class="text-muted">(自动填充)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control readonly-field" 
+                                           id="contract_total_display" 
+                                           value="{{ project.contract_amount|floatformat:2 }}" readonly>
+                                    <input type="hidden" name="contract_total" id="contract_total" 
+                                           value="{{ project.contract_amount|floatformat:2 }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">月份 <span class="text-danger">*</span></label>
+                                <input type="month" class="form-control" name="month" required 
+                                       value="{% now 'Y-m' %}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 产值信息 -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-graph-up"></i> 产值信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">上月累计产值 (元) <span class="text-danger">*</span> <span class="text-muted small">(从上月自动填充)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control" name="last_month_cumulative_output" 
+                                           id="last_month_cumulative_output" step="0.01" required 
+                                           value="{{ last_cumulative_output|floatformat:2 }}" onchange="calculateOutput()">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">本月产值 (元) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control" name="current_month_output" 
+                                           id="current_month_output" step="0.01" required 
+                                           value="0.00" onchange="calculateOutput()">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label">本月累计产值 (元) <span class="text-muted">(自动计算)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control calculated-field" 
+                                           id="current_month_cumulative_output" readonly value="{{ last_cumulative_output|floatformat:2 }}">
+                                </div>
+                                <small class="text-muted">计算公式：本月累计产值 = 上月累计产值 + 本月产值</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 回款信息 -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-wallet2"></i> 回款信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">上月累计回款 (元) <span class="text-danger">*</span> <span class="text-muted small">(从上月自动填充)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control" name="last_month_cumulative_payment" 
+                                           id="last_month_cumulative_payment" step="0.01" required 
+                                           value="{{ last_cumulative_payment|floatformat:2 }}" onchange="calculatePayment()">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">本月回款 (元) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control" name="current_month_payment" 
+                                           id="current_month_payment" step="0.01" required 
+                                           value="0.00" onchange="calculatePayment()">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">本月累计回款 (元) <span class="text-muted">(自动计算)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control calculated-field" 
+                                           id="current_month_cumulative_payment" readonly value="{{ last_cumulative_payment|floatformat:2 }}">
+                                </div>
+                                <small class="text-muted">计算公式：本月累计回款 = 上月累计回款 + 本月回款</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">合同余款 (元) <span class="text-muted">(自动计算)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text currency-symbol">¥</span>
+                                    <input type="number" class="form-control calculated-field" 
+                                           id="contract_balance" readonly value="{{ contract_total|floatformat:2 }}">
+                                </div>
+                                <small class="text-muted">计算公式：合同余款 = 合同总价 - 本月累计回款</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 请款信息 -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-receipt"></i> 请款信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">目前在请款 <span class="text-muted small">(从上月自动填充)</span></label>
+                                <input type="text" class="form-control" name="recent_payment_request" 
+                                       placeholder="近期请款情况" value="{{ last_recent_payment_request }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">请款措施 <span class="text-muted small">(从上月自动填充)</span></label>
+                                <input type="text" class="form-control" name="payment_measures" 
+                                       placeholder="请款措施" value="{{ last_payment_measures }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">下月请款 <span class="text-muted small">(从上月自动填充)</span></label>
+                            <input type="text" class="form-control" name="next_month_request" 
+                                   placeholder="下月请款计划" value="{{ last_next_month_request }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">需要协助 <span class="text-muted small">(从上月自动填充)</span></label>
+                            <textarea class="form-control" name="need_assistance" rows="3" 
+                                      placeholder="需要哪些协助">{{ last_need_assistance }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 系统信息（自动填充） -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-gear"></i> 系统信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">更新时间 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ current_time|date:'Y/m/d H:i:s' }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">操作人 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ user.get_full_name|default:user.username }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'eims_app:project_ledger_detail' project.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle"></i> 保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 自动计算产值
+function calculateOutput() {
+    const lastMonthOutput = parseFloat(document.getElementById('last_month_cumulative_output').value) || 0;
+    const currentMonthOutput = parseFloat(document.getElementById('current_month_output').value) || 0;
+    const cumulativeOutput = lastMonthOutput + currentMonthOutput;
+    
+    document.getElementById('current_month_cumulative_output').value = cumulativeOutput.toFixed(2);
+}
+
+// 自动计算回款
+function calculatePayment() {
+    const contractTotal = parseFloat(document.getElementById('contract_total').value) || 0;
+    const lastMonthPayment = parseFloat(document.getElementById('last_month_cumulative_payment').value) || 0;
+    const currentMonthPayment = parseFloat(document.getElementById('current_month_payment').value) || 0;
+    const cumulativePayment = lastMonthPayment + currentMonthPayment;
+    const balance = contractTotal - cumulativePayment;
+    
+    document.getElementById('current_month_cumulative_payment').value = cumulativePayment.toFixed(2);
+    document.getElementById('contract_balance').value = balance.toFixed(2);
+}
+</script>
+{% endblock %}

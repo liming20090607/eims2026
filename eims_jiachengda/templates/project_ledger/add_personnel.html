@@ -1,0 +1,840 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}新增项目人员 - {{ project.project_name }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目台账</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_detail' project.pk %}">{{ project.project_name|truncatechars:10 }}</a></li>
+<li class="breadcrumb-item active">新增项目人员</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 30px;
+        border-top: 4px solid #17a2b8;
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 25px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .form-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #17a2b8;
+        margin-bottom: 20px;
+        padding-left: 10px;
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .readonly-field {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+    
+    .position-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .position-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-color: #17a2b8;
+    }
+    
+    .position-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .position-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #17a2b8;
+        margin: 0;
+    }
+    
+    .position-details {
+        display: none;
+    }
+    
+    .position-details.show {
+        display: block;
+    }
+    
+    /* 错误高亮样式 */
+    .has-error .form-control,
+    .has-error .form-select {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery 必须在 Select2 之前加载 -->
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- 引入 Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- 引入 Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<style>
+    /* Select2 自定义样式 */
+    .select2-container .select2-selection--single {
+        height: 38px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="form-container">
+                <h4 class="mb-4">
+                    <i class="bi bi-people"></i> 新增项目人员
+                </h4>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- 项目基本信息（自动填充） -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-file-text"></i> 项目基本信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">项目编号 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ project.project_code }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">项目名称 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ project.project_name }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 监理团队人员配置 -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-person-badge"></i> 监理团队人员配置
+                        </h5>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>使用说明：</strong>勾选"有无变化"后，填写对应岗位的人员信息。系统会自动填写项目编号和项目名称。
+                        </div>
+                        
+                        <!-- 总监 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-star"></i> 总监
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_director" name="has_change_director" 
+                                           onchange="togglePosition('director')">
+                                    <label class="form-check-label" for="has_change_director">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_director">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_director">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_director">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_director">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_director">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_director" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_director" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 总代 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-star-half"></i> 总代
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_deputy_director" name="has_change_deputy_director" 
+                                           onchange="togglePosition('deputy_director')">
+                                    <label class="form-check-label" for="has_change_deputy_director">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_deputy_director">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_deputy_director">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_deputy_director">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_deputy_director">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_deputy_director">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_deputy_director" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_deputy_director" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 土建专监 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-building"></i> 土建专监
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_civil_supervisor" name="has_change_civil_supervisor" 
+                                           onchange="togglePosition('civil_supervisor')">
+                                    <label class="form-check-label" for="has_change_civil_supervisor">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_civil_supervisor">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_civil_supervisor">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_civil_supervisor">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_civil_supervisor">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_civil_supervisor">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_civil_supervisor" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_civil_supervisor" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 水电专监 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-lightning-charge"></i> 水电专监
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_electrical_supervisor" name="has_change_electrical_supervisor" 
+                                           onchange="togglePosition('electrical_supervisor')">
+                                    <label class="form-check-label" for="has_change_electrical_supervisor">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_electrical_supervisor">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_electrical_supervisor">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_electrical_supervisor">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_electrical_supervisor">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_electrical_supervisor">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_electrical_supervisor" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_electrical_supervisor" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 监理员 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-person-check"></i> 监理员
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_supervisor" name="has_change_supervisor" 
+                                           onchange="togglePosition('supervisor')">
+                                    <label class="form-check-label" for="has_change_supervisor">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_supervisor">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_supervisor">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_supervisor">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_supervisor">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_supervisor">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_supervisor" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_supervisor" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 资料员 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-file-earmark-text"></i> 资料员
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_document_controller" name="has_change_document_controller" 
+                                           onchange="togglePosition('document_controller')">
+                                    <label class="form-check-label" for="has_change_document_controller">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_document_controller">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_document_controller">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_document_controller">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_document_controller">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_document_controller">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_document_controller" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_document_controller" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 见证员 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-eye"></i> 见证员
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_witness" name="has_change_witness" 
+                                           onchange="togglePosition('witness')">
+                                    <label class="form-check-label" for="has_change_witness">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_witness">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_witness">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_witness">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_witness">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_witness">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_witness" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_witness" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 安全员 -->
+                        <div class="position-card">
+                            <div class="position-header">
+                                <h6 class="position-title">
+                                    <i class="bi bi-shield-check"></i> 安全员
+                                </h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="has_change_safety_officer" name="has_change_safety_officer" 
+                                           onchange="togglePosition('safety_officer')">
+                                    <label class="form-check-label" for="has_change_safety_officer">
+                                        有无变化
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="position-details" id="details_safety_officer">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">姓名</label>
+                                        <select class="form-select select2-single" name="name_safety_officer">
+                                            <option value="">请选择人员</option>
+                                            {% for name in employee_names %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" name="gender_safety_officer">
+                                            <option value="0">男</option>
+                                            <option value="1">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">联系电话</label>
+                                        <input type="text" class="form-control" name="phone" 
+                                               placeholder="请输入联系电话">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">入岗时间</label>
+                                        <input type="date" class="form-control" name="entry_time_safety_officer">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">离岗时间</label>
+                                        <input type="date" class="form-control" name="leave_time_safety_officer">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" name="email_safety_officer" 
+                                               placeholder="请输入邮箱">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">备注</label>
+                                    <textarea class="form-control" name="remark_safety_officer" rows="2" 
+                                              placeholder="备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- 系统信息（自动填充） -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">
+                            <i class="bi bi-gear"></i> 系统信息
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">更新时间 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ current_time|date:'Y/m/d H:i:s' }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">操作人 <span class="text-muted">(自动填充)</span></label>
+                                <input type="text" class="form-control readonly-field" 
+                                       value="{{ user.get_full_name|default:user.username }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'eims_app:project_ledger_detail' project.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回
+                        </a>
+                        <button type="submit" class="btn btn-info btn-lg">
+                            <i class="bi bi-check-circle"></i> 保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 切换岗位详情显示/隐藏
+function togglePosition(positionKey) {
+    const checkbox = document.getElementById('has_change_' + positionKey);
+    const details = document.getElementById('details_' + positionKey);
+    
+    if (checkbox.checked) {
+        details.classList.add('show');
+    } else {
+        details.classList.remove('show');
+    }
+}
+
+// 页面加载时，如果是编辑模式，自动选中对应的人员
+window.addEventListener('DOMContentLoaded', function() {
+    {% if editing_personnel %}
+    // 根据编辑的人员岗位，自动勾选对应的岗位
+    const positionMap = {
+        '总监': 'director',
+        '总代': 'deputy_director',
+        '土建专监': 'civil_supervisor',
+        '水电专监': 'electrical_supervisor',
+        '监理员': 'supervisor',
+        '资料员': 'document_controller',
+        '见证员': 'witness',
+        '安全员': 'safety_officer'
+    };
+    
+    const positionKey = positionMap['{{ editing_personnel.position }}'];
+    if (positionKey) {
+        // 勾选岗位
+        const checkbox = document.getElementById('has_change_' + positionKey);
+        if (checkbox) {
+            checkbox.checked = true;
+            togglePosition(positionKey);
+        }
+        
+        // 选中姓名
+        const nameSelect = document.querySelector('select[name="name_' + positionKey + '"]');
+        if (nameSelect) {
+            nameSelect.value = '{{ editing_personnel.name }}';
+        }
+        
+        // 填充其他字段
+        const genderSelect = document.querySelector('select[name="gender_' + positionKey + '"]');
+        if (genderSelect) {
+            genderSelect.value = '{{ editing_personnel.gender }}';
+        }
+        
+        const phoneInput = document.querySelector('input[name="phone"]');
+        if (phoneInput && '{{ editing_personnel.phone }}') {
+            phoneInput.value = '{{ editing_personnel.phone }}';
+        }
+        
+        const entryInput = document.querySelector('input[name="entry_time_' + positionKey + '"]');
+        if (entryInput && '{{ editing_personnel.entry_time|date:"Y-m-d" }}') {
+            entryInput.value = '{{ editing_personnel.entry_time|date:"Y-m-d" }}';
+        }
+        
+        const leaveInput = document.querySelector('input[name="leave_time_' + positionKey + '"]');
+        if (leaveInput && '{{ editing_personnel.leave_time|date:"Y-m-d" }}') {
+            leaveInput.value = '{{ editing_personnel.leave_time|date:"Y-m-d" }}';
+        }
+        
+        const emailInput = document.querySelector('input[name="email_' + positionKey + '"]');
+        if (emailInput && '{{ editing_personnel.email }}') {
+            emailInput.value = '{{ editing_personnel.email }}';
+        }
+        
+        const remarkInput = document.querySelector('textarea[name="remark_' + positionKey + '"]');
+        if (remarkInput && '{{ editing_personnel.remark }}') {
+            remarkInput.value = '{{ editing_personnel.remark }}';
+        }
+    }
+    {% endif %}
+});
+
+// 初始化 Select2 下拉搜索
+// 使用原生 JavaScript 确保兼容性
+document.addEventListener('DOMContentLoaded', function() {
+    // 等待 jQuery 加载
+    if (typeof $ === 'undefined') {
+        console.error('jQuery 未加载！');
+        return;
+    }
+    
+    $('.select2-single').select2({
+        placeholder: '请选择人员',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return '未找到匹配的人员';
+            },
+            searching: function() {
+                return '搜索中...';
+            },
+            inputTooShort: function() {
+                return '请输入字符进行搜索';
+            }
+        },
+        width: '100%'
+    });
+    
+    // 表单提交前调试
+    document.querySelector('form').addEventListener('submit', function(e) {
+        console.log('表单准备提交...');
+        const formData = new FormData(this);
+        console.log('表单数据:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
+        
+        // 检查所有勾选了变化的岗位是否填写了姓名
+        const positions = ['director', 'deputy_director', 'civil_supervisor', 'electrical_supervisor', 'supervisor', 'document_controller', 'witness', 'safety_officer'];
+        let hasError = false;
+        
+        positions.forEach(function(positionKey) {
+            const checkbox = document.getElementById('has_change_' + positionKey);
+            if (checkbox && checkbox.checked) {
+                const nameSelect = document.querySelector('select[name="name_' + positionKey + '"]');
+                if (nameSelect && (!nameSelect.value || nameSelect.value.trim() === '')) {
+                    console.error('岗位 "' + positionKey + '" 已勾选但未选择人员');
+                    hasError = true;
+                    
+                    // 高亮错误字段
+                    nameSelect.closest('.mb-3').classList.add('has-error');
+                }
+            }
+        });
+        
+        if (hasError) {
+            alert('请为所有勾选变化的岗位选择人员！');
+            e.preventDefault();
+            return false;
+        }
+        
+        console.log('表单验证通过，允许提交');
+    });
+});
+</script>
+{% endblock %}

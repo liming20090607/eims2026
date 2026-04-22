@@ -1,0 +1,254 @@
+{% extends 'base/base.html' %}
+
+{% block title %}员工信息管理{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">员工信息管理</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 标题和操作按钮 -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-people"></i> {{ page_title }}
+                </h4>
+                <div class="btn-group" role="group">
+                    <!-- 导出全部按钮 -->
+                    <a href="{% url 'eims_app:employee_export' %}?{% if search_key %}keyword={{ search_key }}&{% endif %}{% if selected_education %}education={{ selected_education }}&{% endif %}{% if selected_ethnic %}ethnic={{ selected_ethnic }}&{% endif %}" class="btn btn-success" id="exportAllBtn">
+                        <i class="bi bi-file-earmark-excel"></i> 导出全部
+                    </a>
+                    <!-- 导出所选按钮 -->
+                    <button type="button" class="btn btn-success ms-2" id="exportSelectedBtn" onclick="exportSelected()">
+                        <i class="bi bi-file-earmark-excel"></i> 导出所选
+                    </button>
+                    <!-- 添加员工按钮 -->
+                    <a href="{% url 'eims_app:employee_add' %}" class="btn btn-primary ms-2">
+                        <i class="bi bi-plus-circle"></i> 添加员工
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选表单 -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get" action="{% url 'eims_app:employee_list' %}">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">搜索关键词</label>
+                        <input type="text" class="form-control" name="keyword" value="{{ search_key }}" placeholder="姓名/编号/手机号">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">学历</label>
+                        <select name="education" class="form-control">
+                            <option value="">全部学历</option>
+                            {% for value, label in EDUCATION_CHOICES %}
+                            <option value="{{ value }}" {% if selected_education == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">民族</label>
+                        <select name="ethnic" class="form-control">
+                            <option value="">全部民族</option>
+                            {% for value, label in ETHNIC_CHOICES %}
+                            <option value="{{ value }}" {% if selected_ethnic == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> 搜索
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <a href="{% url 'eims_app:employee_list' %}" class="btn btn-secondary w-100">
+                            <i class="bi bi-arrow-counterclockwise"></i> 重置
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="card">
+        <div class="card-body">
+            <form id="batchForm" method="post" action="{% url 'eims_app:employee_batch_delete' %}">
+                {% csrf_token %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="40">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelect()">
+                                </th>
+                                <th>人员编号</th>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>身份证号</th>
+                                <th>学历</th>
+                                <th>民族</th>
+                                <th>手机号</th>
+                                <th>行政职务</th>
+                                <th>技术职务</th>
+                                <th>入职时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in page_obj %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="employee_ids" value="{{ employee.id }}" class="item-checkbox">
+                                </td>
+                                <td>{{ employee.employee_code }}</td>
+                                <td><strong>{{ employee.name }}</strong></td>
+                                <td>{{ employee.get_gender_display }}</td>
+                                <td>{{ employee.id_card|default:"-" }}</td>
+                                <td>{{ employee.get_education_display }}</td>
+                                <td>{{ employee.get_ethnic_display }}</td>
+                                <td>{{ employee.mobile }}</td>
+                                <td>{{ employee.admin_position|default:"-" }}</td>
+                                <td>{{ employee.tech_position|default:"-" }}</td>
+                                <td>{{ employee.entry_time|date:"Y-m-d"|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'eims_app:employee_detail' employee.pk %}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i> 详情
+                                    </a>
+                                    <a href="{% url 'eims_app:employee_edit' employee.pk %}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> 编辑
+                                    </a>
+                                    <a href="{% url 'eims_app:employee_delete' employee.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('确认删除该员工信息吗？')">
+                                        <i class="bi bi-trash"></i> 删除
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2">暂无员工信息</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 批量操作按钮 -->
+                {% if page_obj.has_other_pages %}
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <button type="button" class="btn btn-danger" onclick="batchDelete()">
+                        <i class="bi bi-trash"></i> 批量删除
+                    </button>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- 分页 -->
+    {% if page_obj.has_other_pages %}
+    <div class="card mt-3">
+        <div class="card-body">
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&keyword={{ search_key }}&education={{ selected_education }}&ethnic={{ selected_ethnic }}">上一页</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&keyword={{ search_key }}&education={{ selected_education }}&ethnic={{ selected_ethnic }}">下一页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&keyword={{ search_key }}&education={{ selected_education }}&ethnic={{ selected_ethnic }}">末页</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleSelect() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.item-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = selectAll.checked;
+    });
+}
+
+function batchDelete() {
+    const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkboxes.length === 0) {
+        alert('请至少选择一个员工！');
+        return;
+    }
+    
+    if (confirm(`确认删除选中的 ${checkboxes.length} 个员工记录吗？`)) {
+        document.getElementById('batchForm').submit();
+    }
+}
+
+function exportSelected() {
+    const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkboxes.length === 0) {
+        alert('请至少选择一个员工才能导出！');
+        return;
+    }
+    
+    // 创建表单并提交
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "eims_app:employee_export" %}';
+    
+    // 添加 CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken.value;
+        form.appendChild(csrfInput);
+    }
+    
+    // 添加选中的 ID
+    checkboxes.forEach(cb => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'employee_ids';
+        input.value = cb.value;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    
+    // 清理表单（延迟移除，确保提交完成）
+    setTimeout(() => {
+        document.body.removeChild(form);
+    }, 1000);
+}
+</script>
+{% endblock %}

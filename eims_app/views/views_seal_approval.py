@@ -433,10 +433,14 @@ def get_department_personnel_ajax(request):
         department = Department.objects.get(pk=department_id, is_deleted=False)
         
         # 获取该部门的所有人员（从Personnel表，通过department字段匹配）
-        personnel_list = Personnel.objects.filter(
-            department=department.department_name,
-            is_deleted=False
-        ).order_by('name').values('id', 'name', 'personnel_code')
+        personnel_filter = {
+            'department': department.department_name,
+            'is_deleted': False
+        }
+        if hasattr(request, 'tenant') and request.tenant:
+            personnel_filter['tenant_id'] = request.tenant.id
+        
+        personnel_list = Personnel.objects.filter(**personnel_filter).order_by('name').values('id', 'name', 'personnel_code')
         
         personnel_data = list(personnel_list)
         

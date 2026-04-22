@@ -1,0 +1,272 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}人员证书管理{% endblock %}
+
+{% block header_search %}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_jiachengda:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="javascript:void(0);">人证管理</a></li>
+<li class="breadcrumb-item active">人员证书</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 隐藏页脚，最大化视口 */
+    body { padding-bottom: 0 !important; }
+    footer, .footer { display: none !important; height: 0 !important; overflow: hidden !important; }
+    
+    /* 锁定 content-wrapper，禁止外层滚动 */
+    .content-wrapper {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* 统计卡片 - 高度压缩至60% */
+    .stat-card-container {
+        flex-shrink: 0;
+        padding: 0.3rem 1rem 0.2rem 1rem;
+        background: #fff;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        border-radius: 0.5rem;
+        padding: 0.3rem 0.8rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card h5 {
+        font-size: 13px;
+        font-weight: 500;
+        margin: 0 0.3rem 0 0;
+        display: inline-block;
+        opacity: 0.9;
+    }
+    
+    .stat-card h2 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0;
+        display: inline-block;
+    }
+    
+    /* 固定顶部区域 */
+    .fixed-top-section {
+        flex-shrink: 0;
+        padding: 0.2rem 1rem 0 1rem;
+        background: #fff;
+    }
+    
+    /* 标题栏 */
+    .title-bar {
+        background: linear-gradient(135deg, #3a8bc7 0%, #2a6a97 100%);
+        color: white;
+        padding: 0.4rem 1rem;
+        margin: 0 -1rem;
+    }
+    
+    .title-bar h5 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+    
+    /* 筛选栏 */
+    .filter-bar {
+        padding: 0.35rem 0 0.35rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .filter-bar .form-control,
+    .filter-bar .form-select,
+    .filter-bar .btn {
+        height: 37.5px;
+        min-height: 37.5px;
+        font-size: 14px;
+    }
+    
+    /* 可滚动表格区域 */
+    .scrollable-table-section {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0 1rem;
+    }
+    
+    .table-responsive {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    /* 分页容器 */
+    .pagination-container {
+        flex-shrink: 0;
+        padding: 0.5rem 0;
+        border-top: 1px solid #dee2e6;
+        background: #fff;
+        text-align: center;
+    }
+    
+    .pagination .btn {
+        height: 37.5px;
+        min-height: 37.5px;
+        font-size: 14px;
+        margin: 0 2px;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_jiachengda:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="javascript:void(0);">人证管理</a></li>
+<li class="breadcrumb-item active">人员证书</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid content-wrapper" style="padding: 0 !important; margin: 0 !important;">
+    <!-- 统计卡片 -->
+    <div class="stat-card-container">
+        <div class="stat-card">
+            <h5>证书总数</h5>
+            <h2>{{ total_certificates }}</h2>
+        </div>
+    </div>
+
+    <!-- 固定顶部区域 -->
+    <div class="fixed-top-section">
+        <!-- 标题栏 -->
+        <div class="title-bar d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-award me-2"></i>人员证书信息</h5>
+            {% if user.is_superuser %}
+            <a href="{% url 'eims_jiachengda:certificate_add' %}" class="btn btn-sm btn-light" style="height: 37.5px; min-height: 37.5px; display: inline-flex; align-items: center; padding: 0 0.75rem;">
+                <i class="bi bi-plus-circle me-1"></i> 添加证书
+            </a>
+            {% endif %}
+        </div>
+        
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <input type="text" class="form-control form-control-sm" name="keyword" value="{{ selected_keyword }}" placeholder="证书名称/编号" style="min-width: 200px;">
+                </div>
+                <div class="col-auto">
+                    <select name="certificate_type" class="form-select form-select-sm" style="min-width: 150px;">
+                        <option value="">全部类型</option>
+                        <option value="qualification" {% if selected_certificate_type == 'qualification' %}selected{% endif %}>职业资格证书</option>
+                        <option value="training" {% if selected_certificate_type == 'training' %}selected{% endif %}>培训证书</option>
+                        <option value="academic" {% if selected_certificate_type == 'academic' %}selected{% endif %}>学历证书</option>
+                        <option value="technical" {% if selected_certificate_type == 'technical' %}selected{% endif %}>专业技术证书</option>
+                        <option value="other" {% if selected_certificate_type == 'other' %}selected{% endif %}>其他证书</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="form-control form-control-sm" name="personnel_code" value="{{ selected_personnel_code }}" placeholder="输入人员编号" style="min-width: 150px;">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm" style="min-width: 80px;">
+                        <i class="bi bi-search me-1"></i>搜索
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 可滚动表格区域 -->
+    <div class="scrollable-table-section">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead style="position: sticky; top: 0; z-index: 100; background: #f8f9fa;">
+                    <tr>
+                        <th>证书编号</th>
+                        <th>人员编号</th>
+                        <th>姓名</th>
+                        <th>证书名称</th>
+                        <th>证书类型</th>
+                        <th>发证机关</th>
+                        <th>发证日期</th>
+                        <th>有效期至</th>
+                        <th style="min-width: 180px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cert in page_obj %}
+                    <tr>
+                        <td>{{ cert.certificate_code }}</td>
+                        <td>{{ cert.personnel_code }}</td>
+                        <td>{{ cert.personnel_name|default:"-" }}</td>
+                        <td>{{ cert.certificate_name }}</td>
+                        <td>
+                            {% if cert.certificate_type == 'qualification' %}职业资格证书
+                            {% elif cert.certificate_type == 'training' %}培训证书
+                            {% elif cert.certificate_type == 'academic' %}学历证书
+                            {% elif cert.certificate_type == 'technical' %}专业技术证书
+                            {% else %}其他证书{% endif %}
+                        </td>
+                        <td>{{ cert.issuing_authority }}</td>
+                        <td>{{ cert.issue_date|date:"Y-m-d" }}</td>
+                        <td>{{ cert.valid_date|date:"Y-m-d"|default:"长期有效" }}</td>
+                        <td>
+                            <a href="{% url 'eims_jiachengda:certificate_detail' cert.pk %}" class="btn btn-sm btn-info" style="height: 32px; min-height: 32px;">
+                                <i class="bi bi-eye"></i> 详情
+                            </a>
+                            {% if user.is_superuser %}
+                            <a href="{% url 'eims_jiachengda:certificate_edit' cert.pk %}" class="btn btn-sm btn-warning" style="height: 32px; min-height: 32px;">
+                                <i class="bi bi-pencil"></i> 编辑
+                            </a>
+                            <a href="{% url 'eims_jiachengda:certificate_delete' cert.pk %}" class="btn btn-sm btn-danger" style="height: 32px; min-height: 32px;" onclick="return confirm('确定删除？')">
+                                <i class="bi bi-trash"></i> 删除
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <div class="d-inline-flex align-items-center gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if selected_keyword %}&keyword={{ selected_keyword }}{% endif %}{% if selected_certificate_type %}&certificate_type={{ selected_certificate_type }}{% endif %}{% if selected_personnel_code %}&personnel_code={{ selected_personnel_code }}{% endif %}" class="btn btn-outline-secondary">首页</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_keyword %}&keyword={{ selected_keyword }}{% endif %}{% if selected_certificate_type %}&certificate_type={{ selected_certificate_type }}{% endif %}{% if selected_personnel_code %}&personnel_code={{ selected_personnel_code }}{% endif %}" class="btn btn-outline-secondary">上一页</a>
+                {% else %}
+                <button class="btn btn-outline-secondary" disabled>首页</button>
+                <button class="btn btn-outline-secondary" disabled>上一页</button>
+                {% endif %}
+                
+                <span class="badge bg-primary" style="font-size: 14px; padding: 6px 12px;">第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页</span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_keyword %}&keyword={{ selected_keyword }}{% endif %}{% if selected_certificate_type %}&certificate_type={{ selected_certificate_type }}{% endif %}{% if selected_personnel_code %}&personnel_code={{ selected_personnel_code }}{% endif %}" class="btn btn-outline-secondary">下一页</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_keyword %}&keyword={{ selected_keyword }}{% endif %}{% if selected_certificate_type %}&certificate_type={{ selected_certificate_type }}{% endif %}{% if selected_personnel_code %}&personnel_code={{ selected_personnel_code }}{% endif %}" class="btn btn-outline-secondary">末页</a>
+                {% else %}
+                <button class="btn btn-outline-secondary" disabled>下一页</button>
+                <button class="btn btn-outline-secondary" disabled>末页</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

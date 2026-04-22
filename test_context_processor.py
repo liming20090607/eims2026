@@ -1,55 +1,60 @@
+"""
+测试 context_processors 是否正确返回租户列表
+"""
 import os
-import sys
 import django
 
-sys.path.insert(0, '/var/www/eims')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings_local_mysql')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 django.setup()
 
-from django.test import RequestFactory
 from django.contrib.auth import get_user_model
+from eims_app.models import Tenant, UserProfile, UserTenantRelation
 from eims_app.context_processors import sidebar_context
+from unittest.mock import Mock
 
 User = get_user_model()
 
-print("=== 测试 sidebar_context 实际执行 ===\n")
+print("=" * 80)
+print("测试 context_processors.sidebar_context")
+print("=" * 80)
 
-# 创建模拟请求
-factory = RequestFactory()
-admin = User.objects.filter(is_superuser=True).first()
+# 测试几个不同类型的用户
+test_users = [
+    ('root', '超级管理员，有多公司关联'),
+    ('admin', '超级管理员，单公司关联'),
+    ('秦方玉', '普通用户，单公司关联'),
+    ('黎绍昆', '超级管理员，多公司关联'),
+]
 
-if admin:
-    # 创建带认证用户的请求
-    request = factory.get('/')
-    request.user = admin
-    request.session = {'sidebar_collapsed': False}
-    
-    print(f"测试用户: {admin.username} (is_superuser={admin.is_superuser})")
-    print(f"用户认证状态: {request.user.is_authenticated}")
-    
-    # 执行 context processor
+for username, description in test_users:
     try:
-        context = sidebar_context(request)
-        print(f"\nContext 返回结果:")
-        print(f"  sidebar_collapsed: {context.get('sidebar_collapsed')}")
-        print(f"  pending_count: {context.get('pending_count')}")
+        user = User.objects.get(username=username)
         
-        tenants_all = context.get('tenants_all', [])
-        print(f"  tenants_all 类型: {type(tenants_all)}")
-        print(f"  tenants_all 数量: {tenants_all.count() if hasattr(tenants_all, 'count') else len(tenants_all)}")
+        # 创建模拟 request 对象
+        mock_request = Mock()
+        mock_request.user = user
+        mock_request.session = {'tenant_id': 2}  # 模拟已选择租户
         
-        if hasattr(tenants_all, 'all'):
-            for t in tenants_all.all():
-                print(f"    - {t.name} (ID={t.id})")
-        else:
-            for t in tenants_all:
-                print(f"    - {t.name} (ID={t.id})")
-                
+        # 调用 context_processors
+        context = sidebar_context(mock_request)
+        
+        print(f"\n用户: {username}")
+        print(f"说明: {description}")
+        print(f"  - 是超级管理员: {user.is_superuser}")
+        print(f"  - tenants_all 数量: {len(context['tenants_all'])}")
+        print(f"  - 可切换的公司:")
+        for tenant in context['tenants_all']:
+            current_marker = " (当前)" if tenant.id == 2 else ""
+            print(f"    • {tenant.name}{current_marker}")
+        print(f"  - 启用模块数: {len(context['enabled_module_codes'])}")
+        
+    except User.DoesNotExist:
+        print(f"\n✗ 用户 '{username}' 不存在")
     except Exception as e:
-        print(f"\n✗ 执行 context processor 时出错:")
+        print(f"\n✗ 错误: {e}")
         import traceback
         traceback.print_exc()
-else:
-    print("✗ 未找到超级管理员用户")
 
-print("\n✅ 测试完成！")
+print("\n" + "=" * 80)
+print("测试完成")
+print("=" * 80)

@@ -1,30 +1,45 @@
+#!/usr/bin/env python
+"""
+检查各数据库中的人员数据
+"""
 import os
-import django
+import sys
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import django
 django.setup()
 
-from eims_app.models import Personnel, ProjectDetail
+from eims_app.models import Personnel, Tenant
 
-print('=== Personnel Table (sample) ===')
-personnel_list = Personnel.objects.filter(is_deleted=False)[:10]
-for p in personnel_list:
-    print(f'ID={p.id}, code={p.personnel_code}, name={p.name}')
+print("=" * 70)
+print("检查各数据库中的人员数据")
+print("=" * 70)
 
-print('\n=== ProjectDetail Table (sample with personnel) ===')
-projects = ProjectDetail.objects.exclude(
-    project_director=''
-).exclude(
-    project_manager=''
-)[:15]
-for proj in projects:
-    print(f'ID={proj.id}, project_code={proj.project_code}, director={proj.project_director}, manager={proj.project_manager}')
+# 检查各数据库
+databases = ['default', 'dingce', 'shengchang', 'jiachengda']
 
-print('\n=== Summary ===')
-total_personnel = Personnel.objects.count()
-total_projects_with_director = ProjectDetail.objects.exclude(project_director='').count()
-total_projects_with_manager = ProjectDetail.objects.exclude(project_manager='').count()
+for db_name in databases:
+    print(f"\n--- 数据库: {db_name} ---")
+    try:
+        personnel_list = Personnel.objects.using(db_name).filter(is_deleted=False)
+        count = personnel_list.count()
+        print(f"  总人数: {count}")
+        
+        if count > 0:
+            for p in personnel_list[:5]:
+                print(f"  - {p.personnel_code}: {p.name} (部门: {p.department}) (tenant_id: {p.tenant_id if hasattr(p, 'tenant_id') else 'N/A'})")
+            if count > 5:
+                print(f"  ... 还有 {count - 5} 人")
+    except Exception as e:
+        print(f"  错误: {e}")
 
-print(f'Total active personnel: {total_personnel}')
-print(f'Projects with director: {total_projects_with_director}')
-print(f'Projects with manager: {total_projects_with_manager}')
+# 检查租户信息
+print(f"\n--- 租户信息 (root_admin) ---")
+try:
+    tenants = Tenant.objects.using('root_admin').all()
+    for t in tenants:
+        print(f"  - {t.code}: {t.name} (ID: {t.id})")
+except Exception as e:
+    print(f"  错误: {e}")

@@ -1,0 +1,264 @@
+================================================================================
+造价咨询7个子模块 - 完整实施方案
+================================================================================
+
+日期：2026-03-21
+状态：进行中 (数据模型和表单已完成)
+
+================================================================================
+已完成的模块
+================================================================================
+
+✅ 数据模型 (model_cost_sub_modules.py)
+   - CostProjectInfo (项目信息)
+   - CostTaskPlan (任务计划)
+   - CostTaskImplementation (任务实施)
+   - CostReviewResult (审核成果)
+   - CostPaymentStatus (收费情况)
+   - CostProjectArchive (项目存档)
+
+✅ 表单类 (form_cost_sub_modules.py)
+   - CostProjectInfoForm
+   - CostTaskPlanForm
+   - CostTaskImplementationForm
+   - CostReviewResultForm
+   - CostPaymentStatusForm
+   - CostProjectArchiveForm
+
+✅ 数据库迁移
+   - 迁移文件：0007_add_cost_sub_modules.py
+   - 状态：已应用
+
+================================================================================
+需要继续完成的工作
+================================================================================
+
+1. 创建视图文件 (views_cost_sub_modules.py)
+   每个子模块需要以下视图函数：
+   - *_list (列表页 - 带搜索、筛选、分页、排序)
+   - *_detail (详情页)
+   - *_add (新增页)
+   - *_edit (编辑页)
+   - *_delete (删除)
+   - *_batch_delete (批量删除)
+   - *_import (导入Excel)
+   - *_export (导出Excel)
+   
+   共计：6个子模块 × 8个视图函数 = 48个视图函数
+
+2. 配置URL路由 (urls.py)
+   每个子模块需要8个URL路由
+   共计：6个子模块 × 8个路由 = 48个URL路由
+
+3. 创建模板文件
+   每个子模块需要3个主要模板：
+   - list.html (列表页)
+   - form.html (新增/编辑页)
+   - detail.html (详情页)
+   
+   共计：6个子模块 × 3个模板 = 18个模板文件
+   
+   模板目录结构：
+   eims_app/templates/cost_consulting/
+   ├── project_info/
+   │   ├── list.html
+   │   ├── form.html
+   │   └── detail.html
+   ├── task_plan/
+   │   ├── list.html
+   │   ├── form.html
+   │   └── detail.html
+   ├── task_implementation/
+   │   ├── list.html
+   │   ├── form.html
+   │   └── detail.html
+   ├── review_result/
+   │   ├── list.html
+   │   ├── form.html
+   │   └── detail.html
+   ├── payment_status/
+   │   ├── list.html
+   │   ├── form.html
+   │   └── detail.html
+   └── project_archive/
+       ├── list.html
+       ├── form.html
+       └── detail.html
+
+4. 更新侧边栏菜单 (base.html)
+   在"造价咨询"一级模块下添加7个二级子模块：
+   - 项目台账 (已有)
+   - 合同管理 (已有)
+   - 产值回款 (已有)
+   - 项目信息 (新增)
+   - 任务计划 (新增)
+   - 任务实施 (新增)
+   - 审核成果 (新增)
+   - 收费情况 (新增)
+   - 项目存档 (新增)
+
+================================================================================
+实现细节说明
+================================================================================
+
+视图函数实现模式 (参照现有 views_cost_project_ledger.py)：
+
+@login_required
+def cost_project_info_list(request):
+    """项目信息列表"""
+    queryset = CostProjectInfo.objects.all()
+    queryset = filter_queryset_by_tenant(queryset, request)
+    
+    # 搜索筛选
+    search_key = request.GET.get('search', '')
+    if search_key:
+        queryset = queryset.filter(
+            Q(project_code__icontains=search_key) |
+            Q(project_name__icontains=search_key)
+        )
+    
+    # 排序
+    sort_field = request.GET.get('sort', '-created_at')
+    queryset = queryset.order_by(sort_field)
+    
+    # 分页
+    paginator = Paginator(queryset, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_key': search_key,
+    }
+    return render(request, 'cost_consulting/project_info/list.html', context)
+
+
+模板样式参照：
+- 列表页：参照 eims_app/templates/cost_consulting/contract_management/list.html
+- 表单页：参照 eims_app/templates/cost_consulting/contract_management/form.html
+- 详情页：参照 eims_app/templates/cost_consulting/contract_management/detail.html
+
+样式特点：
+- 紧凑布局，减少空白区域
+- 可滚动表格，支持水平和垂直滚动
+- 固定表头
+- 响应式设计
+- 统计按钮显示总数
+
+================================================================================
+推荐实施方式
+================================================================================
+
+建议分步骤实施：
+
+方案A：完整实施 (推荐)
+- 先完成一个子模块 (如"项目信息") 作为样板
+- 验证功能正常后，复制到其他5个子模块
+- 修改字段和模板内容
+- 预计时间：2-3小时
+
+方案B：简化实施
+- 只创建列表页和新增/编辑页
+- 详情页与表单页合并
+- 暂时不实现导入/导出功能
+- 预计时间：1-1.5小时
+
+方案C：分批实施
+- 第一批：项目信息、任务计划、任务实施 (3个)
+- 第二批：审核成果、收费情况、项目存档 (3个)
+- 每批完成后测试验证
+- 预计时间：分2次完成，每次1-1.5小时
+
+================================================================================
+关键技术要点
+================================================================================
+
+1. 租户数据隔离
+   所有查询必须使用 filter_queryset_by_tenant()
+
+2. 自动填充字段
+   - 项目编号：从CostProjectInfo自动带出
+   - 更新时间：auto_now=True
+   - 操作人：从request.user获取
+
+3. Excel导入导出
+   使用openpyxl库
+   导入：支持.xlsx和.xls格式
+   导出：生成带表头的Excel文件
+
+4. 批量操作
+   - 批量删除：使用checkbox选择多条记录
+   - CSRF保护：所有POST请求需要CSRF token
+
+5. URL命名规范
+   cost_project_info_list
+   cost_project_info_add
+   cost_project_info_edit
+   cost_project_info_delete
+   等等...
+
+================================================================================
+下一步操作建议
+================================================================================
+
+1. 创建 views_cost_sub_modules.py 文件
+   - 先实现 cost_project_info 的8个视图函数
+   - 测试验证
+   - 复制到其他5个子模块
+
+2. 在 urls.py 添加URL路由
+   - 为每个子模块添加8个路由
+
+3. 创建模板目录和文件
+   - 创建6个子目录
+   - 每个目录创建3个模板文件
+
+4. 更新侧边栏菜单
+   - 在 base.html 中添加7个二级子模块链接
+
+5. 本地测试验证
+   - 测试所有CRUD操作
+   - 测试导入导出
+   - 测试租户数据隔离
+
+================================================================================
+现有参考文件
+================================================================================
+
+模型文件：
+- eims_app/models/model_cost_sub_modules.py
+
+表单文件：
+- eims_app/forms/form_cost_sub_modules.py
+
+视图文件参考：
+- eims_app/views/views_cost_project_ledger.py
+- eims_app/views/views_cost_contract_management.py
+- eims_app/views/views_cost_output_payment.py
+
+模板文件参考：
+- eims_app/templates/cost_consulting/contract_management/list.html
+- eims_app/templates/cost_consulting/contract_management/form.html
+- eims_app/templates/cost_consulting/contract_management/detail.html
+
+URL配置参考：
+- eims_app/urls.py (第365-418行的造价咨询路由)
+
+================================================================================
+注意事项
+================================================================================
+
+1. 所有新创建的视图都需要添加 @login_required 装饰器
+2. 所有查询都需要使用 filter_queryset_by_tenant() 进行租户隔离
+3. 表单保存时需要自动设置 tenant 字段
+4. 项目编号字段在新增时需要验证唯一性
+5. 日期字段使用 HTML5 date input 类型
+6. 金额字段使用 DecimalField，注意精度设置
+7. 文件上传字段需要配置 MEDIA_URL 和 MEDIA_ROOT
+8. 所有模板需要继承 'base/base.html'
+9. 侧边栏菜单需要添加 active 状态标记
+10. 导入导出功能需要处理中文编码问题
+
+================================================================================
+END OF DOCUMENT
+================================================================================

@@ -1,0 +1,226 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目台账</a></li>
+<li class="breadcrumb-item active">导入数据</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .import-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+    .upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 48px;
+        text-align: center;
+        margin: 24px 0;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    .upload-area:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    .upload-area.has-file {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+    .upload-icon {
+        font-size: 48px;
+        color: #667eea;
+        margin-bottom: 16px;
+    }
+    .file-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        display: none;
+    }
+    .file-info.show {
+        display: block;
+    }
+    .template-list {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .field-tag {
+        display: inline-block;
+        background: #e9ecef;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        margin: 4px;
+    }
+    .field-required {
+        background: #ffc107;
+        color: #000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="mb-4">
+                <a href="{% url 'eims_app:project_ledger_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+            
+            <div class="import-card">
+                <h3 class="mb-4"><i class="bi bi-upload me-2"></i>{{ title }}</h3>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>导入说明：</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>支持 Excel 文件格式（.xlsx, .xls）</li>
+                        <li>第一行为表头，从第二行开始为数据</li>
+                        <li>必填字段：项目编号、合同编号、项目名称、合同甲方、合同乙方</li>
+                        <li>如果项目编号已存在，将自动更新该项目的数据</li>
+                        <li>导入成功后会显示导入结果</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>导入前建议：</strong>
+                    <a href="/debug_import/" target="_blank" class="btn btn-sm btn-warning ms-2">
+                        <i class="bi bi-bug me-1"></i>使用调试工具检查
+                    </a>
+                    <a href="/static/import_quick_help.html" target="_blank" class="btn btn-sm btn-info ms-2">
+                        <i class="bi bi-question-circle me-1"></i>查看快速帮助
+                    </a>
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" id="importForm">
+                    {% csrf_token %}
+                    
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('excelFile').click()">
+                        <i class="bi bi-cloud-upload upload-icon"></i>
+                        <h5>点击选择 Excel 文件</h5>
+                        <p class="text-muted mb-0">支持格式：.xlsx, .xls</p>
+                        <input type="file" id="excelFile" name="excel_file" accept=".xlsx,.xls" style="display: none;" onchange="handleFileSelect(event)">
+                    </div>
+                    
+                    <div class="file-info" id="fileInfo">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-file-earmark-excel text-success me-2"></i>
+                                <strong id="fileName"></strong>
+                                <span id="fileSize" class="text-muted ms-2"></span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile()">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-list">
+                        <h5 class="mb-3"><i class="bi bi-table me-2"></i>导入模板字段</h5>
+                        <div class="mb-3">
+                            <strong class="text-danger">必填字段：</strong>
+                            <span class="field-tag field-required">项目编号 *</span>
+                            <span class="field-tag field-required">合同编号 *</span>
+                            <span class="field-tag field-required">项目名称 *</span>
+                            <span class="field-tag field-required">合同甲方 *</span>
+                            <span class="field-tag field-required">合同乙方 *</span>
+                        </div>
+                        <div>
+                            <strong>可选字段：</strong>
+                            {% for field in template_fields %}
+                            <span class="field-tag">{{ field }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex gap-2">
+                                <a href="{% static 'templates/project_ledger_import_template.xlsx' %}" class="btn btn-sm btn-outline-success" download>
+                                    <i class="bi bi-file-earmark-excel me-1"></i>下载 Excel 模板
+                                </a>
+                                <a href="{% static 'templates/project_ledger_import_template.csv' %}" class="btn btn-sm btn-outline-secondary" download>
+                                    <i class="bi bi-file-text me-1"></i>下载 CSV 模板
+                                </a>
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                <i class="bi bi-info-circle me-1"></i>
+                                推荐使用 Excel 模板（.xlsx），包含详细填写说明
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                            <i class="bi bi-check-circle me-1"></i>开始导入
+                        </button>
+                        <a href="{% url 'eims_app:project_ledger_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // 显示文件信息
+        uploadArea.classList.add('has-file');
+        fileInfo.classList.add('show');
+        fileName.textContent = file.name;
+        fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+        
+        // 启用提交按钮
+        submitBtn.disabled = false;
+    }
+}
+
+function removeFile() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileInput = document.getElementById('excelFile');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // 重置
+    uploadArea.classList.remove('has-file');
+    fileInfo.classList.remove('show');
+    fileInput.value = '';
+    submitBtn.disabled = true;
+}
+
+// 防止重复提交
+document.getElementById('importForm').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn.disabled) {
+        e.preventDefault();
+        return;
+    }
+    
+    // 显示加载状态
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>导入中...';
+});
+</script>
+{% endblock %}

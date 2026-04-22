@@ -14,6 +14,7 @@ from .views.views_output_payment import (
 )
 from .views import views_contract
 from .views.views_index import IndexView, system_navigation, module_welcome
+from .views import views_cost_sub_modules
 from .views.views_contract import (
     contract_list, contract_add, contract_edit, 
     contract_delete, contract_detail, contract_batch_delete,
@@ -84,6 +85,7 @@ from .views.views_dynamic_choice import (
     add_dynamic_choice, get_dynamic_choices, manage_dynamic_choice
 )
 from .views import views_project_ledger, views_contract_management
+from .views import views_cost_sub_modules
 from .views.views_sms_auth import (
     send_sms_code, sms_login, change_phone, reset_password_by_sms
 )
@@ -102,7 +104,8 @@ from .views.views_wechat_login import (
     wechat_bind_account, wechat_check_status,
     wechat_unbind, wechat_my_bindings
 )
-from .views.views_tenant import tenant_select, tenant_switch
+from .views.views_tenant import tenant_select, tenant_switch, tenant_list
+from .views.views_user_management import user_management, sync_user_from_employee
 from django.views.generic import RedirectView
 
 # 导入调试工具（临时使用）
@@ -121,7 +124,7 @@ app_name = 'eims_app'
 
 urlpatterns = [
     # 首页
-    path('', IndexView.as_view(), name='eims_index'),
+    path('', views_cost_sub_modules.cost_project_info_list, name='eims_index'),
     path('system/navigation/', system_navigation, name='system_navigation'),
     
     # 工程业务模块路由（待开发）
@@ -135,6 +138,13 @@ urlpatterns = [
     # 租户（公司）选择路由
     path('tenant/select/', tenant_select, name='tenant_select'),
     path('tenant/switch/', tenant_switch, name='tenant_switch'),
+    
+    # 租户（公司）管理路由 - Root超级管理员专属
+    path('tenants/', tenant_list, name='tenant_list'),
+    
+    # 用户管理路由 - Root超级管理员专属
+    path('users/', user_management, name='user_management'),
+    path('users/sync/<int:employee_id>/', sync_user_from_employee, name='sync_user_from_employee'),
     
     # 项目管理路由
     path('contract/contract/', RedirectView.as_view(url='/contract/', permanent=True)),
@@ -217,18 +227,17 @@ urlpatterns = [
     path('employee/export/', employee_export, name='employee_export'),
     
     path('personnel/', views_personnel.personnel_list, name='personnel_list'),
+    path('personnel/list/', views_personnel.personnel_list, name='personnel_list_full'),
     path('personnel/navigation/', views_personnel.personnel_navigation, name='personnel_navigation'),
     path('personnel/add/', views_personnel.personnel_add, name='personnel_add'),
-    path('personnel/<int:pk>/', views_personnel.personnel_detail, name='personnel_detail'),
-    path('personnel/<int:pk>/edit/', views_personnel.personnel_edit, name='personnel_edit'),
-    path('personnel/<int:pk>/delete/', views_personnel.personnel_delete, name='personnel_delete'),
-    path('personnel/batch-delete/', views_personnel.personnel_batch_delete, name='personnel_batch_delete'),
+    path('personnel/destination/', views_personnel.personnel_destination, name='personnel_destination'),
     path('personnel/import/', views_personnel.personnel_import, name='personnel_import'),
     path('personnel/import/template/', views_personnel.personnel_import_template, name='personnel_import_template'),
     path('personnel/export/', views_personnel.personnel_export, name='personnel_export'),
-    
-    # 人员去向路由
-    path('personnel/destination/', views_personnel.personnel_destination, name='personnel_destination'),
+    path('personnel/batch-delete/', views_personnel.personnel_batch_delete, name='personnel_batch_delete'),
+    path('personnel/<int:pk>/', views_personnel.personnel_detail, name='personnel_detail'),
+    path('personnel/<int:pk>/edit/', views_personnel.personnel_edit, name='personnel_edit'),
+    path('personnel/<int:pk>/delete/', views_personnel.personnel_delete, name='personnel_delete'),
     
     # 文件管理路由
     path('file_manage/', file_list, name='file_manage_list'),
@@ -379,6 +388,79 @@ urlpatterns = [
     path('contract_management/export/', views_contract_management.contract_management_export, name='contract_management_export'),
     path('contract_management/batch_delete/', views_contract_management.contract_management_batch_delete, name='contract_management_batch_delete'),
     path('contract_management/<int:pk>/preview-contract/', views_contract_management.preview_contract_text_contract, name='preview_contract_contract'),
+    
+    # 造价咨询 - 项目信息子模块路由
+    path('cost_project_info/', views_cost_sub_modules.cost_project_info_list, name='cost_project_info_list'),
+    path('cost_project_info/add/', views_cost_sub_modules.cost_project_info_add, name='cost_project_info_add'),
+    path('cost_project_info/<int:pk>/', views_cost_sub_modules.cost_project_info_detail, name='cost_project_info_detail'),
+    path('cost_project_info/<int:pk>/edit/', views_cost_sub_modules.cost_project_info_edit, name='cost_project_info_edit'),
+    path('cost_project_info/<int:pk>/delete/', views_cost_sub_modules.cost_project_info_delete, name='cost_project_info_delete'),
+    path('cost_project_info/batch-delete/', views_cost_sub_modules.cost_project_info_batch_delete, name='cost_project_info_batch_delete'),
+    path('cost_project_info/export/', views_cost_sub_modules.cost_project_info_export, name='cost_project_info_export'),
+    path('cost_project_info/import/', views_cost_sub_modules.cost_project_info_import, name='cost_project_info_import'),
+    path('cost_project_info/export-template/', views_cost_sub_modules.cost_project_info_export_template, name='cost_project_info_export_template'),
+    # API 路由
+    path('api/cost-project-info/<int:pk>/', views_cost_sub_modules.cost_project_info_api, name='cost_project_info_api'),
+    
+    # 造价咨询 - 任务计划子模块路由
+    path('cost_task_plan/', views_cost_sub_modules.cost_task_plan_list, name='cost_task_plan_list'),
+    path('cost_task_plan/add/', views_cost_sub_modules.cost_task_plan_add, name='cost_task_plan_add'),
+    path('cost_task_plan/<int:pk>/', views_cost_sub_modules.cost_task_plan_detail, name='cost_task_plan_detail'),
+    path('cost_task_plan/<int:pk>/edit/', views_cost_sub_modules.cost_task_plan_edit, name='cost_task_plan_edit'),
+    path('cost_task_plan/<int:pk>/delete/', views_cost_sub_modules.cost_task_plan_delete, name='cost_task_plan_delete'),
+    path('cost_task_plan/batch-delete/', views_cost_sub_modules.cost_task_plan_batch_delete, name='cost_task_plan_batch_delete'),
+    path('cost_task_plan/export/', views_cost_sub_modules.cost_task_plan_export, name='cost_task_plan_export'),
+    
+    # 造价咨询 - 任务实施子模块路由
+    path('cost_task_implementation/', views_cost_sub_modules.cost_task_implementation_list, name='cost_task_implementation_list'),
+    path('cost_task_implementation/add/', views_cost_sub_modules.cost_task_implementation_add, name='cost_task_implementation_add'),
+    path('cost_task_implementation/<int:pk>/', views_cost_sub_modules.cost_task_implementation_detail, name='cost_task_implementation_detail'),
+    path('cost_task_implementation/<int:pk>/edit/', views_cost_sub_modules.cost_task_implementation_edit, name='cost_task_implementation_edit'),
+    path('cost_task_implementation/<int:pk>/delete/', views_cost_sub_modules.cost_task_implementation_delete, name='cost_task_implementation_delete'),
+    path('cost_task_implementation/batch-delete/', views_cost_sub_modules.cost_task_implementation_batch_delete, name='cost_task_implementation_batch_delete'),
+    path('cost_task_implementation/export/', views_cost_sub_modules.cost_task_implementation_export, name='cost_task_implementation_export'),
+    
+    # 造价咨询 - 审核成果子模块路由
+    path('cost_review_result/', views_cost_sub_modules.cost_review_result_list, name='cost_review_result_list'),
+    path('cost_review_result/add/', views_cost_sub_modules.cost_review_result_add, name='cost_review_result_add'),
+    path('cost_review_result/<int:pk>/', views_cost_sub_modules.cost_review_result_detail, name='cost_review_result_detail'),
+    path('cost_review_result/<int:pk>/edit/', views_cost_sub_modules.cost_review_result_edit, name='cost_review_result_edit'),
+    path('cost_review_result/<int:pk>/delete/', views_cost_sub_modules.cost_review_result_delete, name='cost_review_result_delete'),
+    path('cost_review_result/batch-delete/', views_cost_sub_modules.cost_review_result_batch_delete, name='cost_review_result_batch_delete'),
+    path('cost_review_result/export/', views_cost_sub_modules.cost_review_result_export, name='cost_review_result_export'),
+    
+    # 造价咨询 - 收费情况子模块路由
+    path('cost_payment_status/', views_cost_sub_modules.cost_payment_status_list, name='cost_payment_status_list'),
+    path('cost_payment_status/add/', views_cost_sub_modules.cost_payment_status_add, name='cost_payment_status_add'),
+    path('cost_payment_status/<int:pk>/', views_cost_sub_modules.cost_payment_status_detail, name='cost_payment_status_detail'),
+    path('cost_payment_status/<int:pk>/edit/', views_cost_sub_modules.cost_payment_status_edit, name='cost_payment_status_edit'),
+    path('cost_payment_status/<int:pk>/delete/', views_cost_sub_modules.cost_payment_status_delete, name='cost_payment_status_delete'),
+    path('cost_payment_status/batch-delete/', views_cost_sub_modules.cost_payment_status_batch_delete, name='cost_payment_status_batch_delete'),
+    path('cost_payment_status/export/', views_cost_sub_modules.cost_payment_status_export, name='cost_payment_status_export'),
+    
+    # 造价咨询 - 项目存档子模块路由
+    path('cost_project_archive/', views_cost_sub_modules.cost_project_archive_list, name='cost_project_archive_list'),
+    path('cost_project_archive/add/', views_cost_sub_modules.cost_project_archive_add, name='cost_project_archive_add'),
+    path('cost_project_archive/<int:pk>/', views_cost_sub_modules.cost_project_archive_detail, name='cost_project_archive_detail'),
+    path('cost_project_archive/<int:pk>/edit/', views_cost_sub_modules.cost_project_archive_edit, name='cost_project_archive_edit'),
+    path('cost_project_archive/<int:pk>/delete/', views_cost_sub_modules.cost_project_archive_delete, name='cost_project_archive_delete'),
+    path('cost_project_archive/batch-delete/', views_cost_sub_modules.cost_project_archive_batch_delete, name='cost_project_archive_batch_delete'),
+    path('cost_project_archive/export/', views_cost_sub_modules.cost_project_archive_export, name='cost_project_archive_export'),
+    
+    # 造价咨询 - 酬劳分配子模块路由
+    path('cost_remuneration_distribution/', views_cost_sub_modules.cost_remuneration_distribution_list, name='cost_remuneration_distribution_list'),
+    path('cost_remuneration_distribution/add/', views_cost_sub_modules.cost_remuneration_distribution_add, name='cost_remuneration_distribution_add'),
+    path('cost_remuneration_distribution/<int:pk>/', views_cost_sub_modules.cost_remuneration_distribution_detail, name='cost_remuneration_distribution_detail'),
+    path('cost_remuneration_distribution/<int:pk>/edit/', views_cost_sub_modules.cost_remuneration_distribution_edit, name='cost_remuneration_distribution_edit'),
+    path('cost_remuneration_distribution/<int:pk>/delete/', views_cost_sub_modules.cost_remuneration_distribution_delete, name='cost_remuneration_distribution_delete'),
+    path('cost_remuneration_distribution/batch-delete/', views_cost_sub_modules.cost_remuneration_distribution_batch_delete, name='cost_remuneration_distribution_batch_delete'),
+    path('cost_remuneration_distribution/export/', views_cost_sub_modules.cost_remuneration_distribution_export, name='cost_remuneration_distribution_export'),
+    
+    # 造价咨询 - 提醒通知路由
+    path('api/cost-reminders/unread-count/', views_cost_sub_modules.get_unread_reminder_count, name='get_unread_reminder_count'),
+    path('api/cost-reminders/mark-read/<int:pk>/', views_cost_sub_modules.mark_reminder_read, name='mark_reminder_read'),
+    path('api/cost-reminders/snooze/', views_cost_sub_modules.snooze_reminder, name='snooze_reminder'),
+    path('api/cost-reminders/ignore/', views_cost_sub_modules.ignore_reminder, name='ignore_reminder'),
     
     # 短信认证相关路由
     path('api/sms/send-code/', send_sms_code, name='send_sms_code'),

@@ -18,6 +18,13 @@ from ..forms.form_monthly_report import MonthlyReportForm, MonthlyReportFilterFo
 def monthly_report_list(request):
     """月度报告列表页面"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 筛选表单
     filter_form = MonthlyReportFilterForm(request.GET or None)
     
@@ -281,8 +288,12 @@ def monthly_report_dashboard(request):
     # 获取搜索参数
     search_query = request.GET.get('search', '').strip()
     
-    # 获取所有项目（显示所有项目，不限制）
-    projects = ProjectDetail.objects.all()
+    # 获取所有项目（按租户过滤）
+    project_filter = {'is_deleted': False}
+    if hasattr(request, 'tenant') and request.tenant:
+        project_filter['tenant_id'] = request.tenant.id
+    
+    projects = ProjectDetail.objects.filter(**project_filter)
     
     # 如果有搜索关键词，进行模糊搜索
     if search_query:

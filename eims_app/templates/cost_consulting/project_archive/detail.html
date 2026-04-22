@@ -1,0 +1,234 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}项目存档详情 - {{ object.project_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container-fluid {
+        padding: 10px !important;
+        max-width: 100% !important;
+    }
+    
+    .card {
+        margin-bottom: 10px !important;
+    }
+    
+    .card-header {
+        padding: 8px 12px !important;
+    }
+    
+    .card-body {
+        padding: 12px !important;
+    }
+    
+    /* 紧凑型横向布局 */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 6px;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 10px;
+        background: #f8f9fa;
+        border-radius: 3px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 100px;
+    }
+    
+    .detail-label::after {
+        content: ":";
+        margin-left: 2px;
+    }
+    
+    .detail-value {
+        color: #212529;
+        font-size: 0.85rem;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 4px;
+    }
+    
+    .detail-item-full {
+        grid-column: 1 / -1;
+    }
+    
+    .section-title {
+        grid-column: 1 / -1;
+        font-weight: 700;
+        color: #0d6efd;
+        font-size: 0.95rem;
+        padding: 8px 10px 4px 10px;
+        margin-top: 8px;
+        border-bottom: 2px solid #0d6efd;
+    }
+    
+    .section-title:first-child {
+        margin-top: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 面包屑导航 -->
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:module_cost' %}">造价咨询</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:cost_project_archive_list' %}">项目存档</a></li>
+            <li class="breadcrumb-item active">详情</li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">项目存档详情</h6>
+            <a href="{% url 'eims_app:cost_project_archive_list' %}" class="btn btn-sm btn-secondary">
+                <i class="bi bi-arrow-left"></i> 返回列表
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="detail-grid">
+                <!-- 项目基本信息 -->
+                <div class="section-title">项目基本信息</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">项目编号</span>
+                    <span class="detail-value">{{ object.project_code|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">项目名称</span>
+                    <span class="detail-value">{{ object.project_name|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">项目类型</span>
+                    <span class="detail-value">{{ object.get_project_type_display|default:"-" }}</span>
+                </div>
+                
+                <!-- 存档状态 -->
+                <div class="section-title">存档状态</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">存档状态</span>
+                    <span class="detail-value">
+                        {% if object.archive_status == 'not_archived' %}
+                            <span class="badge bg-secondary">未归档</span>
+                        {% elif object.archive_status == 'archiving' %}
+                            <span class="badge bg-info text-dark">归档中</span>
+                        {% elif object.archive_status == 'pending_receive' %}
+                            <span class="badge bg-primary">待接收</span>
+                        {% elif object.archive_status == 'rejected' %}
+                            <span class="badge bg-danger">退回</span>
+                        {% elif object.archive_status == 'archived' %}
+                            <span class="badge bg-success">已归档</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark">{{ object.get_archive_status_display|default:"-" }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">存档日期</span>
+                    <span class="detail-value">{{ object.archive_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">审批状态</span>
+                    <span class="detail-value">
+                        {% if object.approval_status == 'draft' %}
+                        <span class="badge bg-secondary">草稿</span>
+                        {% elif object.approval_status == 'pending_approval' %}
+                        <span class="badge bg-warning text-dark">待审批</span>
+                        {% elif object.approval_status == 'approved' %}
+                        <span class="badge bg-success">已通过</span>
+                        {% elif object.approval_status == 'rejected' %}
+                        <span class="badge bg-danger">已退回</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark">{{ object.get_approval_status_display|default:"-" }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- 存档类型 -->
+                <div class="section-title">存档类型</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">电子档案</span>
+                    <span class="detail-value">
+                        {% if object.archive_electronic %}
+                            <span class="badge bg-success">是</span>
+                        {% else %}
+                            <span class="badge bg-secondary">否</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">纸质档案</span>
+                    <span class="detail-value">
+                        {% if object.archive_paper %}
+                            <span class="badge bg-success">是</span>
+                        {% else %}
+                            <span class="badge bg-secondary">否</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">完整存档</span>
+                    <span class="detail-value">
+                        {% if object.archive_complete %}
+                            <span class="badge bg-success">是</span>
+                        {% else %}
+                            <span class="badge bg-secondary">否</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- 存档位置 -->
+                <div class="section-title">存档位置</div>
+                
+                <div class="detail-item detail-item-full">
+                    <span class="detail-label">存档位置</span>
+                    <span class="detail-value">{{ object.archive_location|default:"-" }}</span>
+                </div>
+                
+                <!-- 系统信息 -->
+                <div class="section-title">系统信息</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">创建时间</span>
+                    <span class="detail-value">{{ object.created_at|date:"Y-m-d H:i:s"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">更新时间</span>
+                    <span class="detail-value">{{ object.update_time|date:"Y-m-d H:i:s"|default:"-" }}</span>
+                </div>
+                
+                <!-- 备注 -->
+                <div class="detail-item detail-item-full">
+                    <span class="detail-label">存档备注</span>
+                    <span class="detail-value">{{ object.archive_remark|default:"-"|linebreaksbr }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

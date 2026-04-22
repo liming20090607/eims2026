@@ -1,0 +1,39 @@
+[
+{
+  "model": "eims_app.monthlyreport",
+  "pk": 2,
+  "fields": {
+    "reporter": 1,
+    "project": 66,
+    "project_code": "2063",
+    "report_year": 2026,
+    "report_month": "2026-03",
+    "status": "submitted",
+    "project_progress": "项目正常推进中",
+    "current_status": "normal_construction",
+    "last_month_cumulative_output": "0.00",
+    "monthly_output_value": "100.00",
+    "current_cumulative_output": "500.00",
+    "last_month_cumulative_payment": "0.00",
+    "monthly_payment": "80.00",
+    "current_cumulative_payment": "400.00",
+    "payment_description": "",
+    "personnel_changes": "",
+    "total_personnel": 0,
+    "current_payment_request": "0.00",
+    "payment_progress": "",
+    "payment_issues": "",
+    "next_month_plan_amount": "0.00",
+    "next_month_plan_detail": "",
+    "next_month_assistance": "",
+    "should_submit_date": "2026-03-25",
+    "actual_submit_date": "2026-03-20",
+    "submit_time": null,
+    "approve_time": null,
+    "approver": null,
+    "reject_reason": "",
+    "create_time": "2026-03-28T06:55:58.167Z",
+    "update_time": "2026-03-28T06:55:58.167Z"
+  }
+}
+]

@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'eims_app.middleware.path_resolver.PathResolverMiddleware',  # 多系统路径解析中间件
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'eims_app.middleware.TenantMiddleware',  # 租户中间件 - 多租户数据隔离
@@ -77,25 +78,76 @@ ROOT_URLCONF = 'urls'
 WSGI_APPLICATION = 'wsgi.application'
 
 # -------------------------- 数据库配置 --------------------------
-# 统一使用 MySQL 数据库（本地和服务器）
+# 使用 MySQL 多数据库架构（多租户系统）
+import pymysql
+pymysql.install_as_MySQLdb()
+
+# 从 .env 文件读取数据库配置
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'eims',
-        'USER': 'root',
-        'PASSWORD': 'root123',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME', 'eims'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'mysql2026!'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         },
-    }
+    },
+    'root_admin': {  # 系统级数据库：租户、用户、权限等
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'eims_root',
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'mysql2026!'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
+    },
+    'dingce': {  # 广西鼎策工程顾问有限责任公司
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'eims_dingce',
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'mysql2026!'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
+    },
+    'shengchang': {  # 广西盛昌工程咨询有限公司
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'eims_shengchang',
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'mysql2026!'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
+    },
+    'jiachengda': {  # 广西嘉诚达工程造价咨询有限公司
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'eims_jiachengda',
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'mysql2026!'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
+    },
 }
 
-# 使用 PyMySQL 作为 MySQL 驱动
-import pymysql
-pymysql.install_as_MySQLdb()
+# 数据库路由器：自动路由到正确的数据库
+DATABASE_ROUTERS = ['eims_app.utils.database_router.CompanyDatabaseRouter']
 
 # -------------------------- 密码验证 --------------------------
 AUTH_PASSWORD_VALIDATORS = [

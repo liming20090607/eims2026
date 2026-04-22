@@ -1,0 +1,84 @@
+<div class="detail-content">
+    <h3 style="margin-bottom: 20px; text-align: center;">合同详情</h3>
+    <button onclick="closeDetail()" style="margin-bottom: 10px;">关闭详情</button>  <!-- 调用common.js中的closeDetail()方法 -->
+    
+    <div class="detail-item">  <!-- 样式与common.css中detail-item对应 -->
+        <label>合同类型：</label>
+        <span>{{ contract.contract_type }}</span>
+    </div>
+    <div class="detail-item">
+        <label>项目编号：</label>
+        <span>{{ contract.project_code }}</span>
+    </div>
+    <div class="detail-item">
+        <label>合同编号：</label>
+        <span>{{ contract.contract_code }}</span>
+    </div>
+    <div class="detail-item">
+        <label>项目名称：</label>
+        <span>{{ contract.project_name }}</span>
+    </div>
+    <div class="detail-item">
+        <label>合同状态：</label>
+        <span>{{ contract.contract_status }}</span>
+    </div>
+    <div class="detail-item">
+        <label>合同甲方：</label>
+        <span>{{ contract.contract_party_a }}</span>
+    </div>
+
+    <div class="detail-item">
+        <label>合同乙方：</label>
+        <span>{{ contract.contract_party_b }}</span>
+    </div>
+    <div class="detail-item">
+        <label>合同总额（万元）：</label>
+        <span>{{ contract.contract_amount }}</span>
+    </div>
+    <div class="detail-item">
+        <label>订立时间：</label>
+        <span>{{ contract.signing_time|date:"Y-m-d" }}</span>
+    </div>
+    <div class="detail-item">
+        <label>服务期：</label>
+        <span>{{ contract.service_period_months }}</span>
+    </div>
+    <div class="detail-item">
+        <label>服务截止期：</label>
+        <span>{{ contract.service_deadline|date:"Y-m-d" }}</span>
+    </div>
+    <div class="detail-item">
+        <label>延期约定：</label>
+        <span>{{ contract.extension_agreement }}</span>
+    </div>
+    <div class="detail-item">
+        <label>计划开工时间：</label>
+        <span>{{ contract.planned_start_time|date:"Y-m-d" }}</span>
+    </div>
+    <div class="detail-item">
+        <label>预计竣工时间：</label>
+        <span>{{ contract.estimated_completion_time|date:"Y-m-d" }}</span>
+    </div>
+    <div class="detail-item">
+        <label>项目规模：</label>
+        <span>{{ contract.project_scale }}</span>
+    </div>
+    <div class="detail-item">
+        <label>项目投资（万元）：</label>
+        <span>{{ contract.project_investment }}</span>
+    </div>
+    <div class="detail-item">
+        <label>项目地址：</label>
+        <span>{{ contract.project_address }}</span>
+    </div>
+    <div class="detail-item">
+        <label>付款约定：</label>
+        <span>{{ contract.payment_agreement }}</span>
+    </div>
+    <div class="detail-item">
+        <label>约定人员配备：</label>
+        <span>{{ contract.agreed_staffing }}</span>
+    </div>
+    <div class="detail-item">
+        <label>合同文本：</label>
+       

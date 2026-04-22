@@ -10,6 +10,7 @@ from django.utils.safestring import mark_safe
 from eims_app.models.model_contract_approval import ContractApproval
 from eims_app.models.model_seal_approval import SealApproval
 from eims_app.models.model_archive_approval import ArchiveApproval
+from eims_app.models.model_user import UserProfile
 
 register = template.Library()
 
@@ -21,6 +22,45 @@ def render_sidebar_menu(context):
     """
     request = context['request']
     user = request.user
+    
+    # 获取当前用户的租户（公司）
+    tenant = None
+    try:
+        profile = UserProfile.objects.get(user=user)
+        tenant = profile.tenant
+    except (UserProfile.DoesNotExist, AttributeError):
+        pass
+    
+    # 获取租户启用的模块代码列表
+    enabled_module_codes = []
+    if tenant:
+        from eims_app.models.model_tenant_module import TenantModulePermission
+        permissions = TenantModulePermission.objects.filter(tenant=tenant, is_enabled=True)
+        enabled_module_codes = [p.module.code for p in permissions]
+    
+    # 如果是超级管理员，启用所有模块
+    if user.is_superuser:
+        from eims_app.models.model_tenant_module import TenantModule
+        enabled_module_codes = [m.code for m in TenantModule.objects.filter(is_active=True)]
+    
+    # 模块代码与菜单项的映射关系
+    MODULE_MENU_MAP = {
+        'supervision': ['contract', 'project'],  # 工程监理：显示合同管理、项目管理
+    }
+    
+    # 如果未配置任何模块，默认启用所有（向后兼容）
+    if not enabled_module_codes:
+        enabled_module_codes = ['preparation', 'bidding', 'design', 'cost', 'supervision', 'construction', 'testing']
+    
+    # 根据启用的模块，获取应该显示的菜单项ID列表
+    enabled_menu_ids = set()
+    for module_code in enabled_module_codes:
+        menu_ids = MODULE_MENU_MAP.get(module_code, [])
+        enabled_menu_ids.update(menu_ids)
+    
+    # 始终显示的基础菜单（不受模块控制）
+    base_menu_ids = {'dashboard', 'employee', 'personnel', 'file_manage', 'notice', 'monthly_report', 'system'}
+    enabled_menu_ids.update(base_menu_ids)
     
     # 定义菜单项（与menu_config.js保持一致）
     menu_items = [
@@ -109,13 +149,21 @@ def render_sidebar_menu(context):
         }
     ]
     
-    # 过滤用户有权限的菜单
+    # 过滤用户有权限的菜单，并根据租户模块配置进行筛选
     visible_items = []
     for item in menu_items:
+        # 检查用户权限
+        has_permission = False
         if item['permission'] == 'is_superuser':
-            if user.is_superuser:
-                visible_items.append(item)
+            has_permission = user.is_superuser
         elif user.has_perm(item['permission']):
+            has_permission = True
+        
+        # 检查租户是否启用了该模块对应的菜单
+        menu_enabled = item['id'] in enabled_menu_ids
+        
+        # 只有同时满足用户权限和模块启用条件才显示
+        if has_permission and menu_enabled:
             visible_items.append(item)
     
     # 获取当前用户的待审批数量（用于显示徽章）- 包含合同、用印、归档

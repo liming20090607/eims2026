@@ -34,12 +34,19 @@ def contract_list(request):
     status = request.GET.get('status', '')
     contract_type = request.GET.get('contract_type', '')
     keyword = request.GET.get('keyword', '')
+    
+    # 2. 获取排序参数
+    sort_field = request.GET.get('sort_field', 'project_code')  # 默认按项目编号排序
+    sort_order = request.GET.get('sort_order', 'asc')  # 默认升序
+    
+    # 构建排序字段（支持降序）
+    order_by = sort_field if sort_order == 'asc' else f'-{sort_field}'
 
-    # 2. 基础查询集（使用辅助函数按租户过滤）
-    queryset = ProjectDetail.objects.select_related().all().order_by('project_code')
+    # 3. 基础查询集（使用辅助函数按租户过滤）
+    queryset = ProjectDetail.objects.select_related().all().order_by(order_by)
     queryset = filter_queryset_by_tenant(queryset, request)
 
-    # 3. 多条件筛选
+    # 4. 多条件筛选
     if status:
         queryset = queryset.filter(contract_status=status)
     if contract_type:
@@ -59,8 +66,8 @@ def contract_list(request):
             Q(remark__icontains=keyword)
         ).distinct()
 
-    # 4. 分页处理
-    paginator = Paginator(queryset, 20)
+    # 5. 分页处理
+    paginator = Paginator(queryset, 15)
     page = request.GET.get('page')
     try:
         page_obj = paginator.get_page(page)
@@ -69,7 +76,7 @@ def contract_list(request):
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
         
-    # 5. 获取总记录数
+    # 6. 获取总记录数
     total_count = queryset.count()
         
     context = {
@@ -78,6 +85,8 @@ def contract_list(request):
         'contract_status_filter': status,
         'contract_type_filter': contract_type,
         'total_count': total_count,  # 添加总记录数
+        'sort_field': sort_field,  # 排序字段
+        'sort_order': sort_order,  # 排序方向
     }
     
     return render(request, 'contract_management/list.html', context)

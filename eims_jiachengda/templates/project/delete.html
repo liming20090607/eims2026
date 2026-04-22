@@ -1,0 +1,48 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}删除项目{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_list' %}">项目管理</a></li>
+<li class="breadcrumb-item active">删除项目</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>删除确认</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">确定要删除项目 <strong>{{ project.project_name }}</strong> 吗？</p>
+                    <p class="text-muted">此操作不可恢复！</p>
+                    
+                    <div class="alert alert-warning">
+                        <strong>项目信息：</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>项目编号：{{ project.project_code }}</li>
+                            <li>项目名称：{{ project.project_name }}</li>
+                            <li>项目状态：{{ project.get_project_status_display }}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <a href="{% url 'eims_app:project_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>取消
+                    </a>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>确认删除
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

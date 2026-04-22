@@ -1,0 +1,133 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if chain %}编辑审批链{% else %}创建审批链{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-diagram-3"></i> {% if chain %}编辑审批链{% else %}创建审批链{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">审批链名称 <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">业务类型 <span class="text-danger">*</span></label>
+                                {{ form.business_type }}
+                                {% if form.business_type.errors %}
+                                    <div class="text-danger small">{{ form.business_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">审批类型</label>
+                                {{ form.chain_type }}
+                                {% if form.chain_type.errors %}
+                                    <div class="text-danger small">{{ form.chain_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">描述</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold text-primary">一级审批配置</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">一级审批部门 <span class="text-danger">*</span></label>
+                                {{ form.level_1_department }}
+                                {% if form.level_1_department.errors %}
+                                    <div class="text-danger small">{{ form.level_1_department.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">一级审批角色 <span class="text-danger">*</span></label>
+                                {{ form.level_1_role }}
+                                {% if form.level_1_role.errors %}
+                                    <div class="text-danger small">{{ form.level_1_role.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">如：部门经理</small>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold text-success">二级审批配置（可选）</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">二级审批部门</label>
+                                {{ form.level_2_department }}
+                                {% if form.level_2_department.errors %}
+                                    <div class="text-danger small">{{ form.level_2_department.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">二级审批角色</label>
+                                {{ form.level_2_role }}
+                                {% if form.level_2_role.errors %}
+                                    <div class="text-danger small">{{ form.level_2_role.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold text-info">跨部门协同（可选）</h6>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.need_cross_department }}
+                            <label class="form-check-label" for="{{ form.need_cross_department.id_for_label }}">
+                                是否需要跨部门协同
+                            </label>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">协同部门</label>
+                            {{ form.cross_departments }}
+                            {% if form.cross_departments.errors %}
+                                <div class="text-danger small">{{ form.cross_departments.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">按住 Ctrl 键可多选</small>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                启用此审批链
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:approval_chain_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> {% if chain %}保存修改{% else %}创建审批链{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

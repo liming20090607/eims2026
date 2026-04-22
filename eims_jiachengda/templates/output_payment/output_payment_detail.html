@@ -1,0 +1,171 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}产值回款详情{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <!-- 返回按钮和标题 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-cash-coin me-2"></i>产值回款详情</h2>
+                <a href="{% url 'eims_app:output_payment_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+
+            <!-- 详情卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">项目编号</label>
+                            <p class="mb-0"><strong>{{ output_payment.project_code }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">项目名称</label>
+                            <p class="mb-0"><strong>{{ output_payment.project.project_name|default:"-" }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">月份</label>
+                            <p class="mb-0"><strong>{{ output_payment.month }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">操作人</label>
+                            <p class="mb-0"><strong>{{ output_payment.operator }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 产值数据 -->
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>产值数据</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">当月产值 (万元)</label>
+                            <p class="mb-0 fs-5 text-primary"><strong>{{ output_payment.monthly_output }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">累计产值 (万元)</label>
+                            <p class="mb-0 fs-5 text-primary"><strong>{{ output_payment.cumulative_output }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 回款数据 -->
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-cash-stack me-2"></i>回款数据</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">合同总额 (元)</label>
+                            <p class="mb-0"><strong>{{ output_payment.contract_total }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">本月实际回款 (元)</label>
+                            <p class="mb-0 fs-5 text-success"><strong>{{ output_payment.actual_payment }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">累计已收款 (元)</label>
+                            <p class="mb-0"><strong>{{ output_payment.cumulative_received }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">合同应收款 (元)</label>
+                            <p class="mb-0"><strong>{{ output_payment.contract_receivable }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">近期待收款 (元)</label>
+                            <p class="mb-0"><strong>{{ output_payment.near_term_receivable }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 回款详情 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>回款详情</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted">合同付款依据</label>
+                            <p class="mb-0">{{ output_payment.payment_basis|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted">上次回款情况</label>
+                            <p class="mb-0">{{ output_payment.last_payment_situation|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted">近期请款情况</label>
+                            <p class="mb-0">{{ output_payment.recent_payment_request|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted">下个月请款</label>
+                            <p class="mb-0">{{ output_payment.next_month_request|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">下月计划收款 (元)</label>
+                            <p class="mb-0"><strong>{{ output_payment.next_month_plan }}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">请款措施</label>
+                            <p class="mb-0">{{ output_payment.payment_measures|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">需要协助</label>
+                            <p class="mb-0">{{ output_payment.need_assistance|default:"-" }}</p>
+                        </div>
+                        {% if output_payment.payment_date %}
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">回款日期</label>
+                            <p class="mb-0"><strong>{{ output_payment.payment_date }}</strong></p>
+                        </div>
+                        {% endif %}
+                        {% if output_payment.payment_method %}
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">回款方式</label>
+                            <p class="mb-0"><strong>{{ output_payment.payment_method }}</strong></p>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted">备注</label>
+                            <p class="mb-0">{{ output_payment.remark|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统信息 -->
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>系统信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">创建时间</label>
+                            <p class="mb-0">{{ output_payment.create_time }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">更新时间</label>
+                            <p class="mb-0">{{ output_payment.update_time }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

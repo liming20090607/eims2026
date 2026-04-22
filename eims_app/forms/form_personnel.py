@@ -17,9 +17,16 @@ class PersonnelForm(forms.ModelForm):
     )
     
     def __init__(self, *args, **kwargs):
+        # 从 kwargs 中提取 tenant（如果存在）
+        tenant = kwargs.pop('tenant', None)
         super().__init__(*args, **kwargs)
-        # 动态加载部门选项
-        departments = Department.objects.filter(is_deleted=False, status='active').order_by('department_code')
+        
+        # 动态加载部门选项，按租户过滤
+        dept_filter = {'is_deleted': False, 'status': 'active'}
+        if tenant:
+            dept_filter['tenant_id'] = tenant.id
+        
+        departments = Department.objects.filter(**dept_filter).order_by('department_code')
         dept_choices = [('', '请选择部门')]
         for dept in departments:
             dept_choices.append((dept.department_name, f'{dept.department_code} - {dept.department_name}'))
@@ -28,7 +35,7 @@ class PersonnelForm(forms.ModelForm):
     class Meta:
         model = Personnel
         fields = '__all__'
-        exclude = ['create_time', 'update_time', 'is_deleted', 'operator']
+        exclude = ['create_time', 'update_time', 'is_deleted', 'operator', 'tenant']
         widgets = {
             'personnel_code': forms.TextInput(attrs={'class': 'form-control'}),
             'project': forms.Select(attrs={'class': 'form-select'}),

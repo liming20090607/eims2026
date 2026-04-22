@@ -1,0 +1,346 @@
+{% extends 'base/base.html' %}
+
+{% block title %}我的账号 - 协同 AI 办公系统{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">我的账号</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>我的账号</h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <!-- 账号信息 -->
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-shield-lock me-2 text-primary"></i>账号信息
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">用户名</label>
+                                <div class="form-control-plaintext fw-bold">{{ request.user.username }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">邮箱</label>
+                                <div class="form-control-plaintext">{{ request.user.email|default:'未设置' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">账号状态</label>
+                                <div class="form-control-plaintext">
+                                    {% if request.user.is_active %}
+                                    <span class="badge bg-success">正常</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">禁用</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 手机号绑定 -->
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-phone me-2 text-success"></i>手机号绑定
+                        </h6>
+                        <div class="alert {% if profile.phone %}alert-success{% else %}alert-warning{% endif %}" role="alert">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi {% if profile.phone %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                                    {% if profile.phone %}
+                                    <strong>已绑定：</strong>{{ profile.phone }}
+                                    {% else %}
+                                    <strong>未绑定</strong> - 绑定手机号后可以使用短信登录和忘记密码功能
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="btn btn-sm {% if profile.phone %}btn-outline-primary{% else %}btn-primary{% endif %}" 
+                                        data-bs-toggle="modal" data-bs-target="#bindPhoneModal">
+                                    {% if profile.phone %}
+                                    <i class="bi bi-pencil me-1"></i>修改手机号
+                                    {% else %}
+                                    <i class="bi bi-plus-circle me-1"></i>立即绑定
+                                    {% endif %}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if profile.phone %}
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-key text-primary" style="font-size: 2rem;"></i>
+                                        <h6 class="mt-2 mb-1">短信登录</h6>
+                                        <small class="text-muted">无需密码，验证码即可登录</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-arrow-counterclockwise text-success" style="font-size: 2rem;"></i>
+                                        <h6 class="mt-2 mb-1">密码找回</h6>
+                                        <small class="text-muted">忘记密码可通过手机找回</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 基本信息 -->
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-person-vcard me-2 text-info"></i>基本信息
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">姓名</label>
+                                <div class="form-control-plaintext">{{ profile.real_name|default:'未设置' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">性别</label>
+                                <div class="form-control-plaintext">{{ profile.get_gender_display|default:'未设置' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">生日</label>
+                                <div class="form-control-plaintext">{{ profile.birthday|default:'未设置' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'eims_app:eims_index' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>返回首页
+                        </a>
+                        <a href="{% url 'eims_app:profile' %}" class="btn btn-primary">
+                            <i class="bi bi-pencil-square me-1"></i>编辑个人资料
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 绑定手机号模态框 -->
+<div class="modal fade" id="bindPhoneModal" tabindex="-1" aria-labelledby="bindPhoneModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bindPhoneModalLabel">
+                    <i class="bi bi-phone me-2"></i>{% if profile.phone %}修改{% else %}绑定{% endif %}手机号
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bindPhoneForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">手机号 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                            <input type="text" class="form-control" id="newPhone" 
+                                   placeholder="请输入手机号" required maxlength="11"
+                                   value="{{ profile.phone }}">
+                        </div>
+                        <small class="form-text text-muted">
+                            请输入中国大陆手机号码（11位数字）
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3" id="verifyCodeSection" style="display: none;">
+                        <label class="form-label">短信验证码 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+                            <input type="text" class="form-control" id="verifyCode" 
+                                   placeholder="请输入验证码" maxlength="6">
+                            <button class="btn btn-outline-secondary" type="button" id="sendCodeBtn" disabled>
+                                获取验证码 (<span id="countdown">60</span>s)
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">
+                            验证码将发送到您的手机，有效期5分钟
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="savePhoneBtn">
+                    <i class="bi bi-check-circle me-1"></i>保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let countdownTimer;
+    const currentPhone = '{{ profile.phone }}';
+    let isSendingCode = false;
+    
+    // 手机号格式验证
+    const phoneRegex = /^1[3-9]\d{9}$/;
+    
+    // 手机号输入框
+    const phoneInput = document.getElementById('newPhone');
+    const verifySection = document.getElementById('verifyCodeSection');
+    const sendCodeBtn = document.getElementById('sendCodeBtn');
+    const countdownSpan = document.getElementById('countdown');
+    const saveBtn = document.getElementById('savePhoneBtn');
+    
+    // 监听手机号输入
+    phoneInput.addEventListener('input', function() {
+        const phone = this.value.trim();
+        if (phoneRegex.test(phone) && !isSendingCode) {
+            sendCodeBtn.disabled = false;
+            verifySection.style.display = 'block';
+        } else {
+            sendCodeBtn.disabled = true;
+            verifySection.style.display = 'none';
+        }
+    });
+    
+    // 初始状态
+    if (currentPhone && phoneRegex.test(currentPhone)) {
+        verifySection.style.display = 'block';
+        sendCodeBtn.disabled = false;
+    }
+    
+    // 发送验证码
+    sendCodeBtn.addEventListener('click', function() {
+        const phone = phoneInput.value.trim();
+        if (!phoneRegex.test(phone)) {
+            alert('请输入正确的手机号');
+            return;
+        }
+        
+        fetch('/api/sms/send-code/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                phone: phone,
+                code_type: 'change_phone'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('验证码已发送');
+                startCountdown();
+                isSendingCode = true;
+            } else {
+                alert('发送失败：' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('发送失败，请重试');
+        });
+    });
+    
+    // 保存手机号
+    saveBtn.addEventListener('click', function() {
+        const phone = phoneInput.value.trim();
+        const code = document.getElementById('verifyCode').value;
+        
+        if (!phoneRegex.test(phone)) {
+            alert('请输入正确的手机号');
+            return;
+        }
+        
+        if (!code || code.length !== 6) {
+            alert('请输入6位验证码');
+            return;
+        }
+        
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>保存中...';
+        
+        fetch('/api/sms/change-phone/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                new_phone: phone,
+                code: code
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>保存';
+            
+            if (data.success) {
+                alert('手机号更新成功！');
+                location.reload();
+            } else {
+                alert('保存失败：' + data.message);
+            }
+        })
+        .catch(error => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>保存';
+            console.error('Error:', error);
+            alert('保存失败，请重试');
+        });
+    });
+    
+    // 倒计时
+    function startCountdown() {
+        let seconds = 60;
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.textContent = `重新发送 (${seconds}s)`;
+        
+        countdownTimer = setInterval(function() {
+            seconds--;
+            sendCodeBtn.textContent = `重新发送 (${seconds}s)`;
+            
+            if (seconds <= 0) {
+                clearInterval(countdownTimer);
+                sendCodeBtn.disabled = false;
+                sendCodeBtn.textContent = '获取验证码';
+            }
+        }, 1000);
+    }
+    
+    // 获取 CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

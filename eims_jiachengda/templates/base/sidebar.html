@@ -1,0 +1,218 @@
+"""
+EIMS 菜单生成标签
+路径: eims_app/templatetags/sidebar_tags.py
+用途：在模板中动态生成菜单，支持权限控制
+"""
+
+from django import template
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+from eims_app.models.model_contract_approval import ContractApproval
+from eims_app.models.model_seal_approval import SealApproval
+from eims_app.models.model_archive_approval import ArchiveApproval
+
+register = template.Library()
+
+@register.simple_tag(takes_context=True)
+def render_sidebar_menu(context):
+    """
+    渲染侧边栏菜单
+    用法: {% render_sidebar_menu %}
+    """
+    request = context['request']
+    user = request.user
+    
+    # 定义菜单项（与menu_config.js保持一致）
+    menu_items = [
+        {
+            'id': 'dashboard',
+            'url': reverse('dashboard'),  # 需在urls.py中定义命名路由
+            'text': '仪表盘',
+            'icon': 'bi-speedometer2',
+            'permission': 'eims_app.view_dashboard'
+        },
+        {
+            'id': 'contract',
+            'url': reverse('contract_list'),
+            'text': '合同管理',
+            'icon': 'bi-file-earmark-text',
+            'permission': 'eims_app.view_contract',
+            'has_submenu': True,
+            'submenu_items': [
+                {'url': reverse('contract_list'), 'text': '合同台账', 'icon': 'bi-journal-text'},
+                {'url': reverse('contract_approval_chain'), 'text': '审批流程', 'icon': 'bi-diagram-3'},
+                {'url': reverse('my_pending_approvals'), 'text': '我的待审批', 'icon': 'bi-bell-fill', 'badge': True},
+                {'url': reverse('my_initiated_approvals'), 'text': '我发起的', 'icon': 'bi-send'},
+            ]
+        },
+        {
+            'id': 'project',
+            'url': reverse('project_list'),
+            'text': '项目管理',
+            'icon': 'bi-building',
+            'permission': 'eims_app.view_project',
+            'has_submenu': True,
+            'submenu_items': [
+                {'url': reverse('project_ledger_list'), 'text': '项目台账', 'icon': 'bi-journal-text'},
+                {'url': reverse('contract_management_list'), 'text': '合同管理', 'icon': 'bi-file-earmark-text'},
+                {'url': reverse('output_payment_list'), 'text': '产值回款', 'icon': 'bi-cash-coin'},
+            ]
+        },
+        {
+            'id': 'employee',
+            'url': reverse('eims_app:employee_list'),
+            'text': '员工信息',
+            'icon': 'bi-person-badge',
+            'permission': 'is_superuser'
+        },
+        {
+            'id': 'personnel',
+            'url': reverse('personnel_list'),
+            'text': '人员管理',
+            'icon': 'bi-people',
+            'permission': 'eims_app.view_personnel'
+        },
+        {
+            'id': 'output_payment',
+            'url': reverse('output_payment_list'),
+            'text': '产值回款',
+            'icon': 'bi-cash-coin',
+            'permission': 'eims_app.view_output_payment'
+        },
+        {
+            'id': 'file_manage',
+            'url': reverse('file_manage_list'),
+            'text': '文件管理',
+            'icon': 'bi-folder',
+            'permission': 'eims_app.view_file_manage'
+        },
+        {
+            'id': 'notice',
+            'url': reverse('notice_list'),
+            'text': '通知公告',
+            'icon': 'bi-bell',
+            'permission': 'eims_app.view_notice'
+        },
+        {
+            'id': 'monthly_report',
+            'url': reverse('eims_app:monthly_report_list'),
+            'text': '月度报告',
+            'icon': 'bi-calendar-check',
+            'permission': 'eims_app.view_monthly_report'
+        },
+        {
+            'id': 'system',
+            'url': reverse('admin:index'),
+            'text': '系统设置',
+            'icon': 'bi-gear',
+            'permission': 'is_superuser'  # 特殊权限
+        }
+    ]
+    
+    # 过滤用户有权限的菜单
+    visible_items = []
+    for item in menu_items:
+        if item['permission'] == 'is_superuser':
+            if user.is_superuser:
+                visible_items.append(item)
+        elif user.has_perm(item['permission']):
+            visible_items.append(item)
+    
+    # 获取当前用户的待审批数量（用于显示徽章）- 包含合同、用印、归档
+    pending_count = 0
+    if user.is_authenticated:
+        contract_count = ContractApproval.objects.filter(
+            current_approver=user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        seal_count = SealApproval.objects.filter(
+            current_approver=user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        archive_count = ArchiveApproval.objects.filter(
+            current_approver=user,
+            status__in=['pending', 'reviewing'],
+            is_deleted=False
+        ).count()
+        pending_count = contract_count + seal_count + archive_count
+    
+    # 生成 HTML
+    html = '<ul id="sidebar-menu" class="nav flex-column">'
+        
+    for item in visible_items:
+        # 检查当前 URL 是否匹配（高亮）
+        is_active = request.path.startswith(item['url']) if item['url'] != '#' else False
+            
+        # 检查是否有子菜单
+        if item.get('has_submenu'):
+            # 检查子菜单是否有激活的项
+            has_active_submenu = any(
+                request.path.startswith(subitem.get('url', '')) 
+                for subitem in item.get('submenu_items', [])
+                if subitem.get('url') != '#'
+            )
+                
+            # 生成主菜单
+            html += f'''
+            <li class="nav-item">
+              <a href="#projectSubmenu" 
+                 data-bs-toggle="collapse" 
+                 aria-expanded="{str(has_active_submenu).lower()}"
+                 class="nav-link {'active' if has_active_submenu else ''}">
+                <span class="menu-icon"><i class="bi {item['icon']}"></i></span>
+                <span class="menu-text">{item['text']}</span>
+                <span class="badge bg-primary ms-auto">{len(item['submenu_items'])}</span>
+              </a>
+              <div class="collapse {'show' if has_active_submenu else ''}" id="projectSubmenu">
+                <ul class="nav flex-column ms-3">
+            '''
+                
+            # 生成子菜单
+            for subitem in item['submenu_items']:
+                sub_is_active = request.path.startswith(subitem.get('url', '')) if subitem.get('url') != '#' else False
+                onclick_attr = f" onclick=\"{subitem['onclick']}\"" if 'onclick' in subitem else ''
+                
+                # 如果是“我的待审批”菜单项且有待审批数量，显示徽章
+                badge_html = ''
+                if subitem.get('badge') and pending_count > 0:
+                    badge_html = f'<span class="badge bg-danger ms-auto">{pending_count}</span>'
+                
+                html += f'''
+                  <li class="nav-item">
+                    <a href="{subitem['url']}" class="nav-link {'active' if sub_is_active else ''}"{onclick_attr}>
+                      <i class="bi {subitem['icon']}"></i> {subitem['text']}
+                      {badge_html}
+                    </a>
+                  </li>
+                '''
+                
+            html += '''
+                </ul>
+              </div>
+            </li>
+            '''
+        else:
+            # 没有子菜单，生成普通菜单项
+            html += f'''
+            <li class="nav-item">
+              <a href="{item['url']}" 
+                 class="nav-link {'active' if is_active else ''}"
+                 data-tooltip="{item['text']}">
+                <span class="menu-icon"><i class="bi {item['icon']}"></i></span>
+                <span class="menu-text">{item['text']}</span>
+              </a>
+            </li>
+            '''
+    
+    if not visible_items:
+        html += '''
+        <li class="nav-item text-center py-4">
+          <span class="text-muted">无可用菜单</span>
+        </li>
+        '''
+    
+    html += '</ul>'
+    
+    return mark_safe(html)

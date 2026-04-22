@@ -1,0 +1,54 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}批量上传 - 文件管理{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>批量上传文件</h5>
+        <a href="{% url 'jiachengda:file_manage_list' %}" class="btn btn-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>返回列表
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="batchUploadForm">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label"><strong>选择多个文件</strong></label>
+                <input type="file" class="form-control" name="files" multiple required
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.zip,.rar,.txt,.md">
+                <small class="text-muted">按住 Ctrl 键可选择多个文件</small>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label"><strong>文件类别</strong></label>
+                <input type="text" class="form-control" name="file_category" placeholder="请输入文件类别">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label"><strong>统一备注</strong></label>
+                <textarea class="form-control" name="remark" rows="3" placeholder="请输入统一备注说明（可选）"></textarea>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>提示：</strong>
+                <ul class="mb-0 mt-2">
+                    <li>支持一次上传多个文件</li>
+                    <li>所有文件将使用相同的类别和备注</li>
+                    <li>上传后可在文件列表中查看详细信息</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-cloud-upload me-1"></i>开始上传
+                </button>
+                <a href="{% url 'jiachengda:file_manage_list' %}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

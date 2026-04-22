@@ -1,0 +1,316 @@
+#!/usr/bin/env python3
+"""
+修复中间件 - 使用本地文件避免编码问题
+Fix middleware using local file to avoid encoding issues
+"""
+import paramiko
+import os
+import time
+import sys
+import base64
+
+print("=" * 80)
+print("🔧 修复中间件语法错误")
+print("Fix Middleware Syntax Error")
+print("=" * 80)
+
+SERVER_IP = '39.106.41.239'
+SERVER_USER = 'root'
+PRIVATE_KEY = os.path.expanduser('~/.ssh/id_rsa')
+
+try:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(SERVER_IP, username=SERVER_USER, key_filename=PRIVATE_KEY, timeout=15)
+    
+    print("\n✅ 已连接服务器\n")
+    
+    # 步骤1: 在本地创建中间件文件
+    print("[1/5] 在本地创建中间件文件...")
+    
+    local_file = 'e:/EIMS2026/middleware_autorefresh.py'
+    
+    middleware_content = '''import re
+from django.conf import settings
+
+class AutoRefreshMiddleware:
+    """Auto-refresh and manual fix button middleware"""
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        if response.get('Content-Type', '').startswith('text/html'):
+            content = response.content.decode('utf-8')
+            
+            is_error_page = (
+                'error-container' in content or
+                'OperationalError' in content or
+                'Internal Server Error' in content or
+                'Access denied' in content or
+                response.status_code >= 500
+            )
+            
+            if is_error_page:
+                fix_button_html = """
+<div id="emergency-fix-panel" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:40px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:10000;text-align:center;max-width:500px;width:90%;">
+    <div style="font-size:64px;margin-bottom:20px;">&#128295;</div>
+    <h2 style="color:#d32f2f;margin-bottom:15px;font-size:24px;">System Error Detected</h2>
+    <p style="color:#666;margin-bottom:25px;font-size:16px;">Database connection error detected. Auto-fixing...</p>
+    
+    <div id="fix-progress" style="margin-bottom:25px;">
+        <div style="background:#e0e0e0;border-radius:10px;height:30px;overflow:hidden;margin-bottom:10px;">
+            <div id="progress-bar" style="background:linear-gradient(90deg,#4CAF50,#8BC34A);height:100%;width:0%;transition:width 0.5s;border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px;">
+                0%
+            </div>
+        </div>
+        <p id="progress-text" style="color:#666;font-size:14px;margin:0;">Fixing...</p>
+    </div>
+    
+    <div style="display:flex;gap:15px;justify-content:center;margin-bottom:20px;">
+        <button onclick="triggerManualFix()" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;padding:15px 30px;border-radius:8px;font-size:16px;cursor:pointer;box-shadow:0 4px 15px rgba(102,126,234,0.4);transition:all 0.3s;font-weight:bold;">
+            &#9889; Manual Fix Now
+        </button>
+        <button onclick="location.reload()" style="background:#f5f5f5;color:#333;border:2px solid #ddd;padding:15px 30px;border-radius:8px;font-size:16px;cursor:pointer;transition:all 0.3s;font-weight:bold;">
+            &#128260; Refresh Page
+        </button>
+    </div>
+    
+    <p style="color:#999;font-size:12px;margin:0;">
+        &#128161; OpenClaw will auto-fix in 30-60 seconds
+    </p>
+</div>
+
+<div id="fix-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;"></div>
+
+<script>
+(function() {
+    var refreshCount = 0;
+    var maxRefreshes = 30;
+    var refreshInterval = 2000;
+    var isFixing = false;
+    
+    function updateProgress(percent, text) {
+        var bar = document.getElementById('progress-bar');
+        var txt = document.getElementById('progress-text');
+        if (bar) {
+            bar.style.width = percent + '%';
+            bar.textContent = percent + '%';
+        }
+        if (txt) {
+            txt.textContent = text;
+        }
+    }
+    
+    window.triggerManualFix = function() {
+        if (isFixing) return;
+        isFixing = true;
+        
+        updateProgress(10, 'Connecting to server...');
+        
+        fetch('/openclaw/api/trigger-fix/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.status === 'success') {
+                updateProgress(50, 'Fix script started, waiting...');
+                
+                var checkInterval = setInterval(function() {
+                    fetch('/openclaw/api/check-status/')
+                    .then(function(r) { return r.json(); })
+                    .then(function(status) {
+                        if (status.mysql === 'OK' || status.mysql === 'FIXED') {
+                            clearInterval(checkInterval);
+                            updateProgress(100, 'Fixed! Redirecting...');
+                            setTimeout(function() {
+                                window.location.href = '/login/';
+                            }, 1000);
+                        } else {
+                            updateProgress(75, 'Fixing, please wait...');
+                        }
+                    })
+                    .catch(function() {});
+                }, 2000);
+            } else {
+                updateProgress(0, 'Failed, please retry');
+                isFixing = false;
+            }
+        })
+        .catch(function(error) {
+            updateProgress(0, 'Network error, please retry');
+            isFixing = false;
+        });
+    };
+    
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    var refreshTimer = setInterval(function() {
+        refreshCount++;
+        
+        if (refreshCount <= maxRefreshes) {
+            updateProgress(Math.min(refreshCount * 3, 90), 'Auto-fixing (' + refreshCount + '/' + maxRefreshes + ')...');
+            
+            var hasError = document.querySelector('.error-container') || 
+                          document.querySelector('h1')?.textContent?.includes('Error') ||
+                          document.querySelector('h1')?.textContent?.includes('error');
+            
+            if (!hasError && refreshCount > 2) {
+                clearInterval(refreshTimer);
+                updateProgress(100, 'System restored! Redirecting...');
+                setTimeout(function() {
+                    window.location.href = '/login/';
+                }, 1000);
+            } else if (refreshCount >= maxRefreshes) {
+                clearInterval(refreshTimer);
+                updateProgress(100, 'Auto-fix incomplete, click Manual Fix');
+            }
+            
+            setTimeout(function() {
+                location.reload();
+            }, 500);
+        }
+    }, refreshInterval);
+    
+    updateProgress(10, 'Error detected, starting auto-fix...');
+})();
+</script>
+"""
+                
+                if '<body>' in content:
+                    content = content.replace('<body>', '<body>' + fix_button_html, 1)
+                else:
+                    content = fix_button_html + content
+                
+                response.content = content.encode('utf-8')
+                if 'Content-Length' in response:
+                    del response['Content-Length']
+        
+        return response
+'''
+    
+    with open(local_file, 'w', encoding='utf-8') as f:
+        f.write(middleware_content)
+    
+    print(f"  ✅ 本地文件已创建: {local_file}")
+    
+    # 步骤2: 读取并base64编码
+    print("\n[2/5] 编码文件...")
+    with open(local_file, 'rb') as f:
+        file_content = f.read()
+    
+    encoded = base64.b64encode(file_content).decode('utf-8')
+    print(f"  ✅ 已编码 ({len(encoded)} characters)")
+    
+    # 步骤3: 在服务器上解码并保存
+    print("\n[3/5] 上传到服务器...")
+    
+    # 删除旧文件
+    ssh.exec_command("rm -f /var/www/eims/utils/middleware_autorefresh.py", timeout=5)
+    
+    # 使用base64解码
+    # 分段发送，避免命令行过长
+    chunk_size = 10000
+    chunks = [encoded[i:i+chunk_size] for i in range(0, len(encoded), chunk_size)]
+    
+    print(f"  分{len(chunks)}块发送...")
+    
+    for i, chunk in enumerate(chunks):
+        if i == 0:
+            cmd = f"echo '{chunk}' | base64 -d > /var/www/eims/utils/middleware_autorefresh.py"
+        else:
+            cmd = f"echo '{chunk}' | base64 -d >> /var/www/eims/utils/middleware_autorefresh.py"
+        
+        stdin, stdout, stderr = ssh.exec_command(cmd, timeout=10)
+        time.sleep(0.5)
+    
+    print("  ✅ 文件已上传")
+    
+    # 步骤4: 验证文件
+    print("\n[4/5] 验证文件...")
+    
+    # 检查文件大小
+    stdin, stdout, stderr = ssh.exec_command("ls -lh /var/www/eims/utils/middleware_autorefresh.py")
+    file_info = stdout.read().decode().strip()
+    print(f"  文件信息: {file_info}")
+    
+    # 验证Python语法
+    stdin, stdout, stderr = ssh.exec_command("python3 -c 'import py_compile; py_compile.compile(\"/var/www/eims/utils/middleware_autorefresh.py\", doraise=True)' 2>&1")
+    check_result = stdout.read().decode().strip()
+    check_error = stderr.read().decode().strip()
+    
+    if not check_result and not check_error:
+        print("  ✅ Python语法验证通过")
+    else:
+        print(f"  ❌ 语法错误:")
+        if check_result:
+            print(f"    stdout: {check_result[:200]}")
+        if check_error:
+            print(f"    stderr: {check_error[:200]}")
+        sys.exit(1)
+    
+    # 步骤5: 重启Gunicorn
+    print("\n[5/5] 重启Gunicorn...")
+    
+    ssh.exec_command("pkill -9 -f gunicorn; sleep 2", timeout=10)
+    time.sleep(3)
+    
+    start_cmd = """cd /var/www/eims && source venv/bin/activate && nohup gunicorn \
+--bind 127.0.0.1:8000 \
+--workers 4 \
+--timeout 300 \
+wsgi:application > /var/www/eims/logs/gunicorn.log 2>&1 &"""
+    
+    ssh.exec_command(start_cmd, timeout=10)
+    time.sleep(5)
+    
+    stdin, stdout, stderr = ssh.exec_command("ps aux | grep gunicorn | grep -v grep | wc -l")
+    count = int(stdout.read().decode().strip())
+    print(f"  ✅ Gunicorn已重启 ({count}进程)")
+    
+    # 最终测试
+    print("\n" + "=" * 80)
+    print("✅ 修复完成！现在请刷新浏览器")
+    print("=" * 80)
+    
+    print("\n🌐 访问地址:")
+    print("  http://www.xietongai.com.cn/login/")
+    
+    print("\n您应该看到:")
+    print("  1. 🎯 屏幕中央的修复面板（白色圆角卡片）")
+    print("  2. 🔧 大号扳手图标")
+    print("  3. ⚡ 'Manual Fix Now'按钮（紫色渐变）")
+    print("  4. 🔄 'Refresh Page'按钮（灰色）")
+    print("  5. 📊 实时进度条（绿色动画）")
+    print("  6. 🌑 半透明黑色遮罩层")
+    
+    print("\n💡 功能:")
+    print("  • 自动刷新（每2秒）")
+    print("  • 手动触发修复")
+    print("  • MySQL恢复后自动跳转")
+    
+    ssh.close()
+    
+except Exception as e:
+    print(f"\n❌ 修复失败: {e}")
+    import traceback
+    traceback.print_exc()

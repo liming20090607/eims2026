@@ -5,16 +5,39 @@
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="#">工程监理</a></li>
 <li class="breadcrumb-item"><a href="#">合同管理</a></li>
 <li class="breadcrumb-item active">合同列表</li>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    /* 表格容器 - 启用水平滚动 */
+    /* 隐藏页脚，最大化视口 */
+    body { padding-bottom: 0 !important; }
+    footer, .footer { display: none !important; height: 0 !important; overflow: hidden !important; }
+    
+    /* 锁定 content-wrapper，禁止外层滚动 */
+    .content-wrapper {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* 主内容区 - 占满剩余空间 */
+    .main-content > .container-fluid {
+        overflow: hidden !important;
+        height: calc(100vh - 60px) !important;
+        max-height: calc(100vh - 60px) !important;
+        padding: 0 !important;
+    }
+    
+    /* 表格容器 - 启用水平和垂直滚动 */
     .table-responsive { 
-        overflow-x: auto;
-        overflow-y: visible;
+        flex: 1 !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
     }
     
     /* 自定义滚动条样式 */
@@ -40,16 +63,201 @@
     .table { 
         min-width: 2800px; /* 强制表格宽度，触发水平滚动 */
         width: max-content; /* 使用内容最大宽度 */
+        margin-bottom: 0 !important;
     }
     
+    /* 固定表头 */
     .table thead th { 
         font-size: 13px; 
-        font-weight: 600; 
+        font-weight: 700; 
         white-space: nowrap; 
-        background-color: #f8f9fa;
+        background-color: #e3f2fd;
+        color: #1565c0;
         padding: 12px 10px;
         vertical-align: middle;
         border-bottom: 2px solid #dee2e6;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+    }
+    
+    /* 固定顶部区域 */
+    .fixed-top-section {
+        flex-shrink: 0 !important;
+        z-index: 100 !important;
+        background: #f8f9fc !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* 可滚动表格区域 */
+    .scrollable-table-section {
+        flex: 1 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* 数据表格卡片 */
+    .data-table-card {
+        border: 1px solid #dee2e6;
+        border-top: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        
+        .card-body {
+            padding: 0 !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+    }
+    
+    /* 可拖动调整高度的把手 */
+    .resize-handle {
+        position: relative !important;
+        height: 16px !important;
+        background: linear-gradient(to bottom, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.3)) !important;
+        cursor: ns-resize !important;
+        z-index: 1000 !important;
+        transition: all 0.2s ease !important;
+        flex-shrink: 0 !important;
+        border-top: 1px solid rgba(13, 110, 253, 0.3) !important;
+        border-bottom: 2px solid #0d6efd !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .resize-handle:hover {
+        background: linear-gradient(to bottom, rgba(13, 110, 253, 0.2), rgba(13, 110, 253, 0.5)) !important;
+        height: 20px !important;
+        border-bottom-width: 3px !important;
+        box-shadow: 0 -2px 8px rgba(13, 110, 253, 0.3) !important;
+    }
+    
+    .resize-handle::before {
+        content: '⋮⋮⋮' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        color: #0d6efd !important;
+        font-size: 12px !important;
+        letter-spacing: 2px !important;
+        font-weight: bold !important;
+        pointer-events: none !important;
+    }
+    
+    .resize-handle::after {
+        display: none;
+    }
+    
+    .resize-handle:hover::before {
+        color: rgba(0, 123, 255, 1);
+    }
+    
+    .resize-handle.dragging {
+        background: linear-gradient(to bottom, transparent, rgba(0, 123, 255, 0.5));
+    }
+    
+    /* 分页容器样式 */
+    .pagination-container {
+        flex-shrink: 0 !important;
+        padding: 0.5rem 1rem;
+        background: #f8f9fc;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .pagination-container .pagination {
+        margin-bottom: 0;
+    }
+    
+    /* ===== 分页导航样式 - 固定在表格底部 ===== */
+    .pagination-wrapper {
+        flex-shrink: 0;
+        background: #f8f9fc;
+        border-top: 1px solid #e3e6f0;
+        padding: 0.4rem 0;
+        box-shadow: none;
+        position: relative;
+        z-index: 10;
+        margin-top: 0;
+        width: 100%;
+    }
+    
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.3rem;
+        width: 100%;
+    }
+    
+    .pagination-btn {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+        color: #4e73df;
+        background: white;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.25rem;
+        text-decoration: none;
+        line-height: 1.2;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination-btn:hover {
+        background: #4e73df;
+        color: white;
+        border-color: #4e73df;
+        text-decoration: none;
+    }
+    
+    .pagination-btn.disabled {
+        color: #6c757d;
+        background: #e9ecef;
+        border-color: #d1d3e2;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .pagination-info {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        background: #4e73df;
+        border: 1px solid #4e73df;
+        border-radius: 0.25rem;
+        line-height: 1.2;
+    }
+    
+    /* 统计信息样式 */
+    .statistics-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .statistics-info strong {
+        font-weight: 600;
     }
     
     .table tbody td { 
@@ -154,7 +362,7 @@
     /* 固定操作列 */
     .table-responsive {
         position: relative;
-        max-height: calc(100vh - 350px);
+        max-height: calc(100vh - 260px);
         overflow: auto;
     }
     
@@ -193,15 +401,86 @@
         font-weight: 600;
         border-color: #dee2e6 #dee2e6 #fff !important;
     }
+    
+    /* ===== 表头排序样式 ===== */
+    th.sortable {
+        cursor: pointer !important;
+        user-select: none !important;
+        position: relative !important;
+        transition: background-color 0.2s !important;
+    }
+
+    th.sortable:hover {
+        background-color: #e9ecef !important;
+    }
+
+    th.sortable .sort-icon {
+        display: inline-block;
+        margin-left: 4px;
+        font-size: 0.75rem;
+        vertical-align: middle;
+        opacity: 0.3;
+        transition: opacity 0.2s;
+    }
+
+    th.sortable.sorted-asc .sort-icon,
+    th.sortable.sorted-desc .sort-icon {
+        opacity: 1;
+        color: #0d6efd;
+    }
+
+    th.sortable.sorted-asc .sort-icon::before {
+        content: '▲';  /* 正三角形 - 升序 */
+    }
+
+    th.sortable.sorted-desc .sort-icon::before {
+        content: '▼';  /* 倒三角形 - 降序 */
+    }
+
+    /* 默认排序图标（未排序状态） */
+    th.sortable:not(.sorted-asc):not(.sorted-desc) .sort-icon::before {
+        content: '⇅';  /* 双向箭头表示可排序 */
+    }
+    
+    /* 右键菜单样式 */
+    .sort-context-menu {
+        position: absolute;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 9999;
+        min-width: 150px;
+        padding: 4px 0;
+    }
+    
+    .sort-context-menu .menu-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .sort-context-menu .menu-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .sort-context-menu .menu-item i {
+        font-size: 0.9rem;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2 class="mb-2"><i class="bi bi-file-earmark-text me-2"></i>合同管理</h2>
-        </div>
+<div class="container-fluid content-wrapper" style="padding: 0 !important; margin: 0 !important;">
+    <!-- ===== 固定顶部区域 ===== -->
+    <div class="fixed-top-section" style="padding: 1rem 1rem 0.5rem 1rem !important;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h2 class="mb-2"><i class="bi bi-file-earmark-text me-2"></i>合同管理</h2>
+            </div>
         <div class="d-flex align-items-center gap-2">
             <!-- 记录统计 -->
             <div class="me-3">
@@ -244,157 +523,82 @@
         </div>
     </div>
     
-    <!-- 标签页导航 -->
-    <ul class="nav nav-tabs mb-4" id="contractTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <a href="{% url 'eims_app:contract_management_list' %}" 
-               class="nav-link {% if 'contract_management' in request.path and 'approval' not in request.path %}active{% endif %}" 
-               id="ledger-tab" role="tab">
-                <i class="bi bi-journal-text me-1"></i>合同台账
-            </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a href="{% url 'eims_app:contract_approval_chain' %}" 
-               class="nav-link {% if 'approval_chain' in request.path %}active{% endif %}" 
-               id="approval-tab" role="tab">
-                <i class="bi bi-diagram-3 me-1"></i>合同审批
-            </a>
-        </li>
-    </ul>
-    
-    <div class="search-bar">
-        <form method="get" action="{% url 'eims_app:contract_management_list' %}">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="搜索项目名称、合同编号..." value="{{ search_key }}">
-                </div>
-                <div class="col-md-2">
-                    <select name="contract_category" class="form-select">
-                        <option value="">所有合同类别</option>
-                        {% for value, label in CONTRACT_CATEGORY_CHOICES %}
-                        <option value="{{ value }}" {% if contract_category == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="contract_status" class="form-select">
-                        <option value="">所有合同状态</option>
-                        {% for value, label in CONTRACT_STATUS_CHOICES %}
-                        <option value="{{ value }}" {% if contract_status == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="settlement_status" class="form-select">
-                        <option value="">所有结算状态</option>
-                        {% for value, label in SETTLEMENT_STATUS_CHOICES %}
-                        <option value="{{ value }}" {% if settlement_status == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>搜索</button>
-                </div>
-            </div>
-        </form>
-    </div>
-    
-    <div class="card">
-        <!-- 分页控件 - 顶部 -->
-        {% if page_obj.has_other_pages %}
-        <div class="card-body py-2">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center mb-0">
-                    <!-- 首页和上一页 -->
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="首页">
-                            <i class="bi bi-chevron-double-left"></i> 首页
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="上一页">
-                            <i class="bi bi-chevron-left"></i> 上一页
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link"><i class="bi bi-chevron-double-left"></i> 首页</span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link"><i class="bi bi-chevron-left"></i> 上一页</span>
-                    </li>
-                    {% endif %}
-                    
-                    <!-- 当前页码 -->
-                    <li class="page-item active">
-                        <span class="page-link">
-                            第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
-                            (共 {{ page_obj.paginator.count }} 条)
-                        </span>
-                    </li>
-                    
-                    <!-- 下一页和末页 -->
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="下一页">
-                            下一页 <i class="bi bi-chevron-right"></i>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" title="末页">
-                            末页 <i class="bi bi-chevron-double-right"></i>
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">下一页 <i class="bi bi-chevron-right"></i></span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link">末页 <i class="bi bi-chevron-double-right"></i></span>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
-        {% endif %}
-        
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <form method="post" id="batchForm" action="{% url 'eims_app:contract_management_batch_delete' %}">
-                    {% csrf_token %}
-                    <table class="table table-hover table-striped mb-0">
+    <!-- ===== 可滚动表格区域 ===== -->
+    <div class="scrollable-table-section">
+        <div class="card data-table-card">
+            <div class="card-body">
+                <!-- 搜索筛选栏 -->
+                <form method="get" action="{% url 'eims_app:contract_management_list' %}" style="padding: 0.5rem 1rem; border-bottom: 1px solid #dee2e6; background: #f8f9fc;">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-4">
+                            <input type="text" name="search" class="form-control form-control-sm" placeholder="搜索项目名称、合同编号..." value="{{ search_key }}" style="height: 37.5px; font-size: 14px;">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="contract_category" class="form-select form-select-sm" style="height: 37.5px; font-size: 14px;">
+                                <option value="">所有合同类别</option>
+                                {% for value, label in CONTRACT_CATEGORY_CHOICES %}
+                                <option value="{{ value }}" {% if contract_category == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="contract_status" class="form-select form-select-sm" style="height: 37.5px; font-size: 14px;">
+                                <option value="">所有合同状态</option>
+                                {% for value, label in CONTRACT_STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if contract_status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="settlement_status" class="form-select form-select-sm" style="height: 37.5px; font-size: 14px;">
+                                <option value="">所有结算状态</option>
+                                {% for value, label in SETTLEMENT_STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if settlement_status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary btn-sm w-100" style="height: 37.5px; font-size: 14px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-search me-1"></i>搜索</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- 数据表格 -->
+                <div class="table-responsive">
+                    <form method="post" id="batchForm" action="{% url 'eims_app:contract_management_batch_delete' %}">
+                        {% csrf_token %}
+                        <table class="table table-hover table-striped mb-0">
                         <thead>
                             <tr>
                                 <th class="text-center" width="50">
                                     <input type="checkbox" id="selectAll" class="form-check-input">
                                 </th>
                                 <th class="text-center">序号</th>
-                                <th>项目编号</th>
-                                <th>合同编号</th>
-                                <th>合同类别</th>
-                                <th>项目名称</th>
-                                <th>项目状态</th>
-                                <th>合同状态</th>
-                                <th>结算情况</th>
-                                <th>合同甲方</th>
-                                <th>合同乙方</th>
-                                <th>签订日期</th>
+                                <th class="sortable" data-field="project_code" onclick="handleSort('project_code')">项目编号<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="contract_code" onclick="handleSort('contract_code')">合同编号<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="contract_category" onclick="handleSort('contract_category')">合同类别<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="project_name" onclick="handleSort('project_name')">项目名称<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="project_status" onclick="handleSort('project_status')">项目状态<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="contract_status" onclick="handleSort('contract_status')">合同状态<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="settlement_status" onclick="handleSort('settlement_status')">结算情况<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="contract_party_a" onclick="handleSort('contract_party_a')">合同甲方<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="contract_party_b" onclick="handleSort('contract_party_b')">合同乙方<span class="sort-icon"></span></th>
+                                <th class="sortable" data-field="signing_date" onclick="handleSort('signing_date')">签订日期<span class="sort-icon"></span></th>
                                 <th>合同文本</th>
-                                <th class="text-end">合同总价 (元)</th>
+                                <th class="text-end sortable" data-field="contract_amount" onclick="handleSort('contract_amount')">合同总价 (元)<span class="sort-icon"></span></th>
                                 <th class="text-end">付款约定</th>
-                                <th class="text-end">累计回款 (元)</th>
-                                <th class="text-end">合同余款 (元)</th>
+                                <th class="text-end sortable" data-field="cumulative_payment" onclick="handleSort('cumulative_payment')">累计回款 (元)<span class="sort-icon"></span></th>
+                                <th class="text-end sortable" data-field="contract_balance" onclick="handleSort('contract_balance')">合同余款 (元)<span class="sort-icon"></span></th>
                                 <th>项目规模</th>
                                 <th class="text-end">项目总投资 (万元)</th>
                                 <th>项目地址</th>
                                 <th>约定人员配备</th>
-                                <th>服务开始时间</th>
-                                <th>服务周期 (月)</th>
-                                <th>服务到期时间</th>
+                                <th class="sortable" data-field="service_start_date" onclick="handleSort('service_start_date')">服务开始时间<span class="sort-icon"></span></th>
+                                <th class="text-end">服务周期 (月)</th>
+                                <th class="sortable" data-field="service_deadline" onclick="handleSort('service_deadline')">服务到期时间<span class="sort-icon"></span></th>
                                 <th>延期约定</th>
                                 <th>实际延期情况</th>
-                                <th>项目总监</th>
+                                <th class="sortable" data-field="project_director" onclick="handleSort('project_director')">项目总监<span class="sort-icon"></span></th>
                                 <th>联系电话</th>
                                 <th>备注</th>
                                 <th class="text-center sticky-col">操作</th>
@@ -472,8 +676,66 @@
                         {% empty %}
                         <tr><td colspan="28" class="text-center text-muted py-4"><i class="bi bi-inbox display-4"></i><p class="mt-2">暂无数据</p></td></tr>
                         {% endfor %}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                    </form>
+                </div>
+                
+                <!-- 可拖动调整高度的把手 -->
+                <div class="resize-handle" id="resizeHandle" title="⬆⬇ 向上或向下拖动此处调整表格显示高度"></div>
+                
+                <!-- 分页导航 -->
+                {% if page_obj.paginator.num_pages > 1 or page_obj.number == 1 %}
+                <div class="pagination-wrapper" style="flex-shrink: 0; background: #f8f9fc; border-top: 1px solid #e3e6f0; padding: 0.4rem 0; box-shadow: none; position: relative; z-index: 10; margin-top: 0; width: 100%;">
+                    <nav aria-label="分页导航">
+                        <div class="pagination-container">
+                            <!-- 统计信息 - 靠左 -->
+                            <div class="statistics-info" style="position: absolute; left: 1rem; white-space: nowrap;">
+                                <span>总合同数: <strong class="text-primary">{{ page_obj.paginator.count }}</strong> 个</span>
+                                <span class="ms-2">当前页: <strong class="text-success">{{ page_obj.number }}</strong> / {{ page_obj.paginator.num_pages }}</span>
+                                <span class="ms-2">本页: <strong class="text-info">{{ page_obj|length }}</strong> 个</span>
+                            </div>
+                            
+                            <!-- 分页导航 - 居中 -->
+                            {% if page_obj.has_previous %}
+                            <a href="?page=1&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" class="pagination-btn">
+                                <i class="bi bi-chevron-double-left"></i> 首页
+                            </a>
+                            <a href="?page={{ page_obj.previous_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" class="pagination-btn">
+                                <i class="bi bi-chevron-left"></i> 上一页
+                            </a>
+                            {% else %}
+                            <span class="pagination-btn disabled">
+                                <i class="bi bi-chevron-double-left"></i> 首页
+                            </span>
+                            <span class="pagination-btn disabled">
+                                <i class="bi bi-chevron-left"></i> 上一页
+                            </span>
+                            {% endif %}
+                            
+                            <span class="pagination-info">
+                                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+                            </span>
+                            
+                            {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" class="pagination-btn">
+                                下一页 <i class="bi bi-chevron-right"></i>
+                            </a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_key }}&contract_category={{ contract_category }}&contract_status={{ contract_status }}&settlement_status={{ settlement_status }}" class="pagination-btn">
+                                末页 <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                            {% else %}
+                            <span class="pagination-btn disabled">
+                                下一页 <i class="bi bi-chevron-right"></i>
+                            </span>
+                            <span class="pagination-btn disabled">
+                                末页 <i class="bi bi-chevron-double-right"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </nav>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -556,6 +818,273 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             return false;
+        });
+    });
+});
+
+// ===== 可拖动调整表格高度功能 =====
+(function() {
+    const resizeHandle = document.getElementById('resizeHandle');
+    if (!resizeHandle) return;
+    
+    const tableContainer = document.querySelector('.table-responsive');
+    if (!tableContainer) return;
+    
+    const scrollableSection = document.querySelector('.scrollable-table-section');
+    if (!scrollableSection) return;
+    
+    let isResizing = false;
+    let startY = 0;
+    let startHeight = 0;
+    
+    // 鼠标按下处理
+    function handleMouseDown(e) {
+        isResizing = true;
+        startY = e.clientY || e.pageY;
+        startHeight = tableContainer.parentElement.getBoundingClientRect().height;
+        
+        resizeHandle.classList.add('dragging');
+        document.body.style.cursor = 'ns-resize';
+        document.body.style.userSelect = 'none';
+        
+        // 添加全局事件监听
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        
+        e.preventDefault();
+    }
+    
+    // 鼠标移动处理
+    function handleMouseMove(e) {
+        if (!isResizing) return;
+        
+        const deltaY = (e.clientY || e.pageY) - startY;
+        const newHeight = Math.max(200, startHeight + deltaY); // 最小高度 200px
+        
+        // 应用新高度到卡片容器
+        const cardBody = tableContainer.parentElement;
+        cardBody.style.height = newHeight + 'px';
+        cardBody.style.flex = 'none';
+        
+        // 保存到 localStorage
+        localStorage.setItem('contractManagementTableHeight', newHeight);
+    }
+    
+    // 鼠标松开处理
+    function handleMouseUp() {
+        if (isResizing) {
+            isResizing = false;
+            resizeHandle.classList.remove('dragging');
+            
+            // 移除全局事件监听
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            
+            // 恢复鼠标样式
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    }
+    
+    // 触摸事件支持
+    function handleTouchStart(e) {
+        const touch = e.touches[0];
+        isResizing = true;
+        startY = touch.clientY;
+        startHeight = tableContainer.parentElement.getBoundingClientRect().height;
+        
+        resizeHandle.classList.add('dragging');
+        document.body.style.userSelect = 'none';
+        
+        document.addEventListener('touchmove', handleTouchMove);
+        document.addEventListener('touchend', handleTouchEnd);
+        
+        e.preventDefault();
+    }
+    
+    function handleTouchMove(e) {
+        if (!isResizing) return;
+        
+        const touch = e.touches[0];
+        const deltaY = touch.clientY - startY;
+        const newHeight = Math.max(200, startHeight + deltaY);
+        
+        const cardBody = tableContainer.parentElement;
+        cardBody.style.height = newHeight + 'px';
+        cardBody.style.flex = 'none';
+        
+        localStorage.setItem('contractManagementTableHeight', newHeight);
+    }
+    
+    function handleTouchEnd() {
+        if (isResizing) {
+            isResizing = false;
+            resizeHandle.classList.remove('dragging');
+            
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+            
+            document.body.style.userSelect = '';
+        }
+    }
+    
+    // 绑定事件
+    resizeHandle.addEventListener('mousedown', handleMouseDown);
+    resizeHandle.addEventListener('touchstart', handleTouchStart);
+    
+    // 页面加载时恢复保存的高度
+    const savedHeight = localStorage.getItem('contractManagementTableHeight');
+    if (savedHeight) {
+        const cardBody = tableContainer.parentElement;
+        cardBody.style.height = savedHeight + 'px';
+        cardBody.style.flex = 'none';
+    }
+})();
+
+// ==================== 排序功能 ====================
+let currentSortField = '{{ sort_field|default:"project_code" }}';
+let currentSortOrder = '{{ sort_order|default:"asc" }}';
+let contextMenuTarget = null;
+
+/**
+ * 处理表头点击排序
+ * @param {string} field - 排序字段
+ */
+function handleSort(field) {
+    // 如果点击的是当前已排序的字段，切换排序方向
+    if (currentSortField === field) {
+        currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+        // 否则，切换到新字段，默认升序
+        currentSortField = field;
+        currentSortOrder = 'asc';
+    }
+    
+    // 更新URL并重新加载页面
+    updateSortUrl();
+}
+
+/**
+ * 显示右键菜单
+ * @param {Event} event - 右键点击事件
+ * @param {string} field - 字段名
+ */
+function showContextMenu(event, field) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    contextMenuTarget = field;
+    
+    // 隐藏已有菜单
+    hideContextMenu();
+    
+    // 创建或获取右键菜单
+    let menu = document.getElementById('sortContextMenu');
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'sortContextMenu';
+        menu.className = 'sort-context-menu';
+        menu.innerHTML = `
+            <div class="menu-item" onclick="applySort('asc')">
+                <i class="bi bi-sort-up"></i>升序排列
+            </div>
+            <div class="menu-item" onclick="applySort('desc')">
+                <i class="bi bi-sort-down"></i>降序排列
+            </div>
+            <div class="menu-item" onclick="clearSort()">
+                <i class="bi bi-x-circle"></i>取消排序
+            </div>
+        `;
+        document.body.appendChild(menu);
+    }
+    
+    // 定位菜单
+    menu.style.left = event.pageX + 'px';
+    menu.style.top = event.pageY + 'px';
+    menu.style.display = 'block';
+    
+    // 点击其他地方关闭菜单
+    setTimeout(() => {
+        document.addEventListener('click', hideContextMenu, { once: true });
+    }, 100);
+}
+
+/**
+ * 隐藏右键菜单
+ */
+function hideContextMenu() {
+    const menu = document.getElementById('sortContextMenu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
+}
+
+/**
+ * 应用排序（从右键菜单）
+ * @param {string} order - 排序方向 'asc' 或 'desc'
+ */
+function applySort(order) {
+    if (!contextMenuTarget) return;
+    
+    currentSortField = contextMenuTarget;
+    currentSortOrder = order;
+    
+    hideContextMenu();
+    updateSortUrl();
+}
+
+/**
+ * 清除排序，恢复默认排序
+ */
+function clearSort() {
+    currentSortField = 'project_code';
+    currentSortOrder = 'asc';
+    
+    hideContextMenu();
+    updateSortUrl();
+}
+
+/**
+ * 更新URL并重新加载页面
+ */
+function updateSortUrl() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort_field', currentSortField);
+    url.searchParams.set('sort_order', currentSortOrder);
+    url.searchParams.set('page', '1');  // 重置到第一页
+    window.location.href = url.toString();
+}
+
+/**
+ * 初始化排序状态显示
+ */
+function initSortDisplay() {
+    // 移除所有排序类
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    
+    // 为当前排序字段添加对应的类
+    const currentTh = document.querySelector(`th[data-field="${currentSortField}"]`);
+    if (currentTh) {
+        if (currentSortOrder === 'asc') {
+            currentTh.classList.add('sorted-asc');
+        } else if (currentSortOrder === 'desc') {
+            currentTh.classList.add('sorted-desc');
+        }
+    }
+}
+
+// 为所有可排序表头添加右键菜单事件
+document.addEventListener('DOMContentLoaded', function() {
+    initSortDisplay();
+    
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('contextmenu', function(e) {
+            const field = this.getAttribute('data-field');
+            if (field) {
+                showContextMenu(e, field);
+            }
         });
     });
 });

@@ -1,0 +1,392 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}编辑{% else %}新增{% endif %} - 项目信息{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container-fluid {
+        padding: 10px !important;
+        max-width: 1200px !important;
+    }
+    
+    .card {
+        margin-bottom: 10px !important;
+    }
+    
+    .card-header {
+        padding: 8px 12px !important;
+    }
+    
+    .card-body {
+        padding: 15px !important;
+    }
+    
+    .form-label {
+        font-size: 0.9rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .form-control, .form-select {
+        font-size: 0.9rem !important;
+        padding: 4px 8px !important;
+    }
+    
+    .form-control:disabled, .form-select:disabled {
+        background-color: #e9ecef;
+        opacity: 0.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 面包屑导航 -->
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:module_cost' %}">造价咨询</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:cost_project_info_list' %}">项目信息</a></li>
+            <li class="breadcrumb-item active">{% if form.instance.pk %}编辑{% else %}新增{% endif %}</li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header">
+            <h6 class="mb-0">{% if form.instance.pk %}编辑项目信息{% else %}新增项目信息{% endif %}</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="projectInfoForm">
+                {% csrf_token %}
+                
+                <div class="row g-3">
+                    <!-- 基础信息 -->
+                    <div class="col-md-12">
+                        <h6 class="text-primary border-bottom pb-2">基础信息</h6>
+                    </div>
+                    
+                    <!-- 隐藏的项目选择字段 -->
+                    {{ form.selected_project }}
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">项目编号 <span class="text-danger">*</span></label>
+                        {{ form.project_code }}
+                        {% if form.project_code.errors %}
+                        <div class="text-danger small">{{ form.project_code.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">项目名称 <span class="text-danger">*</span></label>
+                        {{ form.project_name }}
+                        {% if form.project_name.errors %}
+                        <div class="text-danger small">{{ form.project_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">项目类型</label>
+                        {{ form.project_type }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">专业</label>
+                        {{ form.compilation_category }}
+                        <datalist id="major-list">
+                            <option value="建筑">
+                            <option value="水电">
+                            <option value="园林">
+                            <option value="市政">
+                            <option value="电力">
+                            <option value="其他">
+                        </datalist>
+                        <small class="text-muted">可从列表选择或手动输入新专业</small>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">审核类别</label>
+                        {{ form.review_category }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">项目状态</label>
+                        {{ form.project_status }}
+                    </div>
+                    
+                    <!-- 委托单位信息 -->
+                    <div class="col-md-6">
+                        <label class="form-label">委托单位</label>
+                        {{ form.entrusting_unit }}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">联系人</label>
+                        {{ form.contact_person }}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">联系电话</label>
+                        {{ form.contact_phone }}
+                    </div>
+                    
+                    <!-- 金额信息 -->
+                    <div class="col-md-3">
+                        <label class="form-label">编制金额(万元)</label>
+                        <input type="text" class="form-control" value="--" readonly style="background-color: #f8f9fa; cursor: not-allowed;" title="编制金额请在「审核成果」模块填写">
+                        <small class="text-muted d-block">请在「审核成果」模块填写</small>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">送审金额(万元)</label>
+                        {{ form.submission_amount }}
+                        <input type="hidden" name="submission_amount_original" id="submission_amount_original" value="{{ form.submission_amount.value|default:0 }}">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">审定金额(万元)</label>
+                        {{ form.approved_amount }}
+                        <input type="hidden" name="approved_amount_original" id="approved_amount_original" value="{{ form.approved_amount.value|default:0 }}">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">审减金额(万元)</label>
+                        {{ form.reduced_amount }}
+                        <small class="text-muted d-block">自动计算：送审金额 - 审定金额</small>
+                    </div>
+                    
+                    <!-- 费用信息 -->
+                    <div class="col-md-4">
+                        <label class="form-label">费用总额(万元)</label>
+                        {{ form.total_fee }}
+                        <input type="hidden" name="total_fee_original" id="total_fee_original" value="{{ form.total_fee.value|default:0 }}">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">已收费用(万元)</label>
+                        {{ form.received_fee }}
+                        <input type="hidden" name="received_fee_original" id="received_fee_original" value="{{ form.received_fee.value|default:0 }}">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">待收费用(万元)</label>
+                        {{ form.pending_fee }}
+                        <small class="text-muted d-block">自动计算：费用总额 - 已收费用</small>
+                    </div>
+                    
+                    <!-- 人员和时间 -->
+                    <div class="col-md-4">
+                        <label class="form-label">项目负责人</label>
+                        {{ form.project_manager_personnel }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">送审时间</label>
+                        {{ form.submission_time }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">完成时间</label>
+                        {{ form.completion_time }}
+                    </div>
+                    
+                    <!-- 备注 -->
+                    <div class="col-12">
+                        <label class="form-label">备注</label>
+                        {{ form.remark }}
+                    </div>
+                </div>
+                
+                <div class="mt-3 d-flex justify-content-between">
+                    <a href="{% url 'eims_app:cost_project_info_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> 返回列表
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // 获取表单字段
+    const projectCodeField = document.querySelector('#id_project_code');
+    const projectTypeField = document.querySelector('#id_project_type');
+    const reviewCategoryField = document.querySelector('#id_review_category');
+    const compilationAmountField = document.querySelector('#id_compilation_amount');
+    const submissionAmountField = document.querySelector('#id_submission_amount');
+    const approvedAmountField = document.querySelector('#id_approved_amount');
+    const reducedAmountField = document.querySelector('#id_reduced_amount');
+    const totalFeeField = document.querySelector('#id_total_fee');
+    const receivedFeeField = document.querySelector('#id_received_fee');
+    const pendingFeeField = document.querySelector('#id_pending_fee');
+    
+    // 辅助函数：检查是否包含某个字符串
+    function contains(str, keyword) {
+        return str && str.indexOf(keyword) !== -1;
+    }
+    
+    // 辅助函数：解析数字
+    function parseDecimal(value) {
+        const num = parseFloat(value);
+        return isNaN(num) ? 0 : num;
+    }
+    
+    // 辅助函数：设置字段为禁用/启用
+    function setFieldDisabled(field, disabled) {
+        if (field) {
+            field.disabled = disabled;
+            if (disabled) {
+                field.value = '';
+            }
+        }
+    }
+    
+    // 根据项目类型自动更新项目编号前缀
+    function updateProjectCodePrefix() {
+        if (!projectCodeField || !projectTypeField) return;
+        
+        const projectTypeValue = projectTypeField.value;
+        let prefix = '';
+        
+        // 根据项目类型的实际值确定前缀（注意：数据库中存储的是英文值）
+        switch(projectTypeValue) {
+            case 'settlement_compilation':  // 结算编制
+                prefix = 'JSBZ-';
+                break;
+            case 'budget_compilation':  // 预算编制
+                prefix = 'YSBZ-';
+                break;
+            case 'settlement_review':  // 结算审核
+                prefix = 'JSSH-';
+                break;
+            case 'budget_review':  // 预算审核
+                prefix = 'YSSH-';
+                break;
+            default:
+                // 其他类型不添加前缀
+                return;
+        }
+        
+        const currentCode = projectCodeField.value.trim();
+        
+        // 如果已经有对应的前缀，则不重复添加
+        if (currentCode.startsWith(prefix)) {
+            return;
+        }
+        
+        // 移除旧的四种前缀（如果存在）
+        let codeWithoutPrefix = currentCode;
+        ['JSBZ-', 'YSBZ-', 'JSSH-', 'YSSH-'].forEach(oldPrefix => {
+            if (codeWithoutPrefix.startsWith(oldPrefix)) {
+                codeWithoutPrefix = codeWithoutPrefix.substring(oldPrefix.length);
+            }
+        });
+        
+        // 添加新的前缀
+        projectCodeField.value = prefix + codeWithoutPrefix;
+    }
+    
+    // 更新字段状态
+    function updateFieldStates() {
+        const projectTypeValue = projectTypeField ? projectTypeField.value : '';
+        const projectTypeText = projectTypeField ? projectTypeField.options[projectTypeField.selectedIndex].text : '';
+            
+        // 判断是否包含"编制"或"审核"
+        const isCompilation = contains(projectTypeText, '编制');
+        const isReview = contains(projectTypeText, '审核');
+            
+        // 专业字段始终可用，不再根据项目类型禁用
+        
+        // 如果选了含"编制"的选项，审核类别不可用
+        if (reviewCategoryField) {
+            setFieldDisabled(reviewCategoryField, isCompilation);
+        }
+            
+        // 如果选了含"编制"的选项，送审金额、审定金额、审减金额不可用
+        if (submissionAmountField) {
+            setFieldDisabled(submissionAmountField, isCompilation);
+        }
+        if (approvedAmountField) {
+            setFieldDisabled(approvedAmountField, isCompilation);
+        }
+        if (reducedAmountField) {
+            setFieldDisabled(reducedAmountField, isCompilation);
+        }
+    }
+    
+    // 自动计算审减金额 = 送审金额 - 审定金额
+    function calculateReducedAmount() {
+        if (reducedAmountField && !reducedAmountField.disabled) {
+            const submissionAmount = parseDecimal(submissionAmountField ? submissionAmountField.value : 0);
+            const approvedAmount = parseDecimal(approvedAmountField ? approvedAmountField.value : 0);
+            const reducedAmount = submissionAmount - approvedAmount;
+            reducedAmountField.value = reducedAmount.toFixed(2);
+        }
+    }
+    
+    // 自动计算待收费用 = 费用总额 - 已收费用
+    function calculatePendingFee() {
+        if (pendingFeeField && !pendingFeeField.disabled) {
+            const totalFee = parseDecimal(totalFeeField ? totalFeeField.value : 0);
+            const receivedFee = parseDecimal(receivedFeeField ? receivedFeeField.value : 0);
+            const pendingFee = totalFee - receivedFee;
+            pendingFeeField.value = pendingFee.toFixed(2);
+        }
+    }
+    
+    // 绑定事件
+    if (projectTypeField) {
+        projectTypeField.addEventListener('change', function() {
+            updateProjectCodePrefix();  // 先更新项目编号前缀
+            updateFieldStates();  // 再更新字段状态
+        });
+    }
+    
+    // 送审金额、审定金额变化时自动计算审减金额
+    if (submissionAmountField) {
+        submissionAmountField.addEventListener('input', function() {
+            if (!submissionAmountField.disabled && !approvedAmountField.disabled) {
+                calculateReducedAmount();
+            }
+        });
+    }
+    
+    if (approvedAmountField) {
+        approvedAmountField.addEventListener('input', function() {
+            if (!submissionAmountField.disabled && !approvedAmountField.disabled) {
+                calculateReducedAmount();
+            }
+        });
+    }
+    
+    // 费用总额、已收费用变化时自动计算待收费用
+    if (totalFeeField) {
+        totalFeeField.addEventListener('input', function() {
+            if (!totalFeeField.disabled && !receivedFeeField.disabled) {
+                calculatePendingFee();
+            }
+        });
+    }
+    
+    if (receivedFeeField) {
+        receivedFeeField.addEventListener('input', function() {
+            if (!totalFeeField.disabled && !receivedFeeField.disabled) {
+                calculatePendingFee();
+            }
+        });
+    }
+    
+    // 初始化字段状态
+    updateFieldStates();
+    
+    // 初始化计算
+    calculateReducedAmount();
+    calculatePendingFee();
+})();
+</script>
+{% endblock %}

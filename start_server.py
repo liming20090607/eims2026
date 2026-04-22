@@ -39,7 +39,7 @@ def main():
         os.chdir(r"E:\EIMS2026")
         subprocess.Popen(
             [sys.executable, "manage.py", "runserver", "0.0.0.0:8000"],
-            creationdflags=subprocess.CREATE_NEW_CONSOLE
+            creationflags=subprocess.CREATE_NEW_CONSOLE
         )
         notify("EIMS服务器", f"✅ 服务器已启动！\n\n请访问: http://localhost:{port}/")
 

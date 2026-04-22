@@ -1,0 +1,186 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}组织管理模块导航{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item active">组织管理模块</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="display-6"><i class="bi bi-building-fill text-primary"></i> 组织管理模块</h2>
+            <p class="text-muted mt-2">完整的组织架构管理系统 - 包含部门管理、角色配置、审批流程三大功能</p>
+        </div>
+    </div>
+
+    <!-- 三个核心功能卡片 -->
+    <div class="row g-4 mb-4">
+        <!-- 部门管理 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0"><i class="bi bi-building"></i> 部门管理</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-buildings display-1 text-primary mb-3"></i>
+                    <p class="card-text mt-3">
+                        公司部门全生命周期管理，支持多级部门架构、部门负责人、联系方式等信息管理。
+                    </p>
+                    <ul class="list-unstyled text-start mx-auto" style="max-width: 300px;">
+                        <li><i class="bi bi-check-circle text-success"></i> 部门信息维护</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 多级部门架构</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 部门负责人设置</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 部门职能描述</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 部门数据统计</li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <a href="{% url 'eims_app:department_list' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                    <div class="mt-2">
+                        <small class="text-muted">当前状态：<span class="text-success">✅ 已上线</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 角色配置 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h4 class="mb-0"><i class="bi bi-person-badge"></i> 角色配置</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-person-workspace display-1 text-warning mb-3"></i>
+                    <p class="card-text mt-3">
+                        部门角色权限配置系统，支持多级角色管理、权限分配、负责人设置等功能。
+                    </p>
+                    <ul class="list-unstyled text-start mx-auto" style="max-width: 300px;">
+                        <li><i class="bi bi-check-circle text-success"></i> 部门角色定义</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 角色权限配置</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 负责人指定</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 多角色支持</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 按部门查询</li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <a href="{% url 'eims_app:department_role_list' %}" class="btn btn-warning btn-lg text-dark">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                    <div class="mt-2">
+                        <small class="text-muted">当前状态：<span class="text-success">✅ 已上线</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 审批管理 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-info">
+                <div class="card-header bg-info text-white text-center">
+                    <h4 class="mb-0"><i class="bi bi-diagram-3"></i> 审批管理</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-flowchart display-1 text-info mb-3"></i>
+                    <p class="card-text mt-3">
+                        灵活的多级审批流程配置系统，支持跨部门协作审批、自定义审批链等功能。
+                    </p>
+                    <ul class="list-unstyled text-start mx-auto" style="max-width: 300px;">
+                        <li><i class="bi bi-check-circle text-success"></i> 审批流程定义</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 多级审批配置</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 跨部门协作</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 审批链管理</li>
+                        <li><i class="bi bi-check-circle text-success"></i> 业务流程分类</li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <a href="{% url 'eims_app:approval_chain_list' %}" class="btn btn-info btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> 进入系统
+                    </a>
+                    <div class="mt-2">
+                        <small class="text-muted">当前状态：<span class="text-success">✅ 已上线</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能说明 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-info-circle text-primary"></i> 模块说明</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="fw-bold text-primary"><i class="bi bi-building"></i> 部门管理</h6>
+                            <p class="small text-muted">
+                                建立完整的公司组织架构，支持多级部门设置，管理部门基本信息、负责人、联系方式和职能描述。
+                                可为每个部门设置独立的编号、类型和排序，满足大型企业的复杂组织管理需求。
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="fw-bold text-warning"><i class="bi bi-person-badge"></i> 角色配置</h6>
+                            <p class="small text-muted">
+                                为各部门配置不同的角色和权限，支持一级、二级角色管理，可指定各级角色的负责人和具体人员。
+                                通过角色配置实现精细化的权限控制，确保每个部门和岗位都有明确的职责划分。
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="fw-bold text-info"><i class="bi bi-diagram-3"></i> 审批管理</h6>
+                            <p class="small text-muted">
+                                配置多级审批流程，支持跨部门协同审批。可根据不同的业务类型设置对应的审批链条，
+                                包括一级审批部门/角色和二级审批部门/角色，实现灵活的业务流程管理和自动化审批。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速链接 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-speedometer2 text-primary"></i> 快速访问</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'eims_app:department_list' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-list-ul"></i> 部门列表
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'eims_app:department_add' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-plus-circle"></i> 添加部门
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'eims_app:department_role_list' %}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-people"></i> 角色配置
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'eims_app:approval_chain_list' %}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-diagram-3"></i> 审批流程
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -14,6 +14,8 @@ class Tenant(models.Model):
     contact_phone = models.CharField("联系电话", max_length=20, blank=True)
     contact_email = models.EmailField("联系邮箱", blank=True)
     address = models.TextField("公司地址", blank=True)
+    project_code_prefix = models.CharField("项目编号前缀", max_length=10, blank=True, default='',
+                                           help_text="新建项目编号的默认前缀，如：JCD、DC、SC")
     is_active = models.BooleanField("是否启用", default=True)
     remark = models.TextField("备注", blank=True)
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")

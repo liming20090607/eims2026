@@ -27,6 +27,13 @@ def has_personnel_permission(user):
 def certificate_list(request):
     """人员证书列表页面"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 1. 获取筛选参数
     search_key = request.GET.get('keyword', '')
     certificate_type = request.GET.get('certificate_type', '')
@@ -53,9 +60,13 @@ def certificate_list(request):
     if personnel_code:
         certificate_list = certificate_list.filter(personnel_code=personnel_code)
     
-    # 4. 预获取人员信息
+    # 4. 预获取人员信息（按租户过滤）
+    personnel_filter = {'is_deleted': False}
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
     personnel_info = {}
-    for p in Personnel.objects.all():
+    for p in Personnel.objects.filter(**personnel_filter):
         personnel_info[p.personnel_code] = p
     
     # 为证书对象附加人员姓名
@@ -88,8 +99,15 @@ def certificate_list(request):
         'home_url': reverse('eims_app:eims_index'),
         'eims_index_url': reverse('eims_app:eims_index'),
         'total_certificates': total_certificates,
-        'all_personnel': Personnel.objects.filter(is_deleted=False).order_by('personnel_code'),
     }
+    
+    # 获取人员列表，按租户过滤
+    personnel_filter = {'is_deleted': False}
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    context['all_personnel'] = Personnel.objects.filter(**personnel_filter).order_by('personnel_code')
+    
     return render(request, "personnel/certificate_list.html", context)
 
 
@@ -183,6 +201,13 @@ def certificate_detail(request, pk):
 def allocation_list(request):
     """人员分配列表页面"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 1. 获取筛选参数
     search_key = request.GET.get('keyword', '')
     allocation_status = request.GET.get('allocation_status', '')
@@ -213,13 +238,20 @@ def allocation_list(request):
     if to_project_code:
         allocation_list = allocation_list.filter(to_project_code=to_project_code)
     
-    # 4. 预获取人员和项目信息
+    # 4. 预获取人员和项目信息（按租户过滤）
+    # 注意：ProjectDetail模型没有is_deleted字段
+    personnel_filter = {'is_deleted': False}
+    project_filter = {}
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+        project_filter['tenant_id'] = request.tenant.id
+    
     personnel_info = {}
-    for p in Personnel.objects.all():
+    for p in Personnel.objects.filter(**personnel_filter):
         personnel_info[p.personnel_code] = p
     
     project_info = {}
-    for p in ProjectDetail.objects.all():
+    for p in ProjectDetail.objects.filter(**project_filter):
         project_info[p.project_code] = p
     
     # 为分配对象附加名称
@@ -264,9 +296,22 @@ def allocation_list(request):
         'home_url': reverse('eims_app:eims_index'),
         'eims_index_url': reverse('eims_app:eims_index'),
         'total_allocations': total_allocations,
-        'all_personnel': Personnel.objects.filter(is_deleted=False).order_by('personnel_code'),
-        'all_projects': ProjectDetail.objects.order_by('project_code'),
     }
+    
+    # 获取人员列表，按租户过滤
+    personnel_filter = {'is_deleted': False}
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    context['all_personnel'] = Personnel.objects.filter(**personnel_filter).order_by('personnel_code')
+    
+    # 获取项目列表，按租户过滤
+    proj_filter = {}
+    if hasattr(request, 'tenant') and request.tenant:
+        proj_filter['tenant_id'] = request.tenant.id
+    
+    context['all_projects'] = ProjectDetail.objects.filter(**proj_filter).order_by('project_code')
+    
     return render(request, "personnel/allocation_list.html", context)
 
 

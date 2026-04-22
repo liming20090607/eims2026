@@ -1,0 +1,80 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}合同详情{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:contract_management_list' %}">合同管理</a></li>
+<li class="breadcrumb-item active">详情</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+    .detail-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px 32px; border-radius: 8px 8px 0 0; }
+    .detail-body { padding: 32px; }
+    .section-title { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 24px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; }
+    .section-title i { margin-right: 8px; color: #667eea; }
+    .info-row { display: flex; margin-bottom: 12px; }
+    .info-label { font-weight: 600; color: #64748b; width: 140px; flex-shrink: 0; }
+    .info-value { color: #1e293b; }
+    .status-badge { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="{% url 'eims_app:contract_management_list' %}" class="btn btn-secondary"><i class="bi bi-arrow-left me-1"></i>返回列表</a>
+                <div>
+                    {% if user.is_superuser %}
+                    <a href="{% url 'eims_app:contract_management_edit' contract.pk %}" class="btn btn-warning me-2"><i class="bi bi-pencil me-1"></i>编辑</a>
+                    <a href="{% url 'eims_app:contract_management_delete' contract.pk %}" class="btn btn-danger" onclick="return confirm('确定要删除这个合同吗？')"><i class="bi bi-trash me-1"></i>删除</a>
+                    {% else %}
+                    <button type="button" class="btn btn-secondary me-2 disabled" title="编辑（仅超级管理员）" disabled>
+                        <i class="bi bi-pencil me-1"></i>编辑
+                    </button>
+                    <button type="button" class="btn btn-secondary disabled" title="删除（仅超级管理员）" disabled>
+                        <i class="bi bi-trash me-1"></i>删除
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2 class="mb-2">{{ contract.project_name }}</h2>
+                    <p class="mb-0 opacity-75"><i class="bi bi-hash me-1"></i>{{ contract.contract_code }}</p>
+                </div>
+                
+                <div class="detail-body">
+                    <div class="section-title"><i class="bi bi-info-circle"></i>状态信息</div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-row"><span class="info-label">合同类别:</span><span class="info-value">{{ contract.get_contract_category_display }}</span></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-row"><span class="info-label">合同状态:</span><span class="info-value"><span class="status-badge contract-{{ contract.contract_status }}">{{ contract.get_contract_status_display }}</span></span></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-row"><span class="info-label">结算情况:</span><span class="info-value"><span class="status-badge settlement-{{ contract.settlement_status }}">{{ contract.get_settlement_status_display }}</span></span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title"><i class="bi bi-file-earmark-text"></i>合同信息</div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><div class="info-row"><span class="info-label">合同甲方:</span><span class="info-value">{{ contract.contract_party_a }}</span></div></div>
+                        <div class="col-md-6 mb-3"><div class="info-row"><span class="info-label">合同乙方:</span><span class="info-value">{{ contract.contract_party_b }}</span></div></div>
+                        <div class="col-md-4 mb-3"><div class="info-row"><span class="info-label">签订日期:</span><span class="info-value">{{ contract.signing_date|date:"Y-m-d"|default:"-" }}</span></div></div>
+                        <div class="col-md-4 mb-3"><div class="info-row"><span class="info-label">合同总价 (元):</span><span class="info-value text-success fw-bold">¥{{ contract.contract_amount|floatformat:2 }}</span></div></div>
+                        <div class="col-md-4 mb-3"><div class="info-row"><span class="info-label">付款约定:</span><span class="info-value">{{ contract.payment_agreement|default:"-" }}</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

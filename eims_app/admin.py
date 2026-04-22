@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from eims_app.models.model_contract import Contract  # 导入合同模型，路径确保正确
 # from .models.model_project import Project  # 已废弃，使用 ProjectDetail 替代
 from .models.model_output_payment import OutputPayment
@@ -11,6 +11,7 @@ from .models.model_user import UserProfile
 from .models.model_dynamic_choice import DynamicChoice
 from .models.model_tenant import Tenant
 from .models.model_tenant_module import TenantModule, TenantModulePermission
+from .models.model_department import Department, DepartmentRole, CompanyExecutiveRole, ApprovalChain
 
 # 导入自定义的用户管理配置
 from .admin_user import UserAdmin, UserProfileAdmin
@@ -67,17 +68,64 @@ class OutputPaymentAdmin(admin.ModelAdmin):
 
 @admin.register(Employee)
 class EmployeeAdmin(ImportExportModelAdmin if IMPORT_EXPORT_AVAILABLE else admin.ModelAdmin):
-    list_display = ('employee_code', 'name', 'gender', 'mobile', 'education', 'ethnic', 'entry_time')
+    list_display = ('personnel_code', 'name', 'gender', 'mobile', 'education', 'ethnic', 'entry_time', 'display_tenant')
     search_fields = ('employee_code', 'name', 'mobile', 'id_card')
-    list_filter = ('gender', 'education', 'ethnic')
+    list_filter = ('gender', 'education', 'ethnic')  # 移除tenant过滤器，避免跨数据库查询
+    
+    def display_tenant(self, obj):
+        """显示租户名称，避免跨数据库JOIN问题"""
+        if obj.tenant_id:
+            try:
+                from eims_app.models import Tenant
+                tenant = Tenant.objects.using('root_admin').get(id=obj.tenant_id)
+                return f"{tenant.name} ({tenant.code})"
+            except Tenant.DoesNotExist:
+                return '未知公司'
+        return '-'
+    display_tenant.short_description = '所属公司'
+    display_tenant.admin_order_field = 'tenant_id'  # 按tenant_id排序，但不JOIN
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # 如果是超级管理员，显示所有数据
+        if request.user.is_superuser:
+            return qs
+        # 否则只显示当前用户租户的数据
+        if hasattr(request.user, 'userprofile') and request.user.userprofile.tenant:
+            return qs.filter(tenant=request.user.userprofile.tenant)
+        return qs.none()
+    
     if IMPORT_EXPORT_AVAILABLE:
         resource_classes = [EmployeeResource]
 
 @admin.register(Personnel)
 class PersonnelAdmin(admin.ModelAdmin):
-    list_display = ('personnel_code', 'name', 'project', 'position', 'entry_time')
+    list_display = ('personnel_code', 'name', 'project', 'position', 'entry_time', 'display_tenant')
     search_fields = ('personnel_code', 'name', 'project__project_name')
-    list_filter = ('project', 'position', 'gender')
+    list_filter = ('project', 'position', 'gender')  # 移除tenant过滤器，避免跨数据库查询
+    
+    def display_tenant(self, obj):
+        """显示租户名称，避免跨数据库JOIN问题"""
+        if obj.tenant_id:
+            try:
+                from eims_app.models import Tenant
+                tenant = Tenant.objects.using('root_admin').get(id=obj.tenant_id)
+                return f"{tenant.name} ({tenant.code})"
+            except Tenant.DoesNotExist:
+                return '未知公司'
+        return '-'
+    display_tenant.short_description = '所属公司'
+    display_tenant.admin_order_field = 'tenant_id'  # 按tenant_id排序，但不JOIN
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # 如果是超级管理员，显示所有数据
+        if request.user.is_superuser:
+            return qs
+        # 否则只显示当前用户租户的数据
+        if hasattr(request.user, 'userprofile') and request.user.userprofile.tenant:
+            return qs.filter(tenant=request.user.userprofile.tenant)
+        return qs.none()
 
 @admin.register(ProjectDynamic)
 class ProjectDynamicAdmin(admin.ModelAdmin):
@@ -103,3 +151,64 @@ class DynamicChoiceAdmin(admin.ModelAdmin):
     search_fields = ('category', 'code', 'name')
     ordering = ('category', 'order')
     list_editable = ('order', 'is_active')
+
+# 自定义 Group Admin，优化权限选择框显示
+class CustomGroupAdmin(admin.ModelAdmin):
+    """
+    自定义 Group Admin 配置
+    功能：优化权限选择框（filter_horizontal）的显示，加大加高选择框，增大文字
+    """
+    filter_horizontal = ('permissions',)
+    
+    class Media:
+        css = {
+            'all': ('css/admin_custom.css',)
+        }
+
+# 注销默认的 Group Admin 并注册自定义的
+admin.site.unregister(Group)
+admin.site.register(Group, CustomGroupAdmin)
+
+# ==================== 公司高管角色管理 ====================
+
+@admin.register(CompanyExecutiveRole)
+class CompanyExecutiveRoleAdmin(admin.ModelAdmin):
+    """公司高管角色管理"""
+    list_display = ['user', 'executive_type', 'role_name', 'is_primary', 'order']
+    list_filter = ['executive_type', 'is_primary']
+    search_fields = ['user__username', 'user__first_name', 'role_name']
+    ordering = ['order', 'executive_type']
+    
+    fieldsets = (
+        ('基本信息', {
+            'fields': ('user', 'executive_type', 'role_name')
+        }),
+        ('职责配置', {
+            'fields': ('is_primary', 'description', 'approval_authority'),
+            'classes': ('collapse',)
+        }),
+        ('排序', {
+            'fields': ('order',),
+        }),
+    )
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    """部门管理"""
+    list_display = ['department_code', 'department_name', 'department_type', 'manager', 'status']
+    list_filter = ['department_type', 'status']
+    search_fields = ['department_code', 'department_name']
+
+@admin.register(DepartmentRole)
+class DepartmentRoleAdmin(admin.ModelAdmin):
+    """部门角色管理"""
+    list_display = ['user', 'department', 'role_type', 'role_name', 'is_primary']
+    list_filter = ['role_type', 'is_primary', 'department']
+    search_fields = ['user__username', 'role_name', 'department__department_name']
+
+@admin.register(ApprovalChain)
+class ApprovalChainAdmin(admin.ModelAdmin):
+    """审批链管理"""
+    list_display = ['name', 'business_type', 'chain_type', 'is_active']
+    list_filter = ['business_type', 'chain_type', 'is_active']
+    search_fields = ['name', 'description']

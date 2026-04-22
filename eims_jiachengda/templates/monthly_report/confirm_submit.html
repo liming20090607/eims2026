@@ -1,0 +1,79 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- 页面标题 -->
+            {% include 'components/page_title.html' with title=title subtitle='确认提交月度报告' %}
+            
+            <!-- 确认卡片 -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>请注意：</strong> 提交后将不能再次编辑，请确保所有信息填写正确！
+                    </div>
+                    
+                    <h5 class="mb-3">报告信息预览</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">项目名称</th>
+                            <td>{{ report.project.project_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>报告月份</th>
+                            <td>{{ report.report_month }}</td>
+                        </tr>
+                        <tr>
+                            <th>项目进度说明</th>
+                            <td>{{ report.project_progress|default:"未填写"|linebreaksbr }}</td>
+                        </tr>
+                        <tr>
+                            <th>当前状态</th>
+                            <td>{{ report.get_current_status_display|default:"未选择" }}</td>
+                        </tr>
+                        <tr>
+                            <th>本月完成产值</th>
+                            <td>{{ report.monthly_output_value }} 万元</td>
+                        </tr>
+                        <tr>
+                            <th>本月回款金额</th>
+                            <td>{{ report.monthly_payment }} 元</td>
+                        </tr>
+                        <tr>
+                            <th>人员变动情况</th>
+                            <td>{{ report.personnel_changes|default:"未填写"|linebreaksbr }}</td>
+                        </tr>
+                        <tr>
+                            <th>当前总人数</th>
+                            <td>{{ report.total_personnel }} 人</td>
+                        </tr>
+                        <tr>
+                            <th>请款情况</th>
+                            <td>{{ report.payment_request|default:"未填写"|linebreaksbr }}</td>
+                        </tr>
+                        <tr>
+                            <th>下月工作计划</th>
+                            <td>{{ report.next_month_plan|default:"未填写"|linebreaksbr }}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- 提交按钮 -->
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:monthly_report_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> 确认提交
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

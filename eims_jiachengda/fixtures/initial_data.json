@@ -1,0 +1,49 @@
+[
+    {
+        "model": "eims_app.noticeinfo",
+        "pk": 1,
+        "fields": {
+            "notice_code": "NOTICE-20260101",
+            "notice_title": "EIMS系统上线通知",
+            "notice_type": "通知",
+            "notice_scope": "全员",
+            "notice_content": "工程信息管理系统（EIMS）已正式上线，包含合同、人员、项目等9大模块，欢迎使用！",
+            "publish_person": "管理员",
+            "publish_time": "2026-01-01T09:00:00Z",
+            "effective_date": "2026-01-01",
+            "invalid_date": "2026-12-31",
+            "notice_status": "已发布",
+            "remark": "系统初始通知"
+        }
+    },
+    {
+        "model": "eims_app.department",
+        "pk": 1,
+        "fields": {
+            "name": "工程部",
+            "description": "负责工程项目的规划、实施与验收",
+            "create_time": "2026-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "eims_app.personnelinfo",
+        "pk": 1,
+        "fields": {
+            "emp_id": "EMP-001",
+            "emp_name": "张三",
+            "gender": "男",
+            "age": 35,
+            "birth_date": "1991-01-01",
+            "phone": "13800138000",
+            "email": "zhangsan@example.com",
+            "department": "工程部",
+            "position": "项目经理",
+            "entry_date": "2020-01-01",
+            "probation_status": "转正",
+            "emp_status": "在职",
+            "education": "本科",
+            "major": "土木工程",
+            "certificate": "一级建造师"
+        }
+    }
+] 

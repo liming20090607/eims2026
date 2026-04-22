@@ -1,0 +1,40 @@
+<!-- contract/list.html -->
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+  <!-- 引入复用组件 -->
+  {% include 'components/list_mixin.html' %}
+  
+  <!-- 填充列表头部 -->
+  {% block list_header %}
+    <div class="status-filter">合同状态：{{ status_filter }}</div>
+    <!-- 其他自定义列头 -->
+  {% endblock %}
+
+  <!-- 填充列表内容 -->
+  {% block list_body %}
+    {% for obj in page_obj %}
+      <div class="list-row" data-id="{{ obj.id }}">
+        <input type="checkbox" name="selected_ids" value="{{ obj.id }}">
+        <span>{{ obj.get_contract_type_display }}</span>
+        <!-- 其他字段按顺序填充 -->
+      </div>
+    {% endfor %}
+  {% endblock %}
+{% endblock %}
+
+<!-- list_mixin.html -->
+{% block modal %}
+  <!-- 合同新增/编辑弹窗 -->
+  <div id="contractModal" class="modal">
+    <!-- 动态加载表单内容 -->
+  </div>
+{% endblock %}
+
+{% block detail %}
+  <!-- 合同详情页 -->
+  <div id="contractDetail" class="detail">
+    <!-- 通过 AJAX 加载详情 -->
+  </div>
+{% endblock %}

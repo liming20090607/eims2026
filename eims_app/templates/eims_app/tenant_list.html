@@ -1,0 +1,139 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}公司管理 - EIMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 页面标题 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-buildings me-2"></i>公司管理
+            </h2>
+            <p class="text-muted mb-0">管理系统中的所有租户公司</p>
+        </div>
+        <div>
+            <a href="{% url 'eims_app:tenant_select' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-1"></i>返回选择页面
+            </a>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-buildings fs-3 text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">公司总数</h6>
+                            <h3 class="mb-0">{{ total_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-people fs-3 text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">活跃公司</h6>
+                            <h3 class="mb-0">{{ tenants|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 公司列表 -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>公司列表
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if tenants %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>公司代码</th>
+                            <th>公司名称</th>
+                            <th>简称</th>
+                            <th style="width: 100px;">用户数</th>
+                            <th style="width: 100px;">项目数</th>
+                            <th style="width: 100px;">状态</th>
+                            <th style="width: 180px;">创建时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tenant in tenants %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><code>{{ tenant.code }}</code></td>
+                            <td>
+                                <strong>{{ tenant.name }}</strong>
+                            </td>
+                            <td>{{ tenant.short_name }}</td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary">
+                                    {{ tenant.user_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info bg-opacity-10 text-info">
+                                    {{ tenant.project_count }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if tenant.is_active %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>启用
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>禁用
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ tenant.create_time|date:"Y-m-d H:i" }}
+                                </small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="text-muted mt-3 mb-0">暂无公司数据</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>提示：</strong>使用 Django Admin 后台 (<a href="/admin/eims_app/tenant/" target="_blank">管理租户</a>) 来添加、编辑或删除公司信息。
+    </div>
+</div>
+{% endblock %}

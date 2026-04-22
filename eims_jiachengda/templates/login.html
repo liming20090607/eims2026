@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>登录 - 协同 AI 办公系统 (AOS)</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .login-body {
+            padding: 30px;
+        }
+        .form-control {
+            border-radius: 5px;
+            padding: 10px 15px;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+        }
+        .btn-login:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <h4 class="mb-0"><i class="bi bi-building me-2"></i>协同 AI 办公系统</h4>
+            <p class="mb-0 mt-2"><small>XietongAI - AOS</small></p>
+        </div>
+        <div class="login-body">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                    <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+                
+                {% if show_tenant_select %}
+                <!-- 公司选择界面 -->
+                <div class="text-center mb-4">
+                    <div class="bg-light rounded p-3 mb-3">
+                        <i class="bi bi-person-check text-success" style="font-size: 2rem;"></i>
+                        <h5 class="mt-2 mb-0">欢迎，{{ user_display_name }}</h5>
+                        <small class="text-muted">请选择要进入的公司系统</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="tenant_select" class="form-label">
+                        <i class="bi bi-building me-1"></i>选择公司
+                    </label>
+                    <select name="tenant_id" id="tenant_select" class="form-select" required>
+                        <option value="">-- 请选择公司 --</option>
+                        {% for tenant in available_tenants %}
+                        <option value="{{ tenant.id }}">{{ tenant.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">
+                        <i class="bi bi-info-circle"></i> 您在多家公司任职，请选择要进入的系统
+                    </small>
+                </div>
+                
+                <!-- 隐藏字段，保留用户名和密码 -->
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="password" value="{{ request.POST.password }}">
+                
+                <button type="submit" class="btn btn-primary btn-login w-100" id="tenantSubmitBtn" disabled>
+                    <i class="bi bi-box-arrow-in-right me-2"></i>进入系统
+                </button>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'user_login' %}" class="text-decoration-none">
+                        <small><i class="bi bi-arrow-left me-1"></i>返回重新登录</small>
+                    </a>
+                </div>
+                {% else %}
+                <!-- 正常登录界面 -->
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">用户名/姓名</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" class="form-control" id="id_username" placeholder="请输入用户名或真实姓名" required>
+                    </div>
+                    <small class="form-text text-muted">
+                        <i class="bi bi-info-circle"></i> 支持使用用户名、真实姓名或邮箱登录
+                    </small>
+                </div>
+                <div class="mb-3">
+                    <label for="id_password" class="form-label">密码</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control" id="id_password" placeholder="请输入密码" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login w-100">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>登录
+                </button>
+                
+                <div class="text-center mt-3">
+                    <a href="/forgot-password/" class="text-decoration-none">
+                        <small>忘记密码？</small>
+                    </a>
+                </div>
+                </form>
+                {% endif %}
+            
+            <!-- 分隔线 -->
+            <div class="my-4 d-flex align-items-center">
+                <hr class="flex-grow-1">
+                <span class="mx-3 text-muted small">或</span>
+                <hr class="flex-grow-1">
+            </div>
+            
+            <!-- 扫码登录按钮 -->
+            <div class="text-center">
+                <a href="/qr-login/" class="btn btn-outline-primary w-100 mb-2" style="padding: 12px;">
+                    <i class="bi bi-qr-code-scan me-2"></i>扫码登录
+                </a>
+                <small class="text-muted d-block mb-3">
+                    <i class="bi bi-phone me-1"></i>使用手机扫描二维码快速登录
+                </small>
+                
+                <!-- 微信扫码登录按钮 -->
+                <a href="/wechat-login/" class="btn btn-success w-100" style="padding: 12px; background: linear-gradient(135deg, #07c160 0%, #06ad56 100%); border: none;">
+                    <i class="bi bi-wechat me-2"></i>微信扫码登录
+                </a>
+                <small class="text-muted d-block mt-2">
+                    <i class="bi bi-wechat me-1"></i>使用微信扫描，首次需绑定账号
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // 公司选择下拉列表变化时启用/禁用提交按钮
+    document.addEventListener('DOMContentLoaded', function() {
+        const tenantSelect = document.getElementById('tenant_select');
+        const submitBtn = document.getElementById('tenantSubmitBtn');
+        
+        if (tenantSelect && submitBtn) {
+            tenantSelect.addEventListener('change', function() {
+                if (this.value) {
+                    submitBtn.disabled = false;
+                } else {
+                    submitBtn.disabled = true;
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>

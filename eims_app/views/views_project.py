@@ -455,7 +455,11 @@ def delete_personnel(request, pk):
     if request.method == 'POST':
         ids = request.POST.getlist('ids')
         if ids:
-            Personnel.objects.filter(pk__in=ids).delete()
+            # 按租户过滤，防止误删其他公司的人员
+            delete_filter = {'pk__in': ids}
+            if hasattr(request, 'tenant') and request.tenant:
+                delete_filter['tenant_id'] = request.tenant.id
+            Personnel.objects.filter(**delete_filter).delete()
         messages.success(request, f'成功删除 {len(ids)} 条项目人员')
     
     return HttpResponseRedirect(reverse_lazy('eims_app:project_ledger_detail', args=[pk]))
@@ -556,9 +560,13 @@ def add_personnel(request, pk):
     
     # GET 请求时，获取人员花名册中的所有姓名（按姓名升序排列，去重）
     # 从 Personnel 表（人员花名册）获取姓名，而不是 Employee 表
-    personnel_names = Personnel.objects.filter(
-        is_deleted=False  # 只获取未删除的记录
-    ).order_by('name').values_list('name', flat=True).distinct()
+    personnel_filter = {
+        'is_deleted': False  # 只获取未删除的记录
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    personnel_names = Personnel.objects.filter(**personnel_filter).order_by('name').values_list('name', flat=True).distinct()
     
     # 转换为列表（去重后的姓名列表）
     employee_names = list(personnel_names)
@@ -577,7 +585,12 @@ def add_personnel(request, pk):
             print("=================\n")
             
             # 生成人员编号和电话
-            personnel_code = request.POST.get('personnel_code', f'RY{project_code}_{Personnel.objects.filter(project_code=project_code).count() + 1:03d}')
+            # 按租户过滤统计数量
+            count_filter = {'project_code': project_code}
+            if hasattr(request, 'tenant') and request.tenant:
+                count_filter['tenant_id'] = request.tenant.id
+            
+            personnel_code = request.POST.get('personnel_code', f'RY{project_code}_{Personnel.objects.filter(**count_filter).count() + 1:03d}')
             
             phone = request.POST.get('phone', '')
             if not phone:

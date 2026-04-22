@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多字段排序功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #0d6efd;
+        }
+        
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        
+        th.sortable:hover {
+            background: #e9ecef;
+        }
+        
+        th .sort-priority {
+            display: inline-block;
+            margin-left: 4px;
+            margin-right: 2px;
+            padding: 1px 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            border-radius: 3px;
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            border: 1px solid rgba(13, 110, 253, 0.3);
+        }
+        
+        th .sort-direction::after {
+            content: '▲';
+            font-size: 0.65rem;
+            color: #0d6efd;
+        }
+        
+        th.sorted-desc .sort-direction::after {
+            content: '▼';
+        }
+        
+        th.sorted-asc .sort-priority,
+        th.sorted-desc .sort-priority {
+            background-color: rgba(13, 110, 253, 0.2);
+            color: #0a58ca;
+            border-color: rgba(13, 110, 253, 0.5);
+        }
+        
+        td {
+            padding: 10px 12px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .status-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .status-box h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .status-item {
+            margin: 8px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 多字段排序功能测试</h1>
+        
+        <div class="instructions">
+            <h3>📋 测试步骤：</h3>
+            <ol>
+                <li><strong>单字段排序</strong>：直接点击任意表头（如"姓名"）</li>
+                <li><strong>多字段排序</strong>：<span class="highlight">按住 Ctrl 键不放</span>，依次点击多个表头</li>
+                <li>观察每个表头显示的<span class="highlight">优先级数字（1, 2, 3...）</span></li>
+                <li>查看下方的"当前排序状态"区域</li>
+            </ol>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th class="sortable" data-field="name" onclick="handleSort('name', event)">
+                        姓名<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                    <th class="sortable" data-field="age" onclick="handleSort('age', event)">
+                        年龄<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                    <th class="sortable" data-field="city" onclick="handleSort('city', event)">
+                        城市<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                    <th class="sortable" data-field="score" onclick="handleSort('score', event)">
+                        分数<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>张三</td>
+                    <td>25</td>
+                    <td>北京</td>
+                    <td>95</td>
+                </tr>
+                <tr>
+                    <td>李四</td>
+                    <td>30</td>
+                    <td>上海</td>
+                    <td>88</td>
+                </tr>
+                <tr>
+                    <td>王五</td>
+                    <td>28</td>
+                    <td>广州</td>
+                    <td>92</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="status-box">
+            <h4>📊 当前排序状态：</h4>
+            <div class="status-item">
+                <strong>排序字段：</strong><span id="sortFields">[]</span>
+            </div>
+            <div class="status-item">
+                <strong>排序方向：</strong><span id="sortOrders">[]</span>
+            </div>
+            <div class="status-item">
+                <strong>URL 参数：</strong><span id="urlParams">无</span>
+            </div>
+        </div>
+        
+        <div class="status-box" style="background: #d4edda; border-color: #c3e6cb;">
+            <h4 style="color: #155724;">✅ 预期结果：</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>单击"姓名" → 显示 <span class="success">[1▲]</span></li>
+                <li>Ctrl+点击"年龄" → 姓名显示 <span class="success">[2▲]</span>，年龄显示 <span class="success">[1▲]</span></li>
+                <li>Ctrl+点击"城市" → 城市显示 <span class="success">[1▲]</span>，年龄显示 <span class="success">[2▲]</span>，姓名显示 <span class="success">[3▲]</span></li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let sortFields = [];
+        let sortOrders = [];
+        
+        function handleSort(field, event) {
+            if (!event) event = window.event;
+            
+            // 如果按住 Ctrl 或 Shift 键，添加到多字段排序
+            if (event && (event.ctrlKey || event.shiftKey)) {
+                const existingIndex = sortFields.indexOf(field);
+                if (existingIndex !== -1) {
+                    // 已存在，切换顺序
+                    sortOrders[existingIndex] = sortOrders[existingIndex] === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // 新字段，添加到末尾
+                    sortFields.push(field);
+                    sortOrders.push('asc');
+                }
+            } else {
+                // 单击：设置为唯一排序字段
+                if (sortFields[0] === field) {
+                    // 同一字段，切换顺序
+                    sortOrders[0] = sortOrders[0] === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // 新字段，替换当前排序
+                    sortFields = [field];
+                    sortOrders = ['asc'];
+                }
+            }
+            
+            updateSortDisplay();
+            updateStatusBox();
+        }
+        
+        function updateSortDisplay() {
+            // 清除所有排序状态
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                const priority = th.querySelector('.sort-priority');
+                if (priority) priority.textContent = '';
+                const direction = th.querySelector('.sort-direction');
+                if (direction) direction.style.display = 'none';
+            });
+            
+            // 显示当前排序字段的优先级数字
+            sortFields.forEach((field, index) => {
+                const th = document.querySelector(`th[data-field="${field}"]`);
+                if (th) {
+                    const order = sortOrders[index];
+                    th.classList.add(order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                    
+                    const priority = th.querySelector('.sort-priority');
+                    if (priority) {
+                        priority.textContent = index + 1;  // 显示优先级数字 1, 2, 3...
+                        priority.style.display = 'inline-block';
+                    }
+                    
+                    const direction = th.querySelector('.sort-direction');
+                    if (direction) {
+                        direction.style.display = 'inline-block';
+                    }
+                }
+            });
+        }
+        
+        function updateStatusBox() {
+            document.getElementById('sortFields').textContent = JSON.stringify(sortFields);
+            document.getElementById('sortOrders').textContent = JSON.stringify(sortOrders);
+            
+            if (sortFields.length > 0) {
+                const params = `?sort_field=${sortFields.join(',')}&sort_order=${sortOrders.join(',')}`;
+                document.getElementById('urlParams').textContent = params;
+            } else {
+                document.getElementById('urlParams').textContent = '无';
+            }
+        }
+    </script>
+</body>
+</html>

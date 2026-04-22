@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排序功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th.sortable {
+            cursor: pointer !important;
+            user-select: none !important;
+            position: relative !important;
+            transition: background-color 0.2s !important;
+            white-space: nowrap !important;
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        th.sortable:hover {
+            background-color: #e9ecef !important;
+        }
+        
+        /* 优先级数字徽章 */
+        th.sortable .sort-priority {
+            display: inline-block;
+            margin-left: 4px;
+            margin-right: 2px;
+            padding: 1px 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            border-radius: 3px;
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            border: 1px solid rgba(13, 110, 253, 0.3);
+            transition: all 0.2s ease;
+            vertical-align: middle;
+        }
+        
+        /* 当前排序列的高亮样式 */
+        th.sortable.sorted-asc .sort-priority,
+        th.sortable.sorted-desc .sort-priority {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+            box-shadow: 0 1px 3px rgba(13, 110, 253, 0.3);
+        }
+        
+        /* 排序方向箭头 */
+        th.sortable .sort-direction {
+            display: inline-block;
+            margin-left: 2px;
+            font-size: 0.75rem;
+            color: #0d6efd;
+            vertical-align: middle;
+        }
+        
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        button {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #0b5ed7;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 多字段排序功能测试</h1>
+        
+        <div class="info-box">
+            <strong>测试说明：</strong>
+            <ul>
+                <li>点击任意表头进行排序</li>
+                <li>首次点击：升序（▲），显示优先级 "1"</li>
+                <li>再次点击同一字段：切换为降序（▼）</li>
+                <li>点击其他字段：自动添加到排序列表，新字段显示 "1"，之前的变为 "2", "3"...（最后点击的优先级最高）</li>
+            </ul>
+        </div>
+        
+        <button onclick="resetSort()">重置排序</button>
+        <button onclick="showCurrentState()">显示当前状态</button>
+        
+        <table id="testTable">
+            <thead>
+                <tr>
+                    <th class="sortable" data-field="name" onclick="handleSort('name', event)">
+                        姓名<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                    <th class="sortable" data-field="age" onclick="handleSort('age', event)">
+                        年龄<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                    <th class="sortable" data-field="city" onclick="handleSort('city', event)">
+                        城市<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                    <th class="sortable" data-field="score" onclick="handleSort('score', event)">
+                        分数<span class="sort-priority"></span><span class="sort-direction"></span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>张三</td><td>25</td><td>北京</td><td>85</td></tr>
+                <tr><td>李四</td><td>30</td><td>上海</td><td>92</td></tr>
+                <tr><td>王五</td><td>28</td><td>广州</td><td>78</td></tr>
+            </tbody>
+        </table>
+        
+        <div class="status" id="statusBox">
+            <strong>当前排序状态：</strong><br>
+            sortFields: []<br>
+            sortOrders: []
+        </div>
+    </div>
+    
+    <script>
+        let sortFields = [];
+        let sortOrders = [];
+        
+        function handleSort(field, event) {
+            if (!event) event = window.event;
+            
+            const existingIndex = sortFields.indexOf(field);
+            
+            if (existingIndex !== -1) {
+                // 字段已存在，切换顺序
+                sortOrders[existingIndex] = sortOrders[existingIndex] === 'asc' ? 'desc' : 'asc';
+            } else {
+                // 新字段，添加到末尾（最后添加的优先级最高，显示为1）
+                sortFields.push(field);
+                sortOrders.push('asc');
+            }
+            
+            updateSortDisplay();
+            showCurrentState();
+        }
+        
+        function updateSortDisplay() {
+            // 清除所有排序状态
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                const priority = th.querySelector('.sort-priority');
+                if (priority) priority.textContent = '';
+                const direction = th.querySelector('.sort-direction');
+                if (direction) direction.style.display = 'none';
+            });
+            
+            // 显示当前排序字段的优先级数字（最后点击的显示为1）
+            sortFields.forEach((field, index) => {
+                const th = document.querySelector(`th[data-field="${field}"]`);
+                if (th) {
+                    const order = sortOrders[index];
+                    th.classList.add(order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                    
+                    const priority = th.querySelector('.sort-priority');
+                    if (priority) {
+                        // 反转索引：最后一个元素显示1，倒数第二个显示2，以此类推
+                        const displayPriority = sortFields.length - index;
+                        priority.textContent = displayPriority;  // 显示优先级数字
+                        priority.style.display = 'inline-block';
+                    }
+                    
+                    const direction = th.querySelector('.sort-direction');
+                    if (direction) {
+                        direction.textContent = order === 'asc' ? ' ▲' : ' ▼';
+                        direction.style.display = 'inline-block';
+                    }
+                }
+            });
+        }
+        
+        function resetSort() {
+            sortFields = [];
+            sortOrders = [];
+            updateSortDisplay();
+            showCurrentState();
+        }
+        
+        function showCurrentState() {
+            const statusBox = document.getElementById('statusBox');
+            statusBox.innerHTML = `
+                <strong>当前排序状态：</strong><br>
+                sortFields: [${sortFields.map(f => `"${f}"`).join(', ')}]<br>
+                sortOrders: [${sortOrders.map(o => `"${o}"`).join(', ')}]<br>
+                <br>
+                <strong>显示效果：</strong><br>
+                ${sortFields.map((f, i) => `字段 "${f}" - 优先级 ${i + 1}, 顺序: ${sortOrders[i] === 'asc' ? '升序 ▲' : '降序 ▼'}`).join('<br>') || '无排序'}
+            `;
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            showCurrentState();
+        });
+    </script>
+</body>
+</html>

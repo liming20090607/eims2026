@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统错误 - 正在自动修复</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        h1 {
+            color: #dc2626;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        .error-message {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .status-box {
+            background: #f3f4f6;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .status-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 35px;
+            background: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .status-text {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .auto-refresh-notice {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .auto-refresh-notice strong {
+            color: #92400e;
+        }
+        .log-box {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .countdown {
+            font-size: 48px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin: 20px 0;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #10b981;
+            margin: 20px 0;
+            animation: bounce 0.6s ease;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        .retry-btn {
+            padding: 15px 40px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 错误状态 -->
+        <div id="error-state">
+            <div class="error-icon">⚠️</div>
+            <h1>系统暂时不可用</h1>
+            <div class="error-message">
+                检测到数据库连接错误，系统正在自动修复中...<br>
+                <strong>请勿关闭此页面</strong>
+            </div>
+            
+            <div class="auto-refresh-notice">
+                <strong>🔄 自动修复流程：</strong><br>
+                1. 已自动触发OpenClaw修复脚本<br>
+                2. 修复过程中页面将自动刷新<br>
+                3. 修复完成后将自动跳转到正常页面
+            </div>
+            
+            <div class="status-box">
+                <div class="status-title">🔧 修复进度</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;">0%</div>
+                </div>
+                <div class="status-text" id="status-text">正在启动修复脚本...</div>
+            </div>
+            
+            <div class="log-box" id="log-box">
+                初始化修复流程...
+            </div>
+        </div>
+        
+        <!-- 成功状态 -->
+        <div id="success-state" class="hidden">
+            <div class="success-icon">✅</div>
+            <h1 style="color: #10b981;">修复成功！</h1>
+            <div class="error-message">
+                系统已恢复正常，即将自动跳转...
+            </div>
+            <div class="countdown" id="countdown">3</div>
+        </div>
+        
+        <!-- 失败状态 -->
+        <div id="fail-state" class="hidden">
+            <div class="error-icon">❌</div>
+            <h1>自动修复失败</h1>
+            <div class="error-message">
+                系统无法自动修复此问题，请尝试以下操作：
+            </div>
+            <div style="text-align: left; background: #f3f4f6; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <strong>建议操作：</strong><br><br>
+                1. 访问 <a href="/openclaw/panel/" style="color: #3b82f6;">OpenClaw控制面板</a> 手动触发修复<br>
+                2. 运行本地脚本：<code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">python trigger_openclaw_fix.py</code><br>
+                3. 联系系统管理员
+            </div>
+            <button class="retry-btn" onclick="window.location.reload()">🔄 重试</button>
+            <button class="retry-btn" onclick="window.location.href='/openclaw/panel/'" style="background: linear-gradient(135deg, #10b981, #059669);">
+                🎛️ 打开控制面板
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        let progress = 0;
+        let fixStarted = false;
+        let checkInterval;
+        
+        // 页面加载时自动触发修复
+        window.addEventListener('DOMContentLoaded', async function() {
+            await triggerAutoFix();
+        });
+        
+        async function triggerAutoFix() {
+            if (fixStarted) return;
+            fixStarted = true;
+            
+            try {
+                // 触发修复
+                const response = await fetch('/api/openclaw/trigger-fix/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'started' || data.status === 'running') {
+                    updateStatus('修复脚本已启动，正在处理中...', 10);
+                    addLog('[' + getTimestamp() + '] 修复脚本已启动');
+                    
+                    // 开始监控进度
+                    startMonitoring();
+                } else {
+                    updateStatus('触发失败：' + data.message, 0);
+                    addLog('[' + getTimestamp() + '] 错误: ' + data.message);
+                    showFailState();
+                }
+            } catch (error) {
+                updateStatus('连接失败，正在重试...', 0);
+                addLog('[' + getTimestamp() + '] 连接错误: ' + error.message);
+                
+                // 3秒后重试
+                setTimeout(() => triggerAutoFix(), 3000);
+            }
+        }
+        
+        function startMonitoring() {
+            checkInterval = setInterval(async function() {
+                try {
+                    const response = await fetch('/api/openclaw/check-status/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // 更新日志
+                    if (data.logs) {
+                        const lines = data.logs.split('\n');
+                        const recentLines = lines.slice(-10);
+                        document.getElementById('log-box').innerHTML = recentLines.map(line => 
+                            line.trim() ? line : ''
+                        ).filter(Boolean).join('\n');
+                        
+                        // 滚动到底部
+                        const logBox = document.getElementById('log-box');
+                        logBox.scrollTop = logBox.scrollHeight;
+                    }
+                    
+                    // 根据日志内容更新进度
+                    const logs = data.logs || '';
+                    if (logs.includes('[100%]') || logs.includes('修复完成')) {
+                        updateStatus('修复完成！正在验证系统状态...', 100);
+                        
+                        // 验证MySQL是否正常
+                        if (data.mysql_status === 'OK') {
+                            clearInterval(checkInterval);
+                            showSuccessState();
+                        } else {
+                            updateStatus('修复完成但系统仍异常，正在重试...', 95);
+                        }
+                    } else if (logs.includes('[90%]')) {
+                        updateStatus('正在重启Gunicorn...', 90);
+                    } else if (logs.includes('[80%]')) {
+                        updateStatus('验证MySQL连接...', 80);
+                    } else if (logs.includes('[70%]')) {
+                        updateStatus('正在重启MySQL...', 70);
+                    } else if (logs.includes('[60%]')) {
+                        updateStatus('密码重置完成...', 60);
+                    } else if (logs.includes('[50%]')) {
+                        updateStatus('正在重置密码...', 50);
+                    } else if (logs.includes('[40%]')) {
+                        updateStatus('恢复模式启动中...', 40);
+                    } else if (logs.includes('[30%]')) {
+                        updateStatus('正在启动恢复模式...', 30);
+                    } else if (logs.includes('[20%]')) {
+                        updateStatus('清理文件完成...', 20);
+                    } else if (logs.includes('[10%]')) {
+                        updateStatus('正在停止MySQL...', 10);
+                    } else {
+                        updateStatus('修复进行中...', Math.min(progress + 5, 85));
+                    }
+                    
+                } catch (error) {
+                    console.error('监控失败:', error);
+                }
+            }, 2000); // 每2秒检查一次
+            
+            // 最多等待120秒
+            setTimeout(() => {
+                if (progress < 100) {
+                    clearInterval(checkInterval);
+                    updateStatus('修复超时，请手动操作', 0);
+                    showFailState();
+                }
+            }, 120000);
+        }
+        
+        function updateStatus(text, percent) {
+            progress = percent;
+            document.getElementById('status-text').textContent = text;
+            const progressFill = document.getElementById('progress-fill');
+            progressFill.style.width = percent + '%';
+            progressFill.textContent = percent + '%';
+        }
+        
+        function addLog(message) {
+            const logBox = document.getElementById('log-box');
+            logBox.innerHTML += '\n' + message;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+        
+        function getTimestamp() {
+            const now = new Date();
+            return now.toLocaleString('zh-CN');
+        }
+        
+        function showSuccessState() {
+            document.getElementById('error-state').classList.add('hidden');
+            document.getElementById('success-state').classList.remove('hidden');
+            
+            // 3秒后跳转
+            let countdown = 3;
+            const countdownEl = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    // 跳转到原始页面
+                    window.location.href = document.referrer || '/';
+                }
+            }, 1000);
+        }
+        
+        function showFailState() {
+            document.getElementById('error-state').classList.add('hidden');
+            document.getElementById('fail-state').classList.remove('hidden');
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

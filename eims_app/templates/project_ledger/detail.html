@@ -5,7 +5,8 @@
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
-<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目台账</a></li>
+<li class="breadcrumb-item"><a href="#">工程监理</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:project_ledger_list' %}">项目管理</a></li>
 <li class="breadcrumb-item active">{{ project_detail.project_name|truncatechars:20 }}</li>
 {% endblock %}
 
@@ -229,10 +230,10 @@
     /* 响应式布局：中等屏幕 */
     @media (max-width: 1200px) {
         .field-grid-main {
-            grid-template-columns: repeat(6, 1fr) !important;
+            grid-template-columns: repeat(4, 1fr) !important;
         }
         .field-grid-sub {
-            grid-template-columns: repeat(6, 1fr) !important;
+            grid-template-columns: repeat(4, 1fr) !important;
         }
     }
     
@@ -254,7 +255,7 @@
         }
     }
     
-    /* 字段组容器 - 网格布局 */
+    /* 字段组容器 - 网格布局 - 四列布局 */
     .field-group-container {
         background: #f8f9fa;
         border-radius: 4px;
@@ -268,6 +269,27 @@
         font-weight: 600;
         color: #007bff;
         margin-bottom: 8px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    /* 主字段网格 - 四列布局 */
+    .field-grid-main {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    /* 子字段网格 - 四列布局 */
+    .field-grid-sub {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .field-group-title {
         padding-bottom: 6px;
         border-bottom: 1px solid #007bff;
         display: flex;
@@ -276,22 +298,6 @@
     
     .field-group-title i {
         margin-right: 6px;
-    }
-    
-    /* 字段网格布局 - 主窗体（8 列） */
-    .field-grid-main {
-        display: grid !important;
-        grid-template-columns: repeat(8, 1fr) !important;
-        gap: 6px;
-        width: 100%;
-    }
-    
-    /* 字段网格布局 - 次级窗体（8 列）- 优化防止挤压 */
-    .field-grid-sub {
-        display: grid !important;
-        grid-template-columns: repeat(8, 1fr) !important;
-        gap: 6px;
-        width: 100%;
     }
     
     /* 字段项 - 网格单元 */
@@ -434,10 +440,11 @@
     }
     
     .sub-panel-table thead th {
-        font-size: 15px;
-        font-weight: 600;
+        font-size: 13px;
+        font-weight: 700;
         white-space: nowrap;
-        background-color: #f8f9fa;
+        background-color: #e3f2fd;
+        color: #1565c0;
         padding: 8px 6px;
         vertical-align: middle;
         border-bottom: 2px solid #dee2e6;

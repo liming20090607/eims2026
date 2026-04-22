@@ -25,15 +25,22 @@ def get_monthly_report_reminders(request):
         # 获取用户参与的项目（通过 Personnel 分配）
         from eims_app.models import Personnel
         if request.user.is_superuser:
-            # 超级管理员查看所有项目
-            user_projects = ProjectDetail.objects.all()
+            # 超级管理员查看所有项目（按租户过滤）
+            project_filter = {'is_deleted': False}
+            if hasattr(request, 'tenant') and request.tenant:
+                project_filter['tenant_id'] = request.tenant.id
+            user_projects = ProjectDetail.objects.filter(**project_filter)
         else:
             # 通过 Personnel 表查找用户参与的所有项目
             # 假设 request.user.username 与 Personnel.name 匹配
-            personnel_records = Personnel.objects.filter(
-                name=request.user.username,
-                is_deleted=False
-            )
+            personnel_filter = {
+                'name': request.user.username,
+                'is_deleted': False
+            }
+            if hasattr(request, 'tenant') and request.tenant:
+                personnel_filter['tenant_id'] = request.tenant.id
+            
+            personnel_records = Personnel.objects.filter(**personnel_filter)
             
             # 收集所有项目 ID
             project_ids = set()

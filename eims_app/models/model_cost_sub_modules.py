@@ -1,0 +1,1059 @@
+"""
+造价咨询模块 - 7个子模块数据模型（外键关联架构 - 方案B）
+
+架构设计：
+- CostProjectInfo作为主表，存储项目基础信息
+- 其他6个子模块通过project外键关联到CostProjectInfo
+- 关联组织管理模块（Department、Personnel）和认证管理模块（User）
+- 添加审批流基础字段，为后续审批功能预留
+- 为后续人员分配功能预留人员/部门外键
+
+设计原则：
+1. 数据完整性：通过外键约束确保数据关联完整性
+2. 无冗余：子模块不重复存储project_name等基础信息（通过外键关联获取）
+3. 可扩展：预留审批、人员分配等功能字段
+4. 性能优化：保留部分冗余字段用于列表显示，避免频繁JOIN
+"""
+from django.db import models
+from django.conf import settings
+
+
+class CostProjectInfo(models.Model):
+    """造价咨询项目信息主表"""
+    
+    # ===== 租户字段（多租户数据隔离）=====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               help_text='数据隔离依据',
+                               db_index=True,
+                               db_constraint=False)
+    
+    # ===== 基础信息 =====
+    project_code = models.CharField("项目编号", max_length=50, unique=True, db_index=True)
+    project_name = models.CharField("项目名称", max_length=200, db_index=True)
+    
+    PROJECT_TYPE_CHOICES = [
+        ('budget', '预算'),
+        ('settlement', '结算'),
+        ('audit', '审核'),
+        ('other', '其他'),
+    ]
+    project_type = models.CharField("项目类型", max_length=20, choices=PROJECT_TYPE_CHOICES, default='budget', blank=True)
+    
+    COMPILATION_CATEGORY_CHOICES = [
+        ('civil', '土建'),
+        ('install', '安装'),
+        ('municipal', '市政'),
+        ('decoration', '装饰'),
+        ('other', '其他'),
+    ]
+    compilation_category = models.CharField("编制类别", max_length=20, choices=COMPILATION_CATEGORY_CHOICES, default='civil', blank=True)
+    
+    REVIEW_CATEGORY_CHOICES = [
+        ('initial', '初审'),
+        ('intermediate', '中审'),
+        ('final', '终审'),
+    ]
+    review_category = models.CharField("审核类别", max_length=20, choices=REVIEW_CATEGORY_CHOICES, default='initial', blank=True)
+    
+    PROJECT_STATUS_CHOICES = [
+        ('not_started', '未开始'),
+        ('in_progress', '进行中'),
+        ('completed', '已完成'),
+        ('suspended', '已暂停'),
+    ]
+    project_status = models.CharField("项目状态", max_length=20, choices=PROJECT_STATUS_CHOICES, default='not_started', blank=True)
+    
+    # ===== 项目相关方 =====
+    client_unit = models.CharField("建设单位", max_length=200, blank=True)
+    entrusting_unit = models.CharField("委托单位", max_length=200, blank=True)
+    contact_person = models.CharField("联系人", max_length=50, blank=True)
+    contact_phone = models.CharField("联系电话", max_length=20, blank=True)
+    
+    # ===== 时间节点 =====
+    submission_time = models.DateField("送审时间", null=True, blank=True)
+    start_time = models.DateField("开始时间", null=True, blank=True)
+    planned_duration = models.IntegerField("计划工期(天)", default=0, blank=True)
+    planned_completion_time = models.DateField("计划完成时间", null=True, blank=True)
+    
+    # ===== 金额信息（万元）=====
+    compilation_amount = models.DecimalField("编制金额(万元)", max_digits=12, decimal_places=2, default=0)
+    submission_amount = models.DecimalField("送审金额(万元)", max_digits=12, decimal_places=2, default=0)
+    approved_amount = models.DecimalField("审定金额(万元)", max_digits=12, decimal_places=2, default=0)
+    reduced_amount = models.DecimalField("审减金额(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    # ===== 报告信息 =====
+    report_time = models.DateField("报告时间", null=True, blank=True)
+    
+    RESULT_CONFIRM_CHOICES = [
+        ('confirmed', '已确认'),
+        ('unconfirmed', '未确认'),
+        ('pending', '待确认'),
+    ]
+    result_confirm = models.CharField("结果确认", max_length=20, choices=RESULT_CONFIRM_CHOICES, default='unconfirmed', blank=True)
+    
+    # ===== 费用信息（万元）=====
+    total_fee = models.DecimalField("费用总额(万元)", max_digits=12, decimal_places=2, default=0)
+    received_fee = models.DecimalField("已收费用(万元)", max_digits=12, decimal_places=2, default=0)
+    pending_fee = models.DecimalField("待收费用(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    FEE_SETTLEMENT_CHOICES = [
+        ('settled', '已结清'),
+        ('unsettled', '未结清'),
+        ('partial', '部分结清'),
+    ]
+    fee_settlement = models.CharField("费用结清", max_length=20, choices=FEE_SETTLEMENT_CHOICES, default='unsettled', blank=True)
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    operator = models.CharField("操作人", max_length=50, blank=True, help_text="记录最后操作人")
+    
+    # ===== 审批流基础字段（为后续审批功能预留）=====
+    APPROVAL_STATUS_CHOICES = [
+        ('draft', '草稿'),
+        ('pending_approval', '待审批'),
+        ('approved', '已审批'),
+        ('rejected', '已退回'),
+        ('cancelled', '已撤销'),
+    ]
+    approval_status = models.CharField("审批状态", max_length=20, choices=APPROVAL_STATUS_CHOICES, default='draft', db_index=True, blank=True)
+    approval_flow_type = models.CharField("审批流程类型", max_length=30, choices=[
+        ('user_selected', '用户选择'),
+        ('auto_assigned', '系统指派'),
+    ], default='auto_assigned', blank=True)
+    current_approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="当前审批人",
+        related_name="cost_project_approvals",
+        db_constraint=False
+    )
+    approval_department = models.ForeignKey(
+        'Department',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="审批部门",
+        related_name="cost_project_approvals",
+        db_constraint=False
+    )
+    approval_level = models.IntegerField("审批级别", default=1, blank=True, help_text="1=部门级，2=上级")
+    submit_time = models.DateTimeField("提交审批时间", null=True, blank=True)
+    approval_time = models.DateTimeField("审批时间", null=True, blank=True)
+    approval_remark = models.TextField("审批意见", blank=True)
+    
+    class Meta:
+        verbose_name = "造价咨询项目"
+        verbose_name_plural = "造价咨询项目管理"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project_code', 'project_name']),
+            models.Index(fields=['project_status']),
+            models.Index(fields=['approval_status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.project_code} - {self.project_name}"
+    
+    def save(self, *args, **kwargs):
+        """
+        保存时记录旧的项目编号，用于后续同步子模块
+        """
+        # 如果不是新建，记录旧的项目编号
+        if self.pk:
+            try:
+                old_instance = CostProjectInfo.objects.get(pk=self.pk)
+                self._old_project_code = old_instance.project_code
+                self._old_project_name = old_instance.project_name
+                self._old_project_type = old_instance.project_type
+            except CostProjectInfo.DoesNotExist:
+                pass
+        
+        super().save(*args, **kwargs)
+        
+        # 保存后同步更新所有关联子模块的冗余字段
+        self._sync_sub_modules_redundant_fields()
+    
+    def _sync_sub_modules_redundant_fields(self):
+        """
+        同步更新所有关联子模块的冗余字段
+        当项目信息（编号、名称、类型）变更时，自动更新所有子模块
+        """
+        try:
+            # 1. 更新任务计划
+            CostTaskPlan.objects.filter(project=self).update(
+                project_code=self.project_code,
+                project_name=self.project_name,
+                project_type=self.project_type
+            )
+            
+            # 2. 更新任务实施
+            CostTaskImplementation.objects.filter(project=self).update(
+                project_code=self.project_code,
+                project_name=self.project_name,
+                project_type=self.project_type
+            )
+            
+            # 3. 更新审核成果
+            CostReviewResult.objects.filter(project=self).update(
+                project_code=self.project_code,
+                project_name=self.project_name,
+                project_type=self.project_type
+            )
+            
+            # 4. 更新收费情况
+            CostPaymentStatus.objects.filter(project=self).update(
+                project_code=self.project_code,
+                project_name=self.project_name,
+                project_type=self.project_type
+            )
+            
+            # 5. 更新项目存档
+            CostProjectArchive.objects.filter(project=self).update(
+                project_code=self.project_code,
+                project_name=self.project_name,
+                project_type=self.project_type
+            )
+            
+            # 6. 更新酬劳分配
+            CostRemunerationDistribution.objects.filter(project=self).update(
+                project_code=self.project_code,
+                project_name=self.project_name,
+                project_type=self.project_type
+            )
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"同步子模块冗余字段失败 (项目: {self.project_code}): {str(e)}")
+    
+    # ===== 便捷访问属性（通过related_name反向查询）=====
+    @property
+    def task_plan(self):
+        """获取关联的任务计划"""
+        return self.cost_task_plans.first()
+    
+    @property
+    def task_implementation(self):
+        """获取关联的任务实施"""
+        return self.cost_task_implementations.first()
+    
+    @property
+    def review_result(self):
+        """获取关联的审核成果"""
+        return self.cost_review_results.first()
+    
+    @property
+    def payment_status(self):
+        """获取关联的收费情况"""
+        return self.cost_payment_statuses.first()
+    
+    @property
+    def archive(self):
+        """获取关联的项目存档"""
+        return self.cost_archives.first()
+    
+    @property
+    def remuneration(self):
+        """获取关联的酬劳分配"""
+        return self.cost_remunerations.first()
+
+
+class CostTaskPlan(models.Model):
+    """造价咨询任务计划表 - 通过外键关联CostProjectInfo"""
+    
+    # ===== 外键关联 =====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               db_index=True,
+                               db_constraint=False)
+    
+    # 核心外键：关联项目主表
+    project = models.ForeignKey(
+        CostProjectInfo,
+        on_delete=models.CASCADE,
+        related_name='cost_task_plans',
+        verbose_name="关联项目",
+        help_text="选择造价咨询项目",
+        null=True,
+        blank=True,
+        db_constraint=False
+    )
+    
+    # 冗余字段（从主表关联获取，用于列表显示优化，避免频繁JOIN）
+    project_code = models.CharField("项目编号", max_length=50, db_index=True, blank=True)
+    project_name = models.CharField("项目名称", max_length=200, db_index=True, blank=True)
+    
+    PROJECT_TYPE_CHOICES = [
+        ('budget', '预算'),
+        ('settlement', '结算'),
+        ('audit', '审核'),
+        ('other', '其他'),
+    ]
+    project_type = models.CharField("项目类型", max_length=20, choices=PROJECT_TYPE_CHOICES, default='budget', blank=True)
+    
+    # ===== 编制信息 =====
+    compiler = models.CharField("编制人", max_length=50, blank=True)
+    compiler_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="编制人员",
+        related_name="cost_task_plans_as_compiler",
+        help_text="关联人员管理模块",
+        db_constraint=False
+    )
+    compilation_amount = models.DecimalField("编制金额(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    # ===== 一审计划 =====
+    first_reviewer = models.CharField("一审人员", max_length=50, blank=True)
+    first_reviewer_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="一审人员",
+        related_name="cost_task_plans_as_first_reviewer",
+        db_constraint=False
+    )
+    first_reviewer_department = models.CharField("一审部门", max_length=100, blank=True)
+    first_review_start_time = models.DateField("一审开始时间", null=True, blank=True)
+    first_review_planned_duration = models.IntegerField("一审计划工期(天)", default=0)
+    first_review_planned_completion = models.DateField("一审计划完成时间", null=True, blank=True)
+    
+    # ===== 二审计划 =====
+    second_reviewer = models.CharField("二审人员", max_length=50, blank=True)
+    second_reviewer_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="二审人员",
+        related_name="cost_task_plans_as_second_reviewer",
+        db_constraint=False
+    )
+    second_reviewer_department = models.CharField("二审部门", max_length=100, blank=True)
+    second_review_start_time = models.DateField("二审开始时间", null=True, blank=True)
+    second_review_planned_duration = models.IntegerField("二审计划工期(天)", default=0)
+    second_review_planned_completion = models.DateField("二审计划完成时间", null=True, blank=True)
+    
+    # ===== 三审计划 =====
+    third_reviewer = models.CharField("三审人员", max_length=50, blank=True)
+    third_reviewer_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="三审人员",
+        related_name="cost_task_plans_as_third_reviewer",
+        db_constraint=False
+    )
+    third_reviewer_department = models.CharField("三审部门", max_length=100, blank=True)
+    third_review_start_time = models.DateField("三审开始时间", null=True, blank=True)
+    third_review_planned_duration = models.IntegerField("三审计划工期(天)", default=0)
+    third_review_planned_completion = models.DateField("三审计划完成时间", null=True, blank=True)
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    operator = models.CharField("操作人", max_length=50, blank=True)
+    
+    # ===== 审批流基础字段 =====
+    APPROVAL_STATUS_CHOICES = [
+        ('draft', '草稿'),
+        ('pending_approval', '待审批'),
+        ('approved', '已审批'),
+        ('rejected', '已退回'),
+        ('cancelled', '已撤销'),
+    ]
+    approval_status = models.CharField("审批状态", max_length=20, choices=APPROVAL_STATUS_CHOICES, default='draft', db_index=True)
+    current_approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="当前审批人",
+        related_name="cost_task_plan_approvals",
+        db_constraint=False
+    )
+    
+    class Meta:
+        verbose_name = "任务计划"
+        verbose_name_plural = "任务计划管理"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project_code', 'project_name']),
+            models.Index(fields=['approval_status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.project_code} - {self.project_name}"
+    
+    def save(self, *args, **kwargs):
+        """保存时自动同步项目基础信息"""
+        if self.project:
+            self.project_code = self.project.project_code
+            self.project_name = self.project.project_name
+            self.project_type = self.project.project_type
+            self.tenant = self.project.tenant
+        super().save(*args, **kwargs)
+
+
+class CostTaskImplementation(models.Model):
+    """造价咨询任务实施表 - 通过外键关联CostProjectInfo"""
+    
+    # ===== 外键关联 =====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               db_index=True,
+                               db_constraint=False)
+    
+    project = models.ForeignKey(
+        CostProjectInfo,
+        on_delete=models.CASCADE,
+        related_name='cost_task_implementations',
+        verbose_name="关联项目",
+        null=True,
+        blank=True,
+        db_constraint=False
+    )
+    
+    # 冗余字段
+    project_code = models.CharField("项目编号", max_length=50, db_index=True, blank=True)
+    project_name = models.CharField("项目名称", max_length=200, db_index=True, blank=True)
+    project_type = models.CharField("项目类型", max_length=20, blank=True)
+    
+    # ===== 编制信息 =====
+    compiler = models.CharField("编制人", max_length=50, blank=True)
+    compiler_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="编制人员",
+        related_name="cost_task_implementations_as_compiler",
+        db_constraint=False
+    )
+    compilation_amount = models.DecimalField("编制金额(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    # ===== 一审实际 =====
+    first_review_planned_duration = models.IntegerField("一审计划工期(天)", default=0)
+    first_review_planned_completion = models.DateField("一审计划完成时间", null=True, blank=True)
+    first_review_actual_completion = models.DateField("一审实际完成时间", null=True, blank=True)
+    first_review_actual_duration = models.IntegerField("一审实际工期(天)", default=0)
+    first_review_progress_result = models.CharField("一审进度结果", max_length=200, blank=True)
+    first_reviewer_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="一审人员",
+        related_name="cost_task_implementations_as_first_reviewer",
+        db_constraint=False
+    )
+    
+    # ===== 二审实际 =====
+    second_review_planned_duration = models.IntegerField("二审计划工期(天)", default=0)
+    second_review_planned_completion = models.DateField("二审计划完成时间", null=True, blank=True)
+    second_review_actual_completion = models.DateField("二审实际完成时间", null=True, blank=True)
+    second_review_actual_duration = models.IntegerField("二审实际工期(天)", default=0)
+    second_review_progress_result = models.CharField("二审进度结果", max_length=200, blank=True)
+    second_reviewer_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="二审人员",
+        related_name="cost_task_implementations_as_second_reviewer",
+        db_constraint=False
+    )
+    
+    # ===== 三审实际 =====
+    third_review_planned_duration = models.IntegerField("三审计划工期(天)", default=0)
+    third_review_planned_completion = models.DateField("三审计划完成时间", null=True, blank=True)
+    third_review_actual_completion = models.DateField("三审实际完成时间", null=True, blank=True)
+    third_review_actual_duration = models.IntegerField("三审实际工期(天)", default=0)
+    third_review_progress_result = models.CharField("三审进度结果", max_length=200, blank=True)
+    third_reviewer_personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="三审人员",
+        related_name="cost_task_implementations_as_third_reviewer",
+        db_constraint=False
+    )
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    operator = models.CharField("操作人", max_length=50, blank=True)
+    
+    # ===== 审批流基础字段 =====
+    approval_status = models.CharField("审批状态", max_length=20, default='draft', db_index=True)
+    
+    class Meta:
+        verbose_name = "任务实施"
+        verbose_name_plural = "任务实施管理"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project_code', 'project_name']),
+        ]
+    
+    def __str__(self):
+        return f"{self.project_code} - {self.project_name}"
+    
+    def save(self, *args, **kwargs):
+        """保存时自动同步项目基础信息"""
+        if self.project:
+            self.project_code = self.project.project_code
+            self.project_name = self.project.project_name
+            self.project_type = self.project.project_type
+            self.tenant = self.project.tenant
+        super().save(*args, **kwargs)
+
+
+class CostReviewResult(models.Model):
+    """造价咨询审核成果表 - 通过外键关联CostProjectInfo"""
+    
+    # ===== 外键关联 =====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               db_index=True,
+                               db_constraint=False)
+    
+    project = models.ForeignKey(
+        CostProjectInfo,
+        on_delete=models.CASCADE,
+        related_name='cost_review_results',
+        verbose_name="关联项目",
+        null=True,
+        blank=True,
+        db_constraint=False
+    )
+    
+    # 冗余字段
+    project_code = models.CharField("项目编号", max_length=50, db_index=True, blank=True)
+    project_name = models.CharField("项目名称", max_length=200, db_index=True, blank=True)
+    project_type = models.CharField("项目类型", max_length=20, blank=True)
+    
+    # ===== 编制信息 =====
+    compiler = models.CharField("编制人", max_length=50, blank=True)
+    compilation_amount = models.DecimalField("编制金额(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    # ===== 一审成果 =====
+    first_submission = models.DecimalField("一审送审(万元)", max_digits=12, decimal_places=2, default=0)
+    first_result = models.CharField("一审结果", max_length=200, blank=True)
+    first_reduction = models.DecimalField("一审审减(万元)", max_digits=12, decimal_places=2, default=0)
+    first_reduction_rate = models.DecimalField("一审减率(%)", max_digits=6, decimal_places=2, default=0)
+    first_review_evaluation = models.CharField("一审评价", max_length=200, blank=True)
+    
+    # ===== 二审成果 =====
+    second_submission = models.DecimalField("二审送审(万元)", max_digits=12, decimal_places=2, default=0)
+    second_result = models.CharField("二审结果", max_length=200, blank=True)
+    second_reduction = models.DecimalField("二审审减(万元)", max_digits=12, decimal_places=2, default=0)
+    second_reduction_rate = models.DecimalField("二审减率(%)", max_digits=6, decimal_places=2, default=0)
+    second_reviewer = models.CharField("二审人员", max_length=50, blank=True)
+    second_evaluation = models.CharField("二审评价", max_length=200, blank=True)
+    
+    # ===== 三审成果 =====
+    third_submission = models.DecimalField("三审送审(万元)", max_digits=12, decimal_places=2, default=0)
+    third_result = models.CharField("三审结果", max_length=200, blank=True)
+    third_reduction = models.DecimalField("三审审减(万元)", max_digits=12, decimal_places=2, default=0)
+    third_reduction_rate = models.DecimalField("三审减率(%)", max_digits=6, decimal_places=2, default=0)
+    third_reviewer = models.CharField("三审人员", max_length=50, blank=True)
+    third_evaluation = models.CharField("三审评价", max_length=200, blank=True)
+    
+    # ===== 最终审定 =====
+    final_approved_amount = models.DecimalField("审定金额(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    operator = models.CharField("操作人", max_length=50, blank=True)
+    
+    # ===== 审批流基础字段 =====
+    approval_status = models.CharField("审批状态", max_length=20, default='draft', db_index=True)
+    
+    class Meta:
+        verbose_name = "审核成果"
+        verbose_name_plural = "审核成果管理"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project_code', 'project_name']),
+        ]
+    
+    def __str__(self):
+        return f"{self.project_code} - {self.project_name}"
+    
+    def save(self, *args, **kwargs):
+        """保存时自动同步项目基础信息"""
+        if self.project:
+            self.project_code = self.project.project_code
+            self.project_name = self.project.project_name
+            self.project_type = self.project.project_type
+            self.tenant = self.project.tenant
+        super().save(*args, **kwargs)
+
+
+class CostPaymentStatus(models.Model):
+    """造价咨询收费情况表 - 通过外键关联CostProjectInfo"""
+    
+    # ===== 外键关联 =====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               db_index=True,
+                               db_constraint=False)
+    
+    project = models.ForeignKey(
+        CostProjectInfo,
+        on_delete=models.CASCADE,
+        related_name='cost_payment_statuses',
+        verbose_name="关联项目",
+        null=True,
+        blank=True,
+        db_constraint=False
+    )
+    
+    # 冗余字段
+    project_code = models.CharField("项目编号", max_length=50, db_index=True, blank=True)
+    project_name = models.CharField("项目名称", max_length=200, db_index=True, blank=True)
+    project_type = models.CharField("项目类型", max_length=20, blank=True)
+    
+    # ===== 开票信息（万元）=====
+    invoice_amount = models.DecimalField("开票金额(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    INVOICE_STATUS_CHOICES = [
+        ('invoiced', '已开票'),
+        ('not_invoiced', '未开票'),
+        ('partial', '部分开票'),
+    ]
+    is_invoiced = models.CharField("是否开票", max_length=20, choices=INVOICE_STATUS_CHOICES, default='not_invoiced')
+    
+    # ===== 业主方收费（万元）=====
+    owner_payable = models.DecimalField("业主方应付(万元)", max_digits=12, decimal_places=2, default=0)
+    owner_paid = models.DecimalField("业主方已付(万元)", max_digits=12, decimal_places=2, default=0)
+    owner_pending = models.DecimalField("业主方待付(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    # ===== 施工方收费（万元）=====
+    contractor_payable = models.DecimalField("施工方应付(万元)", max_digits=12, decimal_places=2, default=0)
+    contractor_paid = models.DecimalField("施工方已付(万元)", max_digits=12, decimal_places=2, default=0)
+    contractor_pending = models.DecimalField("施工方待付(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    SETTLEMENT_STATUS_CHOICES = [
+        ('settled', '已结清'),
+        ('unsettled', '未结清'),
+        ('partial', '部分结清'),
+    ]
+    is_settled = models.CharField("是否结清", max_length=20, choices=SETTLEMENT_STATUS_CHOICES, default='unsettled')
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    operator = models.CharField("操作人", max_length=50, blank=True)
+    
+    # ===== 审批流基础字段 =====
+    approval_status = models.CharField("审批状态", max_length=20, default='draft', db_index=True)
+    
+    class Meta:
+        verbose_name = "收费情况"
+        verbose_name_plural = "收费情况管理"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project_code', 'project_name']),
+        ]
+    
+    def __str__(self):
+        return f"{self.project_code} - {self.project_name}"
+    
+    def save(self, *args, **kwargs):
+        """保存时自动同步项目基础信息"""
+        if self.project:
+            self.project_code = self.project.project_code
+            self.project_name = self.project.project_name
+            self.project_type = self.project.project_type
+            self.tenant = self.project.tenant
+        super().save(*args, **kwargs)
+
+
+class CostProjectArchive(models.Model):
+    """造价咨询项目存档表 - 通过外键关联CostProjectInfo"""
+    
+    # ===== 外键关联 =====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               db_index=True,
+                               db_constraint=False)
+    
+    project = models.ForeignKey(
+        CostProjectInfo,
+        on_delete=models.CASCADE,
+        related_name='cost_archives',
+        verbose_name="关联项目",
+        null=True,
+        blank=True,
+        db_constraint=False
+    )
+    
+    # 冗余字段
+    project_code = models.CharField("项目编号", max_length=50, db_index=True, blank=True)
+    project_name = models.CharField("项目名称", max_length=200, db_index=True, blank=True)
+    project_type = models.CharField("项目类型", max_length=20, blank=True)
+    
+    # ===== 附件上传函数 =====
+    def service_contract_upload_path(instance, filename):
+        return f'cost_archives/{instance.project_code}/service_contract/{filename}'
+    
+    def submission_material_upload_path(instance, filename):
+        return f'cost_archives/{instance.project_code}/submission/{filename}'
+    
+    def process_material_upload_path(instance, filename):
+        return f'cost_archives/{instance.project_code}/process/{filename}'
+    
+    def inspection_record_upload_path(instance, filename):
+        return f'cost_archives/{instance.project_code}/inspection/{filename}'
+    
+    def audit_report_upload_path(instance, filename):
+        return f'cost_archives/{instance.project_code}/audit_report/{filename}'
+    
+    def other_document_upload_path(instance, filename):
+        return f'cost_archives/{instance.project_code}/other/{filename}'
+    
+    # ===== 文档信息 =====
+    service_contract = models.FileField("服务合同", upload_to=service_contract_upload_path, blank=True)
+    service_contract_type = models.CharField("附件类型", max_length=50, blank=True)
+    
+    submission_material = models.FileField("送审资料", upload_to=submission_material_upload_path, blank=True)
+    submission_material_type = models.CharField("附件类型", max_length=50, blank=True)
+    
+    process_material = models.FileField("过程资料", upload_to=process_material_upload_path, blank=True)
+    process_material_type = models.CharField("附件类型", max_length=50, blank=True)
+    
+    inspection_record = models.FileField("勘察记录", upload_to=inspection_record_upload_path, blank=True)
+    inspection_record_type = models.CharField("附件类型", max_length=50, blank=True)
+    
+    audit_report = models.FileField("审核报告", upload_to=audit_report_upload_path, blank=True)
+    audit_report_type = models.CharField("附件类型", max_length=50, blank=True)
+    
+    # ===== 业主确认 =====
+    owner_confirmation = models.BooleanField("业主确认", default=False)
+    
+    # ===== 其他文件 =====
+    other_document = models.FileField("其他文件", upload_to=other_document_upload_path, blank=True)
+    other_document_type = models.CharField("附件类型", max_length=50, blank=True)
+    
+    # ===== 提交人信息 =====
+    submitter = models.CharField("提交人", max_length=50, blank=True)
+    submitter_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="提交人",
+        related_name="cost_archives_submitted",
+        db_constraint=False
+    )
+    submit_time = models.DateTimeField("提交时间", null=True, blank=True)
+    archive_time = models.DateTimeField("存档时间", null=True, blank=True)
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    operator = models.CharField("操作人", max_length=50, blank=True)
+    
+    # ===== 审批流基础字段 =====
+    approval_status = models.CharField("审批状态", max_length=20, default='draft', db_index=True)
+    
+    class Meta:
+        verbose_name = "项目存档"
+        verbose_name_plural = "项目存档管理"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project_code', 'project_name']),
+        ]
+    
+    def __str__(self):
+        return f"{self.project_code} - {self.project_name}"
+    
+    def save(self, *args, **kwargs):
+        """保存时自动同步项目基础信息"""
+        if self.project:
+            self.project_code = self.project.project_code
+            self.project_name = self.project.project_name
+            self.project_type = self.project.project_type
+            self.tenant = self.project.tenant
+        super().save(*args, **kwargs)
+
+
+class CostRemunerationDistribution(models.Model):
+    """造价咨询酬劳分配表 - 主表 - 通过外键关联CostProjectInfo"""
+    
+    # ===== 外键关联 =====
+    tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, 
+                               null=True, blank=True, 
+                               verbose_name='所属公司',
+                               db_index=True,
+                               db_constraint=False)
+    
+    project = models.ForeignKey(
+        CostProjectInfo,
+        on_delete=models.CASCADE,
+        related_name='cost_remunerations',
+        verbose_name="关联项目",
+        null=True,
+        blank=True,
+        db_constraint=False
+    )
+    
+    # 冗余字段
+    project_code = models.CharField("项目编号", max_length=50, db_index=True, blank=True)
+    project_name = models.CharField("项目名称", max_length=200, db_index=True, blank=True)
+    project_type = models.CharField("项目类型", max_length=20, blank=True)
+    
+    # ===== 计算方式选择 =====
+    CALC_TYPE_CHOICES = [
+        ('compilation', '编制项目'),
+        ('review', '审核项目'),
+    ]
+    calculation_type = models.CharField("计算类型", max_length=20, choices=CALC_TYPE_CHOICES, default='compilation')
+    
+    CALC_BASE_CHOICES = [
+        ('total_cost', '工程总造价'),
+        ('reduced_amount', '审减金额'),
+    ]
+    calculation_base = models.CharField("计算基准", max_length=20, choices=CALC_BASE_CHOICES, default='total_cost')
+    
+    # ===== 金额信息（万元）=====
+    total_cost = models.DecimalField("工程总造价(万元)", max_digits=12, decimal_places=2, default=0)
+    reduced_amount = models.DecimalField("审减金额(万元)", max_digits=12, decimal_places=2, default=0)
+    total_remuneration = models.DecimalField("酬劳总额(万元)", max_digits=12, decimal_places=2, default=0)
+    
+    # ===== 计算式（用户手动输入）=====
+    calculation_formula = models.TextField("计算式", blank=True, help_text="例如：工程总造价×0.3%")
+    
+    # ===== 状态 =====
+    DISTRIBUTION_STATUS_CHOICES = [
+        ('draft', '草稿'),
+        ('confirmed', '已确认'),
+        ('distributed', '已分配'),
+    ]
+    distribution_status = models.CharField("分配状态", max_length=20, choices=DISTRIBUTION_STATUS_CHOICES, default='draft')
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    operator = models.CharField("操作人", max_length=50, blank=True)
+    
+    # ===== 审批流基础字段 =====
+    approval_status = models.CharField("审批状态", max_length=20, default='draft', db_index=True)
+    current_approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="当前审批人",
+        related_name="cost_remuneration_approvals",
+        db_constraint=False
+    )
+    approval_department = models.ForeignKey(
+        'Department',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="审批部门",
+        related_name="cost_remuneration_approvals",
+        db_constraint=False
+    )
+    approval_level = models.IntegerField("审批级别", default=1, help_text="1=部门级，2=上级")
+    submit_time = models.DateTimeField("提交审批时间", null=True, blank=True)
+    approval_time = models.DateTimeField("审批时间", null=True, blank=True)
+    approval_remark = models.TextField("审批意见", blank=True)
+    
+    class Meta:
+        verbose_name = "酬劳分配"
+        verbose_name_plural = "酬劳分配管理"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project_code', 'project_name']),
+        ]
+    
+    def __str__(self):
+        return f"{self.project_code} - {self.project_name}"
+    
+    def save(self, *args, **kwargs):
+        """保存时自动同步项目基础信息"""
+        if self.project:
+            self.project_code = self.project.project_code
+            self.project_name = self.project.project_name
+            self.project_type = self.project.project_type
+            self.tenant = self.project.tenant
+        super().save(*args, **kwargs)
+
+
+class CostRemunerationItem(models.Model):
+    """造价咨询酬劳分配明细表 - 子表"""
+    
+    # ===== 关联主表 =====
+    distribution = models.ForeignKey(CostRemunerationDistribution, on_delete=models.CASCADE, 
+                                     related_name='items', verbose_name="酬劳分配")
+    
+    # ===== 人员信息 =====
+    person_name = models.CharField("人员姓名", max_length=50)
+    personnel = models.ForeignKey(
+        'Personnel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="关联人员",
+        related_name="cost_remuneration_items",
+        help_text="关联人员管理模块",
+        db_constraint=False
+    )
+    personnel_department = models.CharField("人员部门", max_length=100, blank=True)
+    department = models.ForeignKey(
+        'Department',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="所属部门",
+        related_name="cost_remuneration_items",
+        help_text="关联部门管理模块",
+        db_constraint=False
+    )
+    
+    ROLE_CHOICES = [
+        ('compiler', '编制人'),
+        ('first_reviewer', '一审人员'),
+        ('second_reviewer', '二审人员'),
+        ('third_reviewer', '三审人员'),
+        ('other', '其他人员'),
+    ]
+    role = models.CharField("角色", max_length=20, choices=ROLE_CHOICES, default='compiler')
+    
+    # ===== 分配比例及计算 =====
+    distribution_percentage = models.DecimalField("分配比例(%)", max_digits=6, decimal_places=2, default=0, help_text="例如：40表示40%")
+    calculated_amount = models.DecimalField("计算酬劳(万元)", max_digits=12, decimal_places=2, default=0, help_text="系统自动计算：酬劳总额×分配比例")
+    
+    # ===== 备注 =====
+    remark = models.TextField("备注", blank=True)
+    
+    # ===== 系统字段 =====
+    update_time = models.DateTimeField("更新时间", auto_now=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "酬劳分配明细"
+        verbose_name_plural = "酬劳分配明细管理"
+        ordering = ['role', 'person_name']
+        indexes = [
+            models.Index(fields=['distribution', 'person_name']),
+        ]
+    
+    def __str__(self):
+        return f"{self.person_name} - {self.get_role_display()}"
+
+
+# ===== Django信号：自动创建子模块记录 =====
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+@receiver(post_save, sender=CostProjectInfo)
+def auto_create_sub_modules(sender, instance, created, **kwargs):
+    """
+    当创建新的CostProjectInfo记录时，自动为6个子模块创建空记录
+    
+    参数:
+        sender: 发送信号的模型类
+        instance: 被保存的实例
+        created: 是否为新建（True=新建，False=更新）
+    """
+    if not created:
+        # 只在创建新记录时触发，更新时不触发
+        return
+    
+    try:
+        # 1. 创建任务计划记录
+        CostTaskPlan.objects.get_or_create(
+            project=instance,
+            defaults={
+                'tenant': instance.tenant,
+                'project_code': instance.project_code,
+                'project_name': instance.project_name,
+                'project_type': instance.project_type,
+            }
+        )
+        
+        # 2. 创建任务实施记录
+        CostTaskImplementation.objects.get_or_create(
+            project=instance,
+            defaults={
+                'tenant': instance.tenant,
+                'project_code': instance.project_code,
+                'project_name': instance.project_name,
+                'project_type': instance.project_type,
+            }
+        )
+        
+        # 3. 创建审核成果记录
+        CostReviewResult.objects.get_or_create(
+            project=instance,
+            defaults={
+                'tenant': instance.tenant,
+                'project_code': instance.project_code,
+                'project_name': instance.project_name,
+                'project_type': instance.project_type,
+            }
+        )
+        
+        # 4. 创建收费情况记录
+        CostPaymentStatus.objects.get_or_create(
+            project=instance,
+            defaults={
+                'tenant': instance.tenant,
+                'project_code': instance.project_code,
+                'project_name': instance.project_name,
+                'project_type': instance.project_type,
+            }
+        )
+        
+        # 5. 创建项目存档记录
+        CostProjectArchive.objects.get_or_create(
+            project=instance,
+            defaults={
+                'tenant': instance.tenant,
+                'project_code': instance.project_code,
+                'project_name': instance.project_name,
+                'project_type': instance.project_type,
+            }
+        )
+        
+        # 6. 创建酬劳分配记录
+        CostRemunerationDistribution.objects.get_or_create(
+            project=instance,
+            defaults={
+                'tenant': instance.tenant,
+                'project_code': instance.project_code,
+                'project_name': instance.project_name,
+                'project_type': instance.project_type,
+                'calculation_type': 'compilation',
+                'calculation_base': 'total_cost',
+                'distribution_status': 'draft',
+            }
+        )
+        
+    except Exception as e:
+        # 如果创建失败，记录错误但不影响主记录的创建
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"自动创建子模块记录失败 (项目: {instance.project_code}): {str(e)}")

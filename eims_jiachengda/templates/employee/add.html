@@ -1,0 +1,236 @@
+{% extends 'base/base.html' %}
+
+{% block title %}添加员工{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+<li class="breadcrumb-item"><a href="{% url 'eims_app:employee_list' %}">员工管理</a></li>
+<li class="breadcrumb-item active">添加员工</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> 添加新员工</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h6 class="mb-3 text-primary"><i class="bi bi-person-badge"></i> 基本信息</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">人员编号 <span class="text-danger">*</span></label>
+                                {{ form.employee_code }}
+                                {% if form.employee_code.errors %}
+                                    <div class="text-danger small">{{ form.employee_code.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">姓名 <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">性别</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger small">{{ form.gender.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">身份证号 <span class="text-danger">*</span></label>
+                                {{ form.id_card }}
+                                {% if form.id_card.errors %}
+                                    <div class="text-danger small">{{ form.id_card.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">籍贯</label>
+                                {{ form.native_place }}
+                                {% if form.native_place.errors %}
+                                    <div class="text-danger small">{{ form.native_place.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">民族</label>
+                                {{ form.ethnic }}
+                                {% if form.ethnic.errors %}
+                                    <div class="text-danger small">{{ form.ethnic.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">学历</label>
+                                {{ form.education }}
+                                {% if form.education.errors %}
+                                    <div class="text-danger small">{{ form.education.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">入职时间</label>
+                                {{ form.entry_time }}
+                                {% if form.entry_time.errors %}
+                                    <div class="text-danger small">{{ form.entry_time.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mb-3 text-primary mt-4"><i class="bi bi-telephone"></i> 联系方式</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">手机号码 <span class="text-danger">*</span></label>
+                                {{ form.mobile }}
+                                {% if form.mobile.errors %}
+                                    <div class="text-danger small">{{ form.mobile.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">固定电话</label>
+                                {{ form.home_phone }}
+                                {% if form.home_phone.errors %}
+                                    <div class="text-danger small">{{ form.home_phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">住址</label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <div class="text-danger small">{{ form.address.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">微信</label>
+                                {{ form.wechat }}
+                                {% if form.wechat.errors %}
+                                    <div class="text-danger small">{{ form.wechat.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mb-3 text-primary mt-4"><i class="bi bi-shield-check"></i> 应急联系</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">应急联系人</label>
+                                {{ form.emergency_contact }}
+                                {% if form.emergency_contact.errors %}
+                                    <div class="text-danger small">{{ form.emergency_contact.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">应急电话</label>
+                                {{ form.emergency_phone }}
+                                {% if form.emergency_phone.errors %}
+                                    <div class="text-danger small">{{ form.emergency_phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mb-3 text-primary mt-4"><i class="bi bi-briefcase"></i> 职务信息</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">行政职务</label>
+                                {{ form.admin_position }}
+                                {% if form.admin_position.errors %}
+                                    <div class="text-danger small">{{ form.admin_position.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">技术职务</label>
+                                {{ form.tech_position }}
+                                {% if form.tech_position.errors %}
+                                    <div class="text-danger small">{{ form.tech_position.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">执业资格</label>
+                                {{ form.professional_qualification }}
+                                {% if form.professional_qualification.errors %}
+                                    <div class="text-danger small">{{ form.professional_qualification.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">职称</label>
+                                {{ form.professional_title }}
+                                {% if form.professional_title.errors %}
+                                    <div class="text-danger small">{{ form.professional_title.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">任职资格</label>
+                                {{ form.job_qualification }}
+                                {% if form.job_qualification.errors %}
+                                    <div class="text-danger small">{{ form.job_qualification.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">离职时间</label>
+                                {{ form.leave_time }}
+                                {% if form.leave_time.errors %}
+                                    <div class="text-danger small">{{ form.leave_time.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">备注</label>
+                            {{ form.remark }}
+                            {% if form.remark.errors %}
+                                <div class="text-danger small">{{ form.remark.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:employee_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 返回
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> 提交
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle"></i> 
+                <strong>提示：</strong> 带 <span class="text-danger">*</span> 为必填项
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

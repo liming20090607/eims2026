@@ -18,6 +18,12 @@ def is_superuser(user):
 def employee_list(request):
     """员工信息列表页面 - 支持筛选和搜索"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 1. 获取筛选参数
     search_key = request.GET.get('keyword', '')
     education = request.GET.get('education', '')
@@ -25,15 +31,16 @@ def employee_list(request):
     
     # 2. 基础查询集（按租户过滤）
     if hasattr(request, 'tenant') and request.tenant:
-        employee_list = Employee.objects.filter(is_deleted=False, tenant=request.tenant).order_by('employee_code')
+        # 使用 tenant_id 而不是 tenant 对象来避免跨数据库 JOIN
+        employee_list = Employee.objects.filter(is_deleted=False, tenant_id=request.tenant.id).order_by('personnel_code')
     else:
-        employee_list = Employee.objects.filter(is_deleted=False).order_by('employee_code')
+        employee_list = Employee.objects.filter(is_deleted=False).order_by('personnel_code')
     
     # 3. 多条件筛选
     if search_key:
         employee_list = employee_list.filter(
             Q(name__icontains=search_key) |
-            Q(employee_code__icontains=search_key) |
+            Q(personnel_code__icontains=search_key) |
             Q(mobile__icontains=search_key) |
             Q(id_card__icontains=search_key) |
             Q(native_place__icontains=search_key) |
@@ -103,7 +110,17 @@ def employee_add(request):
 def employee_detail(request, pk):
     """员工详情页面"""
     
-    employee = get_object_or_404(Employee, pk=pk, is_deleted=False)
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
+    # 按租户过滤，防止跨租户访问
+    if hasattr(request, 'tenant') and request.tenant:
+        employee = get_object_or_404(Employee, pk=pk, is_deleted=False, tenant_id=request.tenant.id)
+    else:
+        employee = get_object_or_404(Employee, pk=pk, is_deleted=False)
     
     # 提取字段信息用于模板显示
     field_data = []
@@ -133,7 +150,18 @@ def employee_detail(request, pk):
 @user_passes_test(is_superuser)
 def employee_edit(request, pk):
     """编辑员工信息"""
-    employee = get_object_or_404(Employee, pk=pk, is_deleted=False)
+    
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
+    # 按租户过滤，防止跨租户访问
+    if hasattr(request, 'tenant') and request.tenant:
+        employee = get_object_or_404(Employee, pk=pk, is_deleted=False, tenant_id=request.tenant.id)
+    else:
+        employee = get_object_or_404(Employee, pk=pk, is_deleted=False)
     
     if request.method == "POST":
         form = EmployeeForm(request.POST, instance=employee)
@@ -142,7 +170,9 @@ def employee_edit(request, pk):
             employee.operator = request.user.username
             employee.save()
             messages.success(request, "员工信息修改成功！")
-            return redirect("eims_app:employee_list")
+            # 从人员花名册进入的，返回人员花名册；否则返回员工列表
+            next_url = request.GET.get('next', 'eims_app:personnel_list')
+            return redirect(next_url)
         else:
             messages.error(request, "员工信息修改失败，请检查红色标注的输入项！")
     else:
@@ -157,7 +187,18 @@ def employee_edit(request, pk):
 @user_passes_test(is_superuser)
 def employee_delete(request, pk):
     """删除员工（软删除）"""
-    employee = get_object_or_404(Employee, pk=pk, is_deleted=False)
+    
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
+    # 按租户过滤，防止误删其他公司的员工
+    if hasattr(request, 'tenant') and request.tenant:
+        employee = get_object_or_404(Employee, pk=pk, is_deleted=False, tenant_id=request.tenant.id)
+    else:
+        employee = get_object_or_404(Employee, pk=pk, is_deleted=False)
     
     try:
         employee.is_deleted = True
@@ -166,7 +207,13 @@ def employee_delete(request, pk):
     except Exception as e:
         messages.error(request, f"删除失败：{str(e)}")
     
-    return redirect("eims_app:employee_list")
+    # 从当前URL提取系统前缀（如 /root/, /dingce/, /shengchang/, /jiachengda/）
+    path_parts = request.path.strip('/').split('/')
+    system_prefix = path_parts[0] if path_parts and path_parts[0] else 'root'
+    
+    # 构建人员花名册的URL路径
+    next_url = f'/{system_prefix}/personnel/'
+    return redirect(next_url)
 
 @user_passes_test(is_superuser)
 def employee_batch_delete(request):
@@ -179,7 +226,11 @@ def employee_batch_delete(request):
             return redirect("eims_app:employee_list")
         
         try:
-            count = Employee.objects.filter(id__in=employee_ids).update(is_deleted=True)
+            # 按租户过滤，防止误删其他公司的员工
+            if hasattr(request, 'tenant') and request.tenant:
+                count = Employee.objects.filter(id__in=employee_ids, tenant_id=request.tenant.id).update(is_deleted=True)
+            else:
+                count = Employee.objects.filter(id__in=employee_ids).update(is_deleted=True)
             messages.success(request, f"成功删除 {count} 个员工记录！")
         except Exception as e:
             messages.error(request, f"批量删除失败：{str(e)}")
@@ -201,8 +252,11 @@ def employee_export(request):
     if request.method == 'POST':
         selected_ids = request.POST.getlist('employee_ids')
     
-    # 基础查询集（只导出未删除的）
-    queryset = Employee.objects.filter(is_deleted=False).order_by('employee_code')
+    # 基础查询集（只导出未删除的，按租户过滤）
+    if hasattr(request, 'tenant') and request.tenant:
+        queryset = Employee.objects.filter(is_deleted=False, tenant_id=request.tenant.id).order_by('personnel_code')
+    else:
+        queryset = Employee.objects.filter(is_deleted=False).order_by('personnel_code')
     
     # 如果有选中的 ID，只导出这些
     if selected_ids:
@@ -212,7 +266,7 @@ def employee_export(request):
         if search_key:
             queryset = queryset.filter(
                 Q(name__icontains=search_key) |
-                Q(employee_code__icontains=search_key) |
+                Q(personnel_code__icontains=search_key) |
                 Q(mobile__icontains=search_key) |
                 Q(id_card__icontains=search_key) |
                 Q(native_place__icontains=search_key) |
@@ -259,7 +313,7 @@ def employee_export(request):
     
     # 字段映射（英文 → 中文）
     field_mapping = {
-        'employee_code': '员工编号',
+        'personnel_code': '人员编号',
         'name': '姓名',
         'gender': '性别',
         'id_card': '身份证号',
@@ -293,7 +347,7 @@ def employee_export(request):
     # 填充数据
     for row_idx, employee in enumerate(queryset, 2):
         # 员工编号
-        ws.cell(row=row_idx, column=1, value=employee.employee_code or '')
+        ws.cell(row=row_idx, column=1, value=employee.personnel_code or '')
         # 姓名
         ws.cell(row=row_idx, column=2, value=employee.name or '')
         # 性别（转换为中文）

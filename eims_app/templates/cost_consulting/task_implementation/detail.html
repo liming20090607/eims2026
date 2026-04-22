@@ -1,0 +1,296 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}任务实施详情 - {{ object.project_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container-fluid {
+        padding: 10px !important;
+        max-width: 100% !important;
+    }
+    
+    .card {
+        margin-bottom: 10px !important;
+    }
+    
+    .card-header {
+        padding: 8px 12px !important;
+    }
+    
+    .card-body {
+        padding: 12px !important;
+    }
+    
+    /* 紧凑型横向布局 */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 6px;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 10px;
+        background: #f8f9fa;
+        border-radius: 3px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 100px;
+    }
+    
+    .detail-label::after {
+        content: ":";
+        margin-left: 2px;
+    }
+    
+    .detail-value {
+        color: #212529;
+        font-size: 0.85rem;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 4px;
+    }
+    
+    .detail-item-full {
+        grid-column: 1 / -1;
+    }
+    
+    .section-title {
+        grid-column: 1 / -1;
+        font-weight: 700;
+        color: #0d6efd;
+        font-size: 0.95rem;
+        padding: 8px 10px 4px 10px;
+        margin-top: 8px;
+        border-bottom: 2px solid #0d6efd;
+    }
+    
+    .section-title:first-child {
+        margin-top: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 面包屑导航 -->
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:eims_index' %}">首页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:module_cost' %}">造价咨询</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'eims_app:cost_task_implementation_list' %}">任务实施</a></li>
+            <li class="breadcrumb-item active">详情</li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">任务实施详情</h6>
+            <a href="{% url 'eims_app:cost_task_implementation_list' %}" class="btn btn-sm btn-secondary">
+                <i class="bi bi-arrow-left"></i> 返回列表
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="detail-grid">
+                <!-- 项目基本信息 -->
+                <div class="section-title">项目基本信息</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">项目编号</span>
+                    <span class="detail-value">{{ object.project_code|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">项目名称</span>
+                    <span class="detail-value">{{ object.project_name|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">项目类型</span>
+                    <span class="detail-value">{{ object.get_project_type_display|default:"-" }}</span>
+                </div>
+                
+                <!-- 编制实际 -->
+                <div class="section-title">编制实际</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">编制人</span>
+                    <span class="detail-value">{{ object.impl_compiler|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">编制人员</span>
+                    <span class="detail-value">{{ object.impl_compiler_personnel.name|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">编制金额(万元)</span>
+                    <span class="detail-value">{{ object.impl_compilation_amount|floatformat:2|default:"0.00" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">编制开始时间</span>
+                    <span class="detail-value">{{ object.impl_compilation_start|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">编制完成时间</span>
+                    <span class="detail-value">{{ object.impl_compilation_end|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">编制实际工期(天)</span>
+                    <span class="detail-value">{{ object.impl_compilation_actual_duration|default:"0" }}</span>
+                </div>
+                
+                <!-- 一审实际 -->
+                <div class="section-title">一审实际</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">一审人员</span>
+                    <span class="detail-value">{{ object.impl_first_reviewer|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">一审人员（关联）</span>
+                    <span class="detail-value">{{ object.impl_first_reviewer_personnel.name|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">一审开始时间</span>
+                    <span class="detail-value">{{ object.impl_first_review_start|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">一审完成时间</span>
+                    <span class="detail-value">{{ object.impl_first_review_end|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">一审实际工期(天)</span>
+                    <span class="detail-value">{{ object.impl_first_review_actual_duration|default:"0" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">一审进度结果</span>
+                    <span class="detail-value">{{ object.impl_first_review_progress_result|default:"-" }}</span>
+                </div>
+                
+                <!-- 二审实际 -->
+                <div class="section-title">二审实际</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">二审人员</span>
+                    <span class="detail-value">{{ object.impl_second_reviewer|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">二审人员（关联）</span>
+                    <span class="detail-value">{{ object.impl_second_reviewer_personnel.name|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">二审开始时间</span>
+                    <span class="detail-value">{{ object.impl_second_review_start|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">二审完成时间</span>
+                    <span class="detail-value">{{ object.impl_second_review_end|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">二审实际工期(天)</span>
+                    <span class="detail-value">{{ object.impl_second_review_actual_duration|default:"0" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">二审进度结果</span>
+                    <span class="detail-value">{{ object.impl_second_review_progress_result|default:"-" }}</span>
+                </div>
+                
+                <!-- 三审实际 -->
+                <div class="section-title">三审实际</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">三审人员</span>
+                    <span class="detail-value">{{ object.impl_third_reviewer|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">三审人员（关联）</span>
+                    <span class="detail-value">{{ object.impl_third_reviewer_personnel.name|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">三审开始时间</span>
+                    <span class="detail-value">{{ object.impl_third_review_start|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">三审完成时间</span>
+                    <span class="detail-value">{{ object.impl_third_review_end|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">三审实际工期(天)</span>
+                    <span class="detail-value">{{ object.impl_third_review_actual_duration|default:"0" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">三审进度结果</span>
+                    <span class="detail-value">{{ object.impl_third_review_progress_result|default:"-" }}</span>
+                </div>
+                
+                <!-- 实施状态 -->
+                <div class="section-title">实施状态</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">实施状态</span>
+                    <span class="detail-value">
+                        {% if object.implementation_status == 'not_started' %}
+                            <span class="badge bg-secondary">未开始</span>
+                        {% elif object.implementation_status == 'in_progress' %}
+                            <span class="badge bg-primary">进行中</span>
+                        {% elif object.implementation_status == 'completed' %}
+                            <span class="badge bg-success">已完成</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark">{{ object.get_implementation_status_display|default:"-" }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- 系统信息 -->
+                <div class="section-title">系统信息</div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">创建时间</span>
+                    <span class="detail-value">{{ object.created_at|date:"Y-m-d H:i:s"|default:"-" }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">更新时间</span>
+                    <span class="detail-value">{{ object.update_time|date:"Y-m-d H:i:s"|default:"-" }}</span>
+                </div>
+                
+                <!-- 备注 -->
+                <div class="detail-item detail-item-full">
+                    <span class="detail-label">备注</span>
+                    <span class="detail-value">{{ object.impl_remark|default:"-"|linebreaksbr }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

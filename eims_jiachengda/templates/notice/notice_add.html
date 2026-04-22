@@ -1,0 +1,413 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}发布通知{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 隐藏搜索框 */
+    .search-box {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bell-plus me-2"></i>发布通知公告</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- 通知标题 -->
+                        <div class="mb-3">
+                            <label for="{{ form.notice_title.id_for_label }}" class="form-label">
+                                <i class="bi bi-card-heading me-1"></i>通知标题 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.notice_title }}
+                            {% if form.notice_title.errors %}
+                                <div class="text-danger small mt-1">{{ form.notice_title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 关键字 -->
+                        <div class="mb-3">
+                            <label for="{{ form.keywords.id_for_label }}" class="form-label">
+                                <i class="bi bi-tags me-1"></i>关键字
+                            </label>
+                            {{ form.keywords }}
+                            {% if form.keywords.errors %}
+                                <div class="text-danger small mt-1">{{ form.keywords.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">用逗号或空格分隔，例如：通知，会议，重要</small>
+                        </div>
+
+                        <!-- 通知类型 -->
+                        <div class="mb-3">
+                            <label for="{{ form.notice_type.id_for_label }}" class="form-label">
+                                <i class="bi bi-tag me-1"></i>通知类型
+                            </label>
+                            {{ form.notice_type }}
+                            {% if form.notice_type.errors %}
+                                <div class="text-danger small mt-1">{{ form.notice_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 发布范围 -->
+                        <div class="mb-3">
+                            <label for="{{ form.notice_scope.id_for_label }}" class="form-label">
+                                <i class="bi bi-people me-1"></i>发布范围
+                            </label>
+                            {{ form.notice_scope }}
+                            {% if form.notice_scope.errors %}
+                                <div class="text-danger small mt-1">{{ form.notice_scope.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">例如：全员、工程部、张三，李四</small>
+                        </div>
+
+                        <!-- 通知内容 -->
+                        <div class="mb-3">
+                            <label for="{{ form.notice_content.id_for_label }}" class="form-label">
+                                <i class="bi bi-card-text me-1"></i>通知内容
+                            </label>
+                            {{ form.notice_content }}
+                            {% if form.notice_content.errors %}
+                                <div class="text-danger small mt-1">{{ form.notice_content.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 附件管理 -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-paperclip me-1"></i>附件管理
+                            </label>
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <div>
+                                    <strong>批量上传附件：</strong>支持一次上传多个文件，系统会自动管理版本
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="batchUploadBtn">
+                                <i class="bi bi-upload me-1"></i>批量上传附件
+                            </button>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-file-earmark me-1"></i>支持格式：
+                                    PDF、Word、Excel、PPT、图片、ZIP、RAR、TXT、MD
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- 发布人 -->
+                        <div class="mb-3">
+                            <label for="{{ form.publish_person.id_for_label }}" class="form-label">
+                                <i class="bi bi-person me-1"></i>发布人
+                            </label>
+                            {{ form.publish_person }}
+                            {% if form.publish_person.errors %}
+                                <div class="text-danger small mt-1">{{ form.publish_person.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">系统自动获取当前用户，可手动修改</small>
+                        </div>
+                        
+                        <!-- 生效日期和失效日期 -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.effective_date.id_for_label }}" class="form-label">
+                                    <i class="bi bi-calendar-check me-1"></i>生效日期
+                                </label>
+                                {{ form.effective_date }}
+                                {% if form.effective_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.effective_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.invalid_date.id_for_label }}" class="form-label">
+                                    <i class="bi bi-calendar-x me-1"></i>失效日期
+                                </label>
+                                {{ form.invalid_date }}
+                                {% if form.invalid_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.invalid_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- 通知状态 -->
+                        <div class="mb-3">
+                            <label for="{{ form.notice_status.id_for_label }}" class="form-label">
+                                <i class="bi bi-flag me-1"></i>通知状态
+                            </label>
+                            {{ form.notice_status }}
+                            {% if form.notice_status.errors %}
+                                <div class="text-danger small mt-1">{{ form.notice_status.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">选择“已发布”将立即显示在列表中</small>
+                        </div>
+
+                        <!-- 备注 -->
+                        <div class="mb-3">
+                            <label for="{{ form.remark.id_for_label }}" class="form-label">
+                                <i class="bi bi-chat-left-text me-1"></i>备注
+                            </label>
+                            {{ form.remark }}
+                            {% if form.remark.errors %}
+                                <div class="text-danger small mt-1">{{ form.remark.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'eims_app:notice_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>发布通知
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- 批量上传模态框 -->
+                    <div class="modal" id="batchUploadModal" tabindex="-1" aria-labelledby="batchUploadModalLabel" data-bs-backdrop="static" data-bs-keyboard="false">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <form id="batchUploadForm" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="notice_id" id="modal_notice_id" value="">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="batchUploadModalLabel">
+                                            <i class="bi bi-upload me-2"></i>批量上传附件
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label"><strong>选择多个文件</strong></label>
+                                            <input type="file" class="form-control" name="files" multiple required
+                                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.zip,.rar,.txt,.md">
+                                            <small class="text-muted">按住 Ctrl 键可选择多个文件</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><strong>统一备注</strong></label>
+                                            <textarea class="form-control" name="remark" rows="2" placeholder="对所有文件的统一备注（可选）"></textarea>
+                                        </div>
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            <strong>注意：</strong>请先保存通知，获取到通知 ID 后再上传附件。
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                        <button type="submit" class="btn btn-primary" id="uploadSubmitBtn">
+                                            <i class="bi bi-upload me-1"></i>开始上传
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 批量上传模态框 - 简化版 -->
+<div class="modal" id="batchUploadModal" tabindex="-1" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="batchUploadForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="notice_id" id="modal_notice_id" value="">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-upload me-2"></i>批量上传附件
+                    </h5>
+                    <button type="button" class="btn-close" id="closeModalBtn"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>选择多个文件</strong></label>
+                        <input type="file" class="form-control" name="files" multiple required
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.zip,.rar,.txt,.md">
+                        <small class="text-muted">按住 Ctrl 键可选择多个文件</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>统一备注</strong></label>
+                        <textarea class="form-control" name="remark" rows="2" placeholder="对所有文件的统一备注（可选）"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelUploadBtn">取消</button>
+                    <button type="submit" class="btn btn-primary" id="uploadSubmitBtn">
+                        <i class="bi bi-upload me-1"></i>开始上传
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 页面加载时检查是否有通知 ID
+function checkNoticeId() {
+    const urlPath = window.location.pathname;
+    console.log('当前 URL:', urlPath);
+    const match = urlPath.match(/\/notice\/(\d+)\/add/);
+    console.log('匹配结果:', match);
+    if (match) {
+        const noticeId = match[1];
+        console.log('提取到通知 ID:', noticeId);
+        document.getElementById('modal_notice_id').value = noticeId;
+        console.log('已设置模态框 notice_id 字段值为:', document.getElementById('modal_notice_id').value);
+    } else {
+        console.log('URL 不匹配，未找到通知 ID');
+    }
+}
+
+// 页面加载后检查
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('页面加载完成，开始检查通知 ID');
+    checkNoticeId();
+    
+    // 获取元素
+    const batchUploadBtn = document.getElementById('batchUploadBtn');
+    const batchUploadModal = document.getElementById('batchUploadModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+    const batchUploadForm = document.getElementById('batchUploadForm');
+    
+    // 打开模态框
+    if (batchUploadBtn) {
+        batchUploadBtn.addEventListener('click', function() {
+            console.log('批量上传按钮被点击');
+            
+            // 检查当前 URL 是否有 ID
+            const urlPath = window.location.pathname;
+            const match = urlPath.match(/\/notice\/(\d+)\/add/);
+            
+            if (match) {
+                // 已经有 ID，直接打开模态框
+                console.log('已有通知 ID，直接打开模态框');
+                if (batchUploadModal) {
+                    batchUploadModal.style.display = 'block';
+                    console.log('模态框已打开');
+                }
+            } else {
+                // 没有 ID，先保存表单
+                console.log('未找到通知 ID，先保存表单');
+                const mainForm = document.querySelector('form[method="post"]');
+                if (mainForm) {
+                    // 触发表单提交
+                    console.log('提交主表单');
+                    mainForm.submit();
+                } else {
+                    alert('请先保存通知，然后再上传附件！');
+                }
+            }
+        });
+    }
+    
+    // 关闭模态框 - 点击关闭按钮
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', function() {
+            if (batchUploadModal) {
+                batchUploadModal.style.display = 'none';
+                console.log('模态框已关闭');
+            }
+        });
+    }
+    
+    // 关闭模态框 - 点击取消按钮
+    if (cancelUploadBtn) {
+        cancelUploadBtn.addEventListener('click', function() {
+            if (batchUploadModal) {
+                batchUploadModal.style.display = 'none';
+                console.log('模态框已关闭');
+            }
+        });
+    }
+    
+    // 关闭模态框 - 点击模态框外部
+    if (batchUploadModal) {
+        batchUploadModal.addEventListener('click', function(e) {
+            if (e.target === batchUploadModal) {
+                batchUploadModal.style.display = 'none';
+                console.log('点击外部，模态框已关闭');
+            }
+        });
+    }
+    
+    // 提交表单
+    if (batchUploadForm) {
+        console.log('找到批量上传表单');
+        batchUploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('表单提交被拦截，使用 AJAX 提交');
+            
+            const formData = new FormData(batchUploadForm);
+            const uploadSubmitBtn = document.getElementById('uploadSubmitBtn');
+            
+            // 禁用按钮
+            if (uploadSubmitBtn) {
+                uploadSubmitBtn.disabled = true;
+                uploadSubmitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 上传中...';
+            }
+            
+            // 使用 AJAX 提交
+            fetch('/notice/batch-upload/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('响应状态:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('响应数据:', data);
+                if (data.success) {
+                    // 上传成功，关闭模态框并跳转
+                    if (batchUploadModal) {
+                        batchUploadModal.style.display = 'none';
+                    }
+                    // 跳转到返回的 URL
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    alert('上传失败：' + (data.message || '未知错误'));
+                    if (uploadSubmitBtn) {
+                        uploadSubmitBtn.disabled = false;
+                        uploadSubmitBtn.innerHTML = '<i class="bi bi-upload me-1"></i>开始上传';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('上传错误:', error);
+                alert('上传失败，请重试');
+                if (uploadSubmitBtn) {
+                    uploadSubmitBtn.disabled = false;
+                    uploadSubmitBtn.innerHTML = '<i class="bi bi-upload me-1"></i>开始上传';
+                }
+            });
+        });
+    } else {
+        console.error('批量上传表单未找到');
+    }
+});
+</script>
+{% endblock %}

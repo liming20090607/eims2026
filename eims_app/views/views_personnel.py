@@ -20,6 +20,31 @@ import csv
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 
+# 导入拼音转换库
+try:
+    from pypinyin import pinyin, Style
+    
+    def get_pinyin_key(text):
+        """
+        将中文文本转换为拼音排序关键字
+        按照拼音字母顺序排序（先按声母，再按韵母）
+        """
+        if not text:
+            return ''
+        # 将中文字符串转换为拼音列表
+        # Style.NORMAL: 不带声调，如 'zhong'
+        # heteronym=False: 不返回多音字的所有读音
+        pinyin_list = pinyin(text, style=Style.NORMAL, heteronym=False)
+        # 将拼音列表扁平化为字符串
+        # 例如：['张'], ['三'] -> [['zhang'], ['san']] -> 'zhangsan'
+        pinyin_str = ''.join([p[0] for p in pinyin_list])
+        return pinyin_str.lower()
+except ImportError:
+    # 如果pypinyin未安装，使用默认排序
+    def get_pinyin_key(text):
+        """备选方案：使用Unicode编码排序"""
+        return text if text else ''
+
 def is_superuser(user):
     return user.is_superuser
 
@@ -33,7 +58,15 @@ def has_personnel_permission(user):
 @login_required
 @user_passes_test(has_personnel_permission)
 def personnel_list(request):
-    """人员列表页面 - 支持筛选和搜索"""
+    """人员花名册页面 - 显示公司所有人员信息（包含Employee和Personnel）"""
+    from eims_app.models import Employee, Personnel
+    
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
     
     # 1. 获取筛选参数
     search_key = request.GET.get('keyword', '')
@@ -41,48 +74,199 @@ def personnel_list(request):
     department = request.GET.get('department', '')
     position = request.GET.get('position', '')
     
-    # 2. 基础查询集
-    personnel_list = Personnel.objects.filter(is_deleted=False).select_related('employee').order_by('personnel_code')
+    # 2. 获取排序参数
+    sort_field = request.GET.get('sort_field', 'personnel_code')  # 默认按编号排序
+    sort_order = request.GET.get('sort_order', 'asc')  # 默认升序
     
-    # 应用租户过滤
-    personnel_list = filter_queryset_by_tenant(personnel_list, request)
+    # 3. 获取租户信息
+    tenant_id = None
+    if hasattr(request, 'tenant') and request.tenant:
+        tenant_id = request.tenant.id
     
-    # 3. 多条件筛选
+    # 3. 构建合并的人员列表
+    # 策略：以Personnel（人员去向/项目分配）为主，补充未分配的Employee
+    
+    # 3.1 获取所有Employee
+    if tenant_id:
+        all_employees = Employee.objects.filter(is_deleted=False, tenant_id=tenant_id).order_by('personnel_code')
+    else:
+        all_employees = Employee.objects.filter(is_deleted=False).order_by('personnel_code')
+    
+    # 构建Employee字典，方便快速查找
+    employee_dict = {emp.id: emp for emp in all_employees}
+    
+    # 3.2 获取当前租户的所有Personnel（人员去向表）
+    if tenant_id:
+        all_personnels = Personnel.objects.filter(
+            is_deleted=False,
+            tenant_id=tenant_id
+        ).order_by('personnel_code')
+    else:
+        all_personnels = Personnel.objects.filter(
+            is_deleted=False
+        ).order_by('personnel_code')
+    
+    # 3.3 获取已分配项目的Employee IDs
+    assigned_employee_ids = set(
+        all_personnels.exclude(employee__isnull=True).values_list('employee_id', flat=True).distinct()
+    )
+    
+    # 4. 合并数据：以Personnel为主，补充未分配的Employee
+    # 创建一个包装类来统一数据结构
+    class PersonnelWrapper:
+        """包装类，统一Employee和Personnel的数据结构"""
+        def __init__(self, source, source_type='employee'):
+            self._source = source
+            self._source_type = source_type
+            
+            if source_type == 'employee':
+                # Employee模型
+                self.id = source.id
+                self.pk = source.id
+                self.source_type = 'employee'  # 公开属性，用于模板访问
+                self.personnel_code = source.personnel_code
+                self.employee_code = source.personnel_code  # 别名，用于兼容模板和搜索
+                self.name = source.name
+                self.gender = source.gender
+                self.id_card = source.id_card
+                self.native_place = source.native_place
+                self.ethnic = source.ethnic
+                self.education = source.education
+                self.department = '-'  # Employee没有部门字段
+                self.admin_position = source.admin_position
+                self.tech_position = source.tech_position
+                self.professional_qualification = source.professional_qualification
+                self.professional_title = source.professional_title
+                self.job_qualification = source.job_qualification
+                self.mobile = source.mobile
+                self.phone = source.mobile  # 别名
+                self.home_phone = source.home_phone
+                self.entry_time = source.entry_time
+                self.leave_time = source.leave_time
+                self.address = source.address
+                self.emergency_contact = source.emergency_contact
+                self.emergency_phone = source.emergency_phone
+                self.wechat = source.wechat
+                self.email = source.email
+                self.remark = source.remark
+                self.tenant = source.tenant
+                self.project = None
+                self.project_code = ''
+            else:
+                # Personnel模型（独立人员）
+                self.id = source.id
+                self.pk = source.id
+                self.source_type = 'personnel'  # 公开属性，用于模板访问
+                self.personnel_code = source.personnel_code
+                self.employee_code = source.personnel_code  # 别名，用于兼容模板和搜索
+                self.name = source.name
+                self.gender = source.gender
+                self.id_card = ''  # Personnel没有身份证
+                self.native_place = ''
+                self.ethnic = 'han'
+                self.education = 'bachelor'
+                self.department = source.department
+                self.admin_position = ''
+                self.tech_position = ''
+                self.professional_qualification = ''
+                self.professional_title = ''
+                self.job_qualification = ''
+                self.mobile = source.phone
+                self.phone = source.phone
+                self.home_phone = ''
+                self.entry_time = source.entry_time
+                self.leave_time = source.leave_time
+                self.address = ''
+                self.emergency_contact = ''
+                self.emergency_phone = ''
+                self.wechat = ''
+                self.email = source.email
+                self.remark = source.remark
+                self.tenant = source.tenant
+                self.project = source.project
+                self.project_code = source.project_code
+        
+        def __str__(self):
+            return f"{self.personnel_code} - {self.name}"
+    
+    # 5. 合并列表
+    personnel_list = []
+    
+    # 5.1 添加所有Personnel（人员去向表中的所有人员）
+    for per in all_personnels:
+        wrapper = PersonnelWrapper(per, 'personnel')
+        personnel_list.append(wrapper)
+    
+    # 5.2 添加未分配项目的Employee（不在Personnel中的纯员工）
+    for emp in all_employees:
+        if emp.id not in assigned_employee_ids:
+            # 检查是否已通过Personnel显示（通过姓名判断）
+            is_duplicate = False
+            for existing in personnel_list:
+                if existing.name == emp.name:
+                    is_duplicate = True
+                    break
+            
+            if not is_duplicate:
+                personnel_list.append(PersonnelWrapper(emp, 'employee'))
+    
+    # 6. 搜索过滤
     if search_key:
-        personnel_list = personnel_list.filter(
-            Q(name__icontains=search_key) |
-            Q(personnel_code__icontains=search_key) |
-            Q(phone__icontains=search_key) |
-            Q(department__icontains=search_key) |
-            Q(position__icontains=search_key) |
-            Q(email__icontains=search_key) |
-            Q(remark__icontains=search_key)
-        ).distinct()
+        filtered_list = []
+        for person in personnel_list:
+            if (search_key.lower() in person.name.lower() or
+                search_key.lower() in person.employee_code.lower() or
+                search_key.lower() in str(person.mobile) or
+                search_key.lower() in str(person.id_card) or
+                search_key.lower() in str(person.email or '') or
+                search_key.lower() in str(person.remark or '') or
+                search_key.lower() in str(person.department or '')):
+                filtered_list.append(person)
+        personnel_list = filtered_list
     
-    if project_code:
-        personnel_list = personnel_list.filter(project_code=project_code)
-    
+    # 7. 部门筛选
     if department:
-        personnel_list = personnel_list.filter(department=department)
+        personnel_list = [p for p in personnel_list if p.department == department]
     
-    if position:
-        personnel_list = personnel_list.filter(position__icontains=position)
+    # 8. 排序处理
+    def get_sort_key(person):
+        """获取排序键值，处理None值和中文拼音排序"""
+        field_map = {
+            'employee_code': person.employee_code or '',
+            'name': person.name or '',
+            'gender': person.gender if person.gender is not None else 999,
+            'id_card': person.id_card or '',
+            'native_place': person.native_place or '',
+            'ethnic': person.ethnic or '',
+            'education': person.education or '',
+            'department': person.department or '',
+            'admin_position': person.admin_position or '',
+            'tech_position': person.tech_position or '',
+            'professional_qualification': person.professional_qualification or '',
+            'professional_title': person.professional_title or '',
+            'job_qualification': person.job_qualification or '',
+            'mobile': person.mobile or '',
+            'home_phone': person.home_phone or '',
+            'entry_time': str(person.entry_time) if person.entry_time else '',
+            'leave_time': str(person.leave_time) if person.leave_time else '',
+            'address': person.address or '',
+            'emergency_contact': person.emergency_contact or '',
+            'emergency_phone': person.emergency_phone or '',
+            'wechat': person.wechat or '',
+            'email': person.email or '',
+        }
+        return field_map.get(sort_field, '')
     
-    # 4. 预获取关联项目信息
-    project_info = {}
-    for p in ProjectDetail.objects.all():
-        project_info[p.project_code] = p
+    # 执行排序（支持中文拼音排序）
+    reverse_order = (sort_order == 'desc')
+    try:
+        personnel_list.sort(key=get_sort_key, reverse=reverse_order)
+    except Exception as e:
+        # 如果排序失败，保持原有顺序
+        pass
     
-    # 为人员对象附加项目信息
-    for personnel in personnel_list:
-        if personnel.project_code in project_info:
-            proj = project_info[personnel.project_code]
-            personnel.project_name = proj.project_name if proj.project_name else ''
-        else:
-            personnel.project_name = ''
-    
-    # 5. 分页处理
-    paginator = Paginator(personnel_list, 15)  # 每页显示 15 条
+    # 9. 分页处理
+    paginator = Paginator(personnel_list, 13)  # 每页显示 13 条
     page = request.GET.get('page')
     try:
         page_obj = paginator.page(page)
@@ -93,9 +277,8 @@ def personnel_list(request):
     except Exception:
         page_obj = paginator.page(1)
     
-    # 6. 统计信息
-    total_personnel = Personnel.objects.filter(is_deleted=False).count()
-    active_personnel = Personnel.objects.filter(is_deleted=False, project__isnull=False).count()
+    # 10. 统计信息
+    total_personnel = len(personnel_list)
     
     context = {
         "page_obj": page_obj,
@@ -103,10 +286,12 @@ def personnel_list(request):
         "selected_project_code": project_code,
         "selected_department": department,
         "selected_position": position,
+        'sort_field': sort_field,  # 当前排序字段
+        'sort_order': sort_order,  # 当前排序方向
         'home_url': reverse('eims_app:eims_index'),
         'eims_index_url': reverse('eims_app:eims_index'),
         'total_personnel': total_personnel,
-        'active_personnel': active_personnel,
+        'active_personnel': 0,  # Employee 模型不使用 active 状态
         'all_projects': ProjectDetail.objects.order_by('project_code'),
         'all_departments': Department.objects.filter(is_deleted=False, status='active').order_by('department_code'),
     }
@@ -127,8 +312,30 @@ def personnel_navigation(request):
 @user_passes_test(has_personnel_permission)
 def personnel_add(request):
     """添加人员"""
+    # 获取当前租户信息
+    tenant = getattr(request, 'tenant', None)
+    
+    # 根据公司代码设置人员编号前缀和公司全称
+    personnel_prefix = ''
+    company_full_name = ''
+    
+    if tenant:
+        company_code = tenant.code
+        company_full_name = tenant.name
+        
+        # 根据公司代码设置前缀
+        if company_code == 'dingce' or '鼎策' in company_full_name:
+            personnel_prefix = 'DCRY-'
+        elif company_code == 'shengchang' or '晟昌' in company_full_name:
+            personnel_prefix = 'SCRY-'
+        elif company_code == 'jiachengda' or '嘉诚达' in company_full_name:
+            personnel_prefix = 'JCDRY-'
+        else:
+            # 默认前缀
+            personnel_prefix = 'RY-'
+    
     if request.method == 'POST':
-        form = PersonnelForm(request.POST)
+        form = PersonnelForm(request.POST, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
             personnel = form.save(commit=False)
             # 自动分配租户
@@ -140,9 +347,14 @@ def personnel_add(request):
         else:
             messages.error(request, "人员添加失败，请检查红色标注的输入项！")
     else:
-        form = PersonnelForm()
+        form = PersonnelForm(tenant=getattr(request, 'tenant', None))
     
-    return render(request, 'personnel/add.html', {'form': form})
+    context = {
+        'form': form,
+        'personnel_prefix': personnel_prefix,
+        'company_full_name': company_full_name,
+    }
+    return render(request, 'personnel/add.html', context)
 
 @login_required
 @user_passes_test(has_personnel_permission)
@@ -180,7 +392,7 @@ def personnel_edit(request, pk):
     personnel = get_object_or_404(Personnel, pk=pk, is_deleted=False)
     
     if request.method == "POST":
-        form = PersonnelForm(request.POST, instance=personnel)
+        form = PersonnelForm(request.POST, instance=personnel, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
             form.save()
             messages.success(request, "人员信息修改成功！")
@@ -188,7 +400,7 @@ def personnel_edit(request, pk):
         else:
             messages.error(request, "人员信息修改失败，请检查红色标注的输入项！")
     else:
-        form = PersonnelForm(instance=personnel)
+        form = PersonnelForm(instance=personnel, tenant=getattr(request, 'tenant', None))
     
     return render(request, "personnel/edit.html", {
         "form": form,
@@ -224,7 +436,12 @@ def personnel_batch_delete(request):
     
     try:
         with transaction.atomic():
-            personnels_to_delete = Personnel.objects.filter(id__in=personnel_ids)
+            # 按租户过滤，防止误删其他公司的人员
+            delete_filter = {'id__in': personnel_ids}
+            if hasattr(request, 'tenant') and request.tenant:
+                delete_filter['tenant_id'] = request.tenant.id
+            
+            personnels_to_delete = Personnel.objects.filter(**delete_filter)
             count = personnels_to_delete.count()
             
             if count == 0:
@@ -471,6 +688,13 @@ def personnel_import_template(request):
 def personnel_export(request):
     """导出人员花名册 - 导出员工基本信息 + 项目分配信息（全部字段）"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 获取选中的 ID 列表（POST 请求）
     selected_ids = None
     if request.method == 'POST':
@@ -478,10 +702,16 @@ def personnel_export(request):
     
     if selected_ids:
         # 从 Personnel 表查询，并预加载关联的 Employee 数据
-        personnel_list = Personnel.objects.filter(id__in=selected_ids, is_deleted=False).select_related('employee')
+        filter_dict = {'id__in': selected_ids, 'is_deleted': False}
+        if hasattr(request, 'tenant') and request.tenant:
+            filter_dict['tenant_id'] = request.tenant.id
+        personnel_list = Personnel.objects.filter(**filter_dict).select_related('employee')
     else:
         # GET 请求：导出全部
-        personnel_list = Personnel.objects.filter(is_deleted=False).select_related('employee').order_by('personnel_code')
+        filter_dict = {'is_deleted': False}
+        if hasattr(request, 'tenant') and request.tenant:
+            filter_dict['tenant_id'] = request.tenant.id
+        personnel_list = Personnel.objects.filter(**filter_dict).select_related('employee').order_by('personnel_code')
     
     wb = Workbook()
     ws = wb.active
@@ -627,22 +857,117 @@ def personnel_destination(request):
     search_key = request.GET.get('keyword', '')
     department_filter = request.GET.get('department', '')
     
-    # 查询所有人员
-    personnel_list = Personnel.objects.filter(is_deleted=False).order_by('department', 'personnel_code')
+    # 获取列筛选参数（支持多个字段）
+    filter_fields = {
+        'personnel_code': request.GET.get('filter_personnel_code', ''),
+        'name': request.GET.get('filter_name', ''),
+        'department': request.GET.get('filter_department', ''),
+        'position': request.GET.get('filter_position', ''),
+        'gender': request.GET.get('filter_gender', ''),
+        'phone': request.GET.get('filter_phone', ''),
+    }
     
-    # 筛选处理
+    # 获取排序参数
+    sort_field = request.GET.get('sort_field', 'personnel_code')  # 默认排序字段
+    sort_order = request.GET.get('sort_order', 'asc')  # 默认排序方向
+    
+    # 验证排序字段是否合法
+    valid_sort_fields = ['personnel_code', 'name', 'department', 'position', 'gender', 'phone']
+    if sort_field not in valid_sort_fields:
+        sort_field = 'personnel_code'
+    
+    # 验证排序方向是否合法
+    if sort_order not in ['asc', 'desc']:
+        sort_order = 'asc'
+    
+    # 构建排序字符串
+    order_by = sort_field if sort_order == 'asc' else f'-{sort_field}'
+    
+    # 查询所有人员（先不过滤，后续在Python层面处理拼音排序）
+    personnel_filter = {'is_deleted': False}
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    # Determine the correct database based on URL path
+    current_system = getattr(request, 'current_system', 'default') or 'default'
+    
+    # Map URL paths to databases
+    # Note: Personnel is tenant-isolated, so /root/ should use default database
+    # (or get tenant from session for more precise routing)
+    db_mapping = {
+        'dingce': 'dingce',
+        'shengchang': 'shengchang',
+        'jiachengda': 'jiachengda',
+        'root': 'default',  # Personnel distributed in company databases, use default
+    }
+    target_db = db_mapping.get(current_system, 'default')
+    
+    # Use explicit database routing to avoid confusion with ProjectDetail
+    personnel_list = list(Personnel.objects.using(target_db).filter(**personnel_filter))
+    
+    # 全局搜索筛选
     if search_key:
-        personnel_list = personnel_list.filter(
-            Q(name__icontains=search_key) |
-            Q(personnel_code__icontains=search_key) |
-            Q(department__icontains=search_key)
-        )
+        personnel_list = [p for p in personnel_list if (
+            search_key.lower() in (p.name or '').lower() or
+            search_key.lower() in (p.personnel_code or '').lower() or
+            search_key.lower() in (p.department or '').lower()
+        )]
     
+    # 部门筛选
     if department_filter:
-        personnel_list = personnel_list.filter(department=department_filter)
+        personnel_list = [p for p in personnel_list if p.department == department_filter]
     
-    # 预加载所有项目信息
-    project_info = {p.project_code: p for p in ProjectDetail.objects.all()}
+    # 列筛选处理（支持多字段同时筛选）
+    for field, value in filter_fields.items():
+        if value:  # 如果筛选值不为空
+            if field == 'gender':
+                # 性别特殊处理：支持中文输入
+                if '男' in value:
+                    personnel_list = [p for p in personnel_list if p.gender == 0]
+                elif '女' in value:
+                    personnel_list = [p for p in personnel_list if p.gender == 1]
+                elif '其他' in value or '其它' in value:
+                    personnel_list = [p for p in personnel_list if p.gender == 2]
+            else:
+                # 其他字段使用模糊匹配
+                personnel_list = [p for p in personnel_list if value.lower() in (getattr(p, field, '') or '').lower()]
+    
+    # 排序处理：对于需要拼音排序的字段，在Python层面处理
+    # 定义需要拼音排序的字段
+    pinyin_sort_fields = ['name', 'department', 'position']
+    
+    if sort_field in pinyin_sort_fields:
+        # 使用拼音排序
+        def get_pinyin_sort_key(personnel):
+            """获取人员的拼音排序关键字"""
+            field_value = getattr(personnel, sort_field, '') or ''
+            # 将中文字符串转换为拼音
+            pinyin_list = pinyin(field_value, style=Style.NORMAL, heteronym=False)
+            # 将拼音列表扁平化为字符串（例如：['zhang'], ['san'] -> 'zhangsan'）
+            pinyin_str = ''.join([p[0] for p in pinyin_list])
+            return pinyin_str.lower()
+        
+        # 按拼音排序
+        personnel_list = sorted(personnel_list, key=get_pinyin_sort_key, reverse=(sort_order == 'desc'))
+    else:
+        # 对于非拼音字段（如personnel_code, gender, phone），使用Python排序
+        def get_sort_key(personnel):
+            """获取普通字段的排序关键字"""
+            value = getattr(personnel, sort_field, '')
+            # 处理None值，将其放到最后
+            if value is None:
+                return '' if sort_order == 'asc' else '\uffff'
+            return value
+        
+        personnel_list = sorted(personnel_list, key=get_sort_key, reverse=(sort_order == 'desc'))
+    
+    # 预加载所有项目信息（按租户过滤）
+    # 注意：ProjectDetail模型没有is_deleted字段，直接查询所有项目
+    project_filter = {}
+    if hasattr(request, 'tenant') and request.tenant:
+        project_filter['tenant_id'] = request.tenant.id
+    
+    project_info = {p.project_code: p for p in ProjectDetail.objects.filter(**project_filter)}
     
     # 为每个人员加载项目分配信息
     for personnel in personnel_list:
@@ -700,6 +1025,15 @@ def personnel_destination(request):
         'all_departments': all_departments,
         'selected_department': department_filter,
         'search_keyword': search_key,
+        'sort_field': sort_field,
+        'sort_order': sort_order,
+        # 列筛选参数
+        'filter_personnel_code': filter_fields['personnel_code'],
+        'filter_name': filter_fields['name'],
+        'filter_department': filter_fields['department'],
+        'filter_position': filter_fields['position'],
+        'filter_gender': filter_fields['gender'],
+        'filter_phone': filter_fields['phone'],
         'home_url': reverse('eims_app:eims_index'),
         'eims_index_url': reverse('eims_app:eims_index'),
     }

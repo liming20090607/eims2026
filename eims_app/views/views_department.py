@@ -33,6 +33,13 @@ def is_superuser(user):
 def department_list(request):
     """部门列表页面"""
     
+    # 如果是 /root/ 路径且没有选择公司，重定向到公司选择页面
+    if hasattr(request, 'current_system') and request.current_system == 'root':
+        if not hasattr(request, 'tenant') or not request.tenant:
+            from django.contrib import messages
+            messages.warning(request, '请先选择要查看的公司')
+            return redirect('eims_app:tenant_select')
+    
     # 获取筛选参数
     search_key = request.GET.get('keyword', '')
     department_type = request.GET.get('department_type', '')
@@ -81,7 +88,7 @@ def department_list(request):
 def department_create(request):
     """创建部门"""
     if request.method == 'POST':
-        form = DepartmentForm(request.POST)
+        form = DepartmentForm(request.POST, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
             dept = form.save(commit=False)
             # 自动分配租户
@@ -91,7 +98,7 @@ def department_create(request):
             messages.success(request, f'部门 "{dept.department_name}" 创建成功！')
             return redirect('eims_app:department_list')
     else:
-        form = DepartmentForm()
+        form = DepartmentForm(tenant=getattr(request, 'tenant', None))
     
     context = {
         'form': form,
@@ -107,13 +114,18 @@ def department_edit(request, pk):
     dept = get_object_or_404(Department, pk=pk)
     
     if request.method == 'POST':
-        form = DepartmentForm(request.POST, instance=dept)
+        form = DepartmentForm(request.POST, instance=dept, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
-            dept = form.save()
+            dept = form.save(commit=False)
+            # 保护 tenant 字段，保持原有租户或设置当前租户
+            if hasattr(dept, 'tenant') and hasattr(request, 'tenant'):
+                if not dept.tenant:
+                    dept.tenant = request.tenant
+            dept.save()
             messages.success(request, f'部门 "{dept.department_name}" 更新成功！')
             return redirect('eims_app:department_list')
     else:
-        form = DepartmentForm(instance=dept)
+        form = DepartmentForm(instance=dept, tenant=getattr(request, 'tenant', None))
     
     context = {
         'form': form,
@@ -130,7 +142,14 @@ def department_delete(request, pk):
     dept = get_object_or_404(Department, pk=pk)
     
     # 检查是否有下属人员
-    personnel_count = Personnel.objects.filter(department=dept.department_name, is_deleted=False).count()
+    personnel_filter = {
+        'department': dept.department_name,
+        'is_deleted': False
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    personnel_count = Personnel.objects.filter(**personnel_filter).count()
     if personnel_count > 0:
         messages.error(request, f'该部门下还有 {personnel_count} 名人员，无法删除！')
         return redirect('eims_app:department_list')
@@ -151,7 +170,14 @@ def department_detail(request, pk):
     dept = get_object_or_404(Department, pk=pk)
     
     # 获取部门成员
-    members = Personnel.objects.filter(department=dept.department_name, is_deleted=False)
+    personnel_filter = {
+        'department': dept.department_name,
+        'is_deleted': False
+    }
+    if hasattr(request, 'tenant') and request.tenant:
+        personnel_filter['tenant_id'] = request.tenant.id
+    
+    members = Personnel.objects.filter(**personnel_filter)
     
     # 获取部门角色配置
     roles = DepartmentRole.objects.filter(department=dept, is_deleted=False)
@@ -175,19 +201,44 @@ def department_role_list(request):
     department_id = request.GET.get('department', '')
     role_type = request.GET.get('role_type', '')
     
-    role_list = DepartmentRole.objects.filter(is_deleted=False).select_related('department', 'user').order_by('department', 'role_type')
+    # 按租户过滤
+    role_qs = DepartmentRole.objects.filter(is_deleted=False).select_related('department').order_by('department', 'role_type')
     
+    if hasattr(request, 'tenant') and request.tenant:
+        role_qs = role_qs.filter(department__tenant_id=request.tenant.id)
+    
+    # Apply filters on the queryset
     if search_key:
-        role_list = role_list.filter(
-            Q(role_name__icontains=search_key) |
-            Q(user__username__icontains=search_key)
+        role_qs = role_qs.filter(
+            Q(role_name__icontains=search_key)
         )
     
     if department_id:
-        role_list = role_list.filter(department_id=department_id)
+        role_qs = role_qs.filter(department_id=department_id)
     
     if role_type:
-        role_list = role_list.filter(role_type=role_type)
+        role_qs = role_qs.filter(role_type=role_type)
+    
+    # Now convert to list and prefetch User objects from root_admin
+    role_list = list(role_qs)
+    
+    # Collect all user IDs
+    user_ids = set()
+    for role in role_list:
+        if role.user_id:
+            user_ids.add(role.user_id)
+        if role.supervisor_id:
+            user_ids.add(role.supervisor_id)
+    
+    # Fetch all users from root_admin database
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    users_cache = {user.id: user for user in User.objects.using('root_admin').filter(id__in=user_ids)}
+    
+    # Attach cached user objects as custom attributes (avoid cross-db FK assignment)
+    for role in role_list:
+        role.cached_user = users_cache.get(role.user_id)
+        role.cached_supervisor = users_cache.get(role.supervisor_id)
     
     paginator = Paginator(role_list, 20)
     page = request.GET.get('page')
@@ -196,12 +247,17 @@ def department_role_list(request):
     except Exception:
         page_obj = paginator.page(1)
     
+    # 部门列表也按租户过滤
+    dept_filter = {'is_deleted': False}
+    if hasattr(request, 'tenant') and request.tenant:
+        dept_filter['tenant_id'] = request.tenant.id
+    
     context = {
         'page_obj': page_obj,
         'selected_keyword': search_key,
         'selected_department': department_id,
         'selected_role_type': role_type,
-        'all_departments': Department.objects.filter(is_deleted=False),
+        'all_departments': Department.objects.filter(**dept_filter),
         'home_url': reverse('eims_app:eims_index'),
     }
     return render(request, 'department/role_list.html', context)
@@ -211,14 +267,17 @@ def department_role_list(request):
 def department_role_create(request):
     """创建部门角色"""
     if request.method == 'POST':
-        form = DepartmentRoleForm(request.POST)
+        form = DepartmentRoleForm(request.POST, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
             role = form.save(commit=False)
+            # 保护 tenant 字段
+            if hasattr(request, 'tenant') and request.tenant:
+                role.department.tenant = request.tenant
             role.save()
             messages.success(request, f'角色 "{role.role_name}" 配置成功！')
             return redirect('eims_app:department_role_list')
     else:
-        form = DepartmentRoleForm()
+        form = DepartmentRoleForm(tenant=getattr(request, 'tenant', None))
     
     context = {
         'form': form,
@@ -235,7 +294,7 @@ def department_role_edit(request, pk):
     
     if request.method == 'POST':
         # 编辑模式下，排除用户字段（不允许修改用户）
-        form = DepartmentRoleForm(request.POST, instance=role)
+        form = DepartmentRoleForm(request.POST, instance=role, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
             # 保存时保持原用户不变
             role = form.save(commit=False)
@@ -249,7 +308,7 @@ def department_role_edit(request, pk):
             print("表单验证失败：", form.errors)
             messages.error(request, f'保存失败：{form.errors}')
     else:
-        form = DepartmentRoleForm(instance=role)
+        form = DepartmentRoleForm(instance=role, tenant=getattr(request, 'tenant', None))
     
     context = {
         'form': form,
@@ -330,7 +389,12 @@ def approval_chain_list(request):
     business_type = request.GET.get('business_type', '')
     is_active = request.GET.get('is_active', '')
     
-    chain_list = ApprovalChain.objects.filter(is_deleted=False).order_by('business_type', 'name')
+    # Use select_related to eagerly load foreign key relationships
+    chain_list = ApprovalChain.objects.filter(is_deleted=False).select_related(
+        'level_1_department', 'level_1_role',
+        'level_2_department', 'level_2_role',
+        'level_3_department', 'level_3_role'
+    ).order_by('business_type', 'name')
     
     if business_type:
         chain_list = chain_list.filter(business_type=business_type)
@@ -358,7 +422,7 @@ def approval_chain_list(request):
 def approval_chain_create(request):
     """创建审批链"""
     if request.method == 'POST':
-        form = ApprovalChainForm(request.POST)
+        form = ApprovalChainForm(request.POST, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
             chain = form.save(commit=False)
             chain.save()
@@ -366,7 +430,7 @@ def approval_chain_create(request):
             messages.success(request, f'审批链 "{chain.name}" 创建成功！')
             return redirect('eims_app:approval_chain_list')
     else:
-        form = ApprovalChainForm()
+        form = ApprovalChainForm(tenant=getattr(request, 'tenant', None))
     
     context = {
         'form': form,
@@ -382,13 +446,13 @@ def approval_chain_edit(request, pk):
     chain = get_object_or_404(ApprovalChain, pk=pk)
     
     if request.method == 'POST':
-        form = ApprovalChainForm(request.POST, instance=chain)
+        form = ApprovalChainForm(request.POST, instance=chain, tenant=getattr(request, 'tenant', None))
         if form.is_valid():
             chain = form.save()
             messages.success(request, f'审批链 "{chain.name}" 更新成功！')
             return redirect('eims_app:approval_chain_list')
     else:
-        form = ApprovalChainForm(instance=chain)
+        form = ApprovalChainForm(instance=chain, tenant=getattr(request, 'tenant', None))
     
     context = {
         'form': form,
