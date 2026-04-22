@@ -48,8 +48,10 @@ from .views.views_personnel_detail import (
     allocation_list, allocation_create, allocation_edit, allocation_delete, allocation_detail
 )
 from .views.views_allocation_visual import (
-    allocation_visual_dashboard, allocation_calendar_view, allocation_list_view,
-    allocation_statistics, allocation_export
+    allocation_visual, allocate_personnel_ajax, assign_to_department_ajax, recall_personnel_ajax,
+    update_personnel_allocation, delete_all_personnel_allocation,
+    allocate_to_project_ajax, recall_to_company_ajax, recall_to_department_ajax,
+    get_personnel_projects
 )
 from .views.views_department import (
     department_list, department_add, department_edit, department_delete, department_detail,
@@ -94,11 +96,6 @@ try:
     from eims_app.views.debug_import import debug_import
 except ImportError:
     debug_import = None
-    allocation_visual, allocate_personnel_ajax, assign_to_department_ajax, recall_personnel_ajax,
-    update_personnel_allocation, delete_all_personnel_allocation,
-    allocate_to_project_ajax, recall_to_company_ajax, recall_to_department_ajax,
-    get_personnel_projects
-)
 from .views.views_department import (
     department_list, department_detail, 
     department_edit, department_delete, department_role_list,
