@@ -2282,14 +2282,24 @@
         addLog('🚀 开始同步到云服务器...\n');
         
         // 调用后端API启动部署
-        fetch('/api/deploy/', {
+        fetch(window.API_BASE + '/api/deploy/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            // 检查响应是否为JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // 返回HTML而不是JSON，可能是重定向到登录页
+                return response.text().then(text => {
+                    throw new Error('服务器返回了HTML而非JSON。可能原因：1)未登录 2)权限不足 3)URL错误。响应内容前100字符：' + text.substring(0, 100));
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 deployTaskId = data.task_id;
@@ -2323,8 +2333,16 @@
         progressInterval = setInterval(() => {
             if (!deployTaskId) return;
             
-            fetch(`/api/deploy/progress/${deployTaskId}/`)
-            .then(response => response.json())
+            fetch(window.API_BASE + `/api/deploy/progress/${deployTaskId}/`)
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    return response.text().then(text => {
+                        throw new Error('进度API返回HTML: ' + text.substring(0, 100));
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     updateProgressUI(data);
