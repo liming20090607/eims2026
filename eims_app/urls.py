@@ -48,6 +48,52 @@ from .views.views_personnel_detail import (
     allocation_list, allocation_create, allocation_edit, allocation_delete, allocation_detail
 )
 from .views.views_allocation_visual import (
+    allocation_visual_dashboard, allocation_calendar_view, allocation_list_view,
+    allocation_statistics, allocation_export
+)
+from .views.views_department import (
+    department_list, department_add, department_edit, department_delete, department_detail,
+    department_role_list, department_role_add, department_role_edit, department_role_delete,
+    approval_chain_list, approval_chain_add, approval_chain_edit, approval_chain_delete,
+    department_user_list, department_user_add, department_user_delete
+)
+from .views.views_approval_chain import (
+    approval_chain_detail, approval_chain_submit, approval_chain_approve,
+    approval_chain_reject, approval_chain_cancel
+)
+from .views.views_personnel import (
+    personnel_list, personnel_add, personnel_edit, personnel_delete, personnel_detail,
+    personnel_navigation, personnel_import, personnel_export,
+    personnel_batch_delete
+)
+from .views.views_notice import (
+    notice_list, notice_add, notice_edit, notice_delete, notice_detail,
+    notice_publish, notice_unpublish
+)
+from .views.views_file_manage import (
+    file_manage_list, file_manage_add, file_manage_edit, file_manage_delete,
+    file_manage_detail, file_manage_upload, file_manage_download, file_manage_preview
+)
+from .views.views_inspection import (
+    inspection_list, inspection_add, inspection_edit, inspection_delete, inspection_detail
+)
+from .views.views_info_collect import (
+    info_collect_list, info_collect_add, info_collect_edit, info_collect_delete, info_collect_detail
+)
+from .views.views_remuneration import (
+    remuneration_list, remuneration_add, remuneration_edit, remuneration_delete, remuneration_detail,
+    remuneration_statistics, remuneration_export
+)
+from .views.views_monthly_report import (
+    monthly_report_list, monthly_report_add, monthly_report_edit, monthly_report_delete, monthly_report_detail,
+    monthly_report_export
+)
+from .views.views_deploy import deploy_to_server
+
+try:
+    from eims_app.views.debug_import import debug_import
+except ImportError:
+    debug_import = None
     allocation_visual, allocate_personnel_ajax, assign_to_department_ajax, recall_personnel_ajax,
     update_personnel_allocation, delete_all_personnel_allocation,
     allocate_to_project_ajax, recall_to_company_ajax, recall_to_department_ajax,
@@ -492,6 +538,9 @@ urlpatterns = [
     path('wechat-login/status/<uuid:session_id>/', wechat_check_status, name='wechat_check_status'),
     path('wechat-login/unbind/', wechat_unbind, name='wechat_unbind'),
     path('wechat-login/my-bindings/', wechat_my_bindings, name='wechat_my_bindings'),
+    
+    # 部署相关路由
+    path('api/deploy/', deploy_to_server, name='deploy_to_server'),
 ]
 
 # 调试工具路由（仅在开发环境使用）
