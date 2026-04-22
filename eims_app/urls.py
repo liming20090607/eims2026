@@ -66,25 +66,16 @@ from .views.views_personnel import (
 )
 from .views.views_notice import (
     notice_list, notice_add, notice_edit, notice_delete, notice_detail,
-    notice_publish, notice_unpublish
+    notice_file_download, notice_file_preview
 )
 from .views.views_file_manage import (
-    file_manage_list, file_manage_add, file_manage_edit, file_manage_delete,
-    file_manage_detail, file_manage_upload, file_manage_download, file_manage_preview
-)
-from .views.views_inspection import (
-    inspection_list, inspection_add, inspection_edit, inspection_delete, inspection_detail
-)
-from .views.views_info_collect import (
-    info_collect_list, info_collect_add, info_collect_edit, info_collect_delete, info_collect_detail
-)
-from .views.views_remuneration import (
-    remuneration_list, remuneration_add, remuneration_edit, remuneration_delete, remuneration_detail,
-    remuneration_statistics, remuneration_export
+    file_list, file_add, file_edit, file_delete,
+    file_detail, file_download, file_preview
 )
 from .views.views_monthly_report import (
-    monthly_report_list, monthly_report_add, monthly_report_edit, monthly_report_delete, monthly_report_detail,
-    monthly_report_export
+    monthly_report_list, monthly_report_create, monthly_report_edit,
+    monthly_report_submit, monthly_report_detail, monthly_report_dashboard,
+    get_pending_reports, clear_reminder
 )
 from .views.views_deploy import deploy_to_server, get_deploy_progress
 
