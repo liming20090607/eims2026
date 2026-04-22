@@ -88,7 +88,7 @@ from .views.views_monthly_report import (
     monthly_report_list, monthly_report_add, monthly_report_edit, monthly_report_delete, monthly_report_detail,
     monthly_report_export
 )
-from .views.views_deploy import deploy_to_server
+from .views.views_deploy import deploy_to_server, get_deploy_progress
 
 try:
     from eims_app.views.debug_import import debug_import
@@ -541,6 +541,7 @@ urlpatterns = [
     
     # 部署相关路由
     path('api/deploy/', deploy_to_server, name='deploy_to_server'),
+    path('api/deploy/progress/<str:task_id>/', get_deploy_progress, name='get_deploy_progress'),
 ]
 
 # 调试工具路由（仅在开发环境使用）

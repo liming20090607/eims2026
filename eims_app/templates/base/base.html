@@ -1485,12 +1485,14 @@
                                 <span class="menu-text">用户账号管理</span>
                             </a>
                         </li>
+                        {% if user.is_superuser %}
                         <li class="nav-item">
                             <a href="javascript:void(0);" class="nav-link" onclick="deployToServer()">
                                 <span class="menu-icon"><i class="bi bi-cloud-upload"></i></span>
                                 <span class="menu-text">同步到云服务器</span>
                             </a>
                         </li>
+                        {% endif %}
                     </ul>
                 </div>
             </li>
@@ -2240,6 +2242,9 @@
     });
     
     // 同步到云服务器功能
+    let deployTaskId = null;
+    let progressInterval = null;
+    
     function deployToServer() {
         // 显示模态对话框
         const modal = new bootstrap.Modal(document.getElementById('deployModal'));
@@ -2250,25 +2255,33 @@
         document.getElementById('deployLog').innerHTML = '';
         document.getElementById('deployStatus').style.display = 'none';
         document.getElementById('startDeployBtn').disabled = false;
+        document.getElementById('startDeployBtn').innerHTML = '<i class="bi bi-play-fill"></i> 开始同步';
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('progressText').textContent = '0%';
+        document.getElementById('currentStep').textContent = '';
     }
     
     function startDeployment() {
         const deployBtn = document.getElementById('startDeployBtn');
         const deployLog = document.getElementById('deployLog');
         const deployStatus = document.getElementById('deployStatus');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const currentStep = document.getElementById('currentStep');
         
         // 禁用按钮
         deployBtn.disabled = true;
-        deployBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 同步中...';
+        deployBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 启动中...';
         
-        // 显示日志区域
+        // 显示日志区域和进度条
         deployLog.style.display = 'block';
         deployStatus.style.display = 'none';
+        document.getElementById('progressContainer').style.display = 'block';
         
         // 添加日志
         addLog('🚀 开始同步到云服务器...\n');
         
-        // 调用后端API
+        // 调用后端API启动部署
         fetch('/api/deploy/', {
             method: 'POST',
             headers: {
@@ -2279,28 +2292,93 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                addLog('\n✅ 同步成功！\n');
-                addLog(data.message || '部署完成');
-                deployStatus.style.display = 'block';
-                deployStatus.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle"></i> ' + (data.message || '同步成功！') + '</div>';
-                deployBtn.innerHTML = '<i class="bi bi-check-circle"></i> 同步完成';
+                deployTaskId = data.task_id;
+                addLog('✅ 部署任务已启动\n');
+                addLog('📋 任务ID: ' + deployTaskId + '\n');
+                deployBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 同步中...';
+                
+                // 开始轮询进度
+                startProgressPolling();
             } else {
-                addLog('\n❌ 同步失败！\n');
+                addLog('\n❌ 启动失败！\n');
                 addLog('错误：' + (data.error || '未知错误'));
                 deployStatus.style.display = 'block';
-                deployStatus.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> 同步失败：' + (data.error || '未知错误') + '</div>';
+                deployStatus.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> 启动失败：' + (data.error || '未知错误') + '</div>';
                 deployBtn.disabled = false;
                 deployBtn.innerHTML = '<i class="bi bi-play-fill"></i> 重新同步';
             }
         })
         .catch(error => {
-            addLog('\n❌ 同步失败！\n');
+            addLog('\n❌ 启动失败！\n');
             addLog('错误：' + error.message);
             deployStatus.style.display = 'block';
             deployStatus.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> 网络错误：' + error.message + '</div>';
             deployBtn.disabled = false;
             deployBtn.innerHTML = '<i class="bi bi-play-fill"></i> 重新同步';
         });
+    }
+    
+    function startProgressPolling() {
+        // 每1秒轮询一次进度
+        progressInterval = setInterval(() => {
+            if (!deployTaskId) return;
+            
+            fetch(`/api/deploy/progress/${deployTaskId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateProgressUI(data);
+                    
+                    // 如果完成或失败，停止轮询
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(progressInterval);
+                        handleDeploymentComplete(data);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('获取进度失败:', error);
+            });
+        }, 1000);
+    }
+    
+    function updateProgressUI(data) {
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const currentStep = document.getElementById('currentStep');
+        const deployLog = document.getElementById('deployLog');
+        
+        // 更新进度条
+        progressBar.style.width = data.progress + '%';
+        progressText.textContent = data.progress + '%';
+        currentStep.textContent = data.current_step || '';
+        
+        // 更新日志（只显示新增的日志）
+        const existingLogs = deployLog.innerHTML;
+        const newLogs = data.logs.join('\n');
+        if (newLogs !== existingLogs) {
+            deployLog.innerHTML = newLogs;
+            deployLog.scrollTop = deployLog.scrollHeight;
+        }
+    }
+    
+    function handleDeploymentComplete(data) {
+        const deployBtn = document.getElementById('startDeployBtn');
+        const deployStatus = document.getElementById('deployStatus');
+        
+        if (data.status === 'completed') {
+            addLog('\n✅ 同步成功！\n');
+            deployStatus.style.display = 'block';
+            deployStatus.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle"></i> 同步成功！代码已部署到云服务器</div>';
+            deployBtn.innerHTML = '<i class="bi bi-check-circle"></i> 同步完成';
+        } else {
+            addLog('\n❌ 同步失败！\n');
+            addLog('错误：' + (data.error || '未知错误'));
+            deployStatus.style.display = 'block';
+            deployStatus.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> 同步失败：' + (data.error || '未知错误') + '</div>';
+            deployBtn.disabled = false;
+            deployBtn.innerHTML = '<i class="bi bi-play-fill"></i> 重新同步';
+        }
     }
     
     function addLog(message) {
@@ -2355,8 +2433,24 @@
                         </button>
                     </div>
                     
+                    <!-- 进度条 -->
+                    <div id="progressContainer" style="display:none; margin: 20px 0;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted" id="currentStep">准备中...</small>
+                            <small class="text-muted" id="progressText">0%</small>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                 role="progressbar" style="width: 0%; transition: width 0.3s ease;" 
+                                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 日志输出区域 -->
                     <div id="deployLog" style="display:none; background:#f8f9fa; border:1px solid #dee2e6; border-radius:4px; padding:15px; max-height:400px; overflow-y:auto; font-family:'Courier New', monospace; font-size:0.9rem; white-space:pre-wrap;"></div>
                     
+                    <!-- 状态提示 -->
                     <div id="deployStatus" style="display:none; margin-top:15px;"></div>
                 </div>
                 <div class="modal-footer">
