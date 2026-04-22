@@ -54,14 +54,10 @@ from .views.views_allocation_visual import (
     get_personnel_projects
 )
 from .views.views_department import (
-    department_list, department_add, department_edit, department_delete, department_detail,
-    department_role_list, department_role_add, department_role_edit, department_role_delete,
-    approval_chain_list, approval_chain_add, approval_chain_edit, approval_chain_delete,
-    department_user_list, department_user_add, department_user_delete
-)
-from .views.views_approval_chain import (
-    approval_chain_detail, approval_chain_submit, approval_chain_approve,
-    approval_chain_reject, approval_chain_cancel
+    department_list, department_create, department_edit, department_delete, department_detail,
+    department_role_list, department_role_create, department_role_edit, department_role_delete,
+    approval_chain_list, approval_chain_create, approval_chain_edit, approval_chain_delete,
+    organization_navigation, temp_welcome, add_role_type
 )
 from .views.views_personnel import (
     personnel_list, personnel_add, personnel_edit, personnel_delete, personnel_detail,
