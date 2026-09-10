@@ -1,0 +1,81 @@
+{% extends 'mobile/base_mobile.html' %}
+
+{% block title %}通知公告{% endblock %}
+{% block header_title %}通知公告{% endblock %}
+
+{% block content %}
+    <!-- 搜索栏 -->
+    <div class="mobile-card">
+        <div class="mobile-card-body" style="padding: 12px;">
+            <form method="get" style="display: flex; gap: 8px;">
+                <input type="text" name="search" value="{{ search_key }}" placeholder="搜索通知标题..." 
+                       style="flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none;">
+                <button type="submit" class="btn-mobile primary" style="padding: 10px 16px;">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 通知列表 -->
+    {% if notices %}
+        {% for notice in notices %}
+        <a href="{% url 'eims_app:notice_detail' notice.pk %}" style="text-decoration: none; color: inherit;">
+            <div class="mobile-card" style="margin-bottom: 10px;">
+                <div class="mobile-card-body" style="padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 6px; line-height: 1.4;">
+                                {{ notice.notice_title }}
+                            </div>
+                            {% if notice.keywords %}
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                                <i class="bi bi-tags"></i> {{ notice.keywords }}
+                            </div>
+                            {% endif %}
+                            <div style="font-size: 12px; color: #9ca3af;">
+                                <i class="bi bi-person"></i> {{ notice.publish_person|default:"-" }}
+                                <span style="margin: 0 6px;">·</span>
+                                <i class="bi bi-calendar"></i> {{ notice.create_time|date:"Y-m-d" }}
+                            </div>
+                        </div>
+                        {% if notice.notice_status == 'published' %}
+                        <span class="status-tag completed">已发布</span>
+                        {% elif notice.notice_status == 'draft' %}
+                        <span class="status-tag not_started">草稿</span>
+                        {% elif notice.notice_status == 'withdrawn' %}
+                        <span class="status-tag terminated">已撤回</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+        
+        <!-- 分页 -->
+        {% if notices.has_other_pages %}
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px 0;">
+            {% if notices.has_previous %}
+            <a href="?page={{ notices.previous_page_number }}&search={{ search_key }}" class="btn-mobile" style="padding: 8px 14px; background: #e5e7eb; color: #374151;">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            {% endif %}
+            <span style="font-size: 13px; color: #6b7280;">
+                第 {{ notices.number }} / {{ notices.paginator.num_pages }} 页
+            </span>
+            {% if notices.has_next %}
+            <a href="?page={{ notices.next_page_number }}&search={{ search_key }}" class="btn-mobile" style="padding: 8px 14px; background: #e5e7eb; color: #374151;">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="mobile-card">
+            <div class="empty-state">
+                <i class="bi bi-megaphone"></i>
+                <div>暂无通知公告</div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

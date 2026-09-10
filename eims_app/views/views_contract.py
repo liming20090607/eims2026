@@ -89,7 +89,9 @@ def contract_list(request):
         'sort_order': sort_order,  # 排序方向
     }
     
-    return render(request, 'contract_management/list.html', context)
+    # 移动端使用手机版模板
+    template_name = 'mobile/contract_list_mobile.html' if getattr(request, 'is_mobile', False) else 'contract_management/list.html'
+    return render(request, template_name, context)
 
 
 @user_passes_test(is_superuser)

@@ -67,6 +67,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'eims_app.middleware.path_resolver.PathResolverMiddleware',  # 多系统路径解析中间件
+    'eims_app.middleware.mobile_detect.MobileDetectMiddleware',  # 移动端检测中间件
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'eims_app.middleware.TenantMiddleware',  # 租户中间件 - 多租户数据隔离

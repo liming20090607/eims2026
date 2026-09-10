@@ -1,0 +1,232 @@
+{% extends 'mobile/base_mobile.html' %}
+{% load permission_tags %}
+
+{% block title %}首页 - 协同办公系统{% endblock %}
+{% block header_title %}协同办公{% endblock %}
+
+{% block content %}
+    <!-- 欢迎横幅 -->
+    <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; padding: 16px; margin-bottom: 14px; color: white;">
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">
+            {{ request.tenant.name|default:"协同办公系统" }}
+        </div>
+        <div style="font-size: 12px; opacity: 0.9;">一站式整体解决方案</div>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon"><i class="bi bi-folder2-open"></i></div>
+            <div class="stat-number">{{ total_projects|default:0 }}</div>
+            <div class="stat-label">总项目数</div>
+            <div class="stat-desc">系统中所有项目</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon"><i class="bi bi-play-circle"></i></div>
+            <div class="stat-number">{{ active_projects|default:0 }}</div>
+            <div class="stat-label">进行中项目</div>
+            <div class="stat-desc">正在执行的项目</div>
+        </div>
+        <div class="stat-card yellow">
+            <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="stat-number">{{ delayed_projects|default:0 }}</div>
+            <div class="stat-label">延期项目</div>
+            <div class="stat-desc">已超计划完成时间</div>
+        </div>
+        <div class="stat-card cyan">
+            <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
+            <div class="stat-number">{{ completed_projects|default:0 }}</div>
+            <div class="stat-label">已完成项目</div>
+            <div class="stat-desc">已成功完成的项目</div>
+        </div>
+    </div>
+    
+    <!-- 快捷功能入口 -->
+    <div class="mobile-card">
+        <div class="mobile-card-header gray">
+            <i class="bi bi-link-45deg"></i> 常用功能
+        </div>
+        <div class="quick-grid">
+            <a href="{% url 'eims_app:notice_list' %}" class="quick-item">
+                <div class="quick-icon" style="background: #ef4444;"><i class="bi bi-megaphone"></i></div>
+                <span class="quick-label">通知公告</span>
+            </a>
+            <a href="{% url 'eims_app:project_list' %}" class="quick-item">
+                <div class="quick-icon" style="background: #3b82f6;"><i class="bi bi-clipboard2-check"></i></div>
+                <span class="quick-label">工程监理</span>
+            </a>
+            <a href="{% url 'eims_app:cost_project_info_list' %}" class="quick-item">
+                <div class="quick-icon" style="background: #06b6d4;"><i class="bi bi-calculator"></i></div>
+                <span class="quick-label">造价咨询</span>
+            </a>
+            <a href="{% url 'eims_app:contract_list' %}" class="quick-item">
+                <div class="quick-icon" style="background: #8b5cf6;"><i class="bi bi-file-earmark-text"></i></div>
+                <span class="quick-label">合同管理</span>
+            </a>
+            <a href="{% url 'eims_app:monthly_report_list' %}" class="quick-item">
+                <div class="quick-icon" style="background: #10b981;"><i class="bi bi-calendar-check"></i></div>
+                <span class="quick-label">月度报告</span>
+            </a>
+            <a href="{% url 'eims_app:my_pending_approvals' %}" class="quick-item">
+                <div class="quick-icon" style="background: #f59e0b;"><i class="bi bi-bell-fill"></i></div>
+                <span class="quick-label">我的审批</span>
+            </a>
+            <a href="{% url 'eims_app:personnel_list' %}" class="quick-item">
+                <div class="quick-icon" style="background: #ec4899;"><i class="bi bi-people"></i></div>
+                <span class="quick-label">人员管理</span>
+            </a>
+            <a href="{% url 'eims_app:output_payment_list' %}" class="quick-item">
+                <div class="quick-icon" style="background: #14b8a6;"><i class="bi bi-cash-stack"></i></div>
+                <span class="quick-label">产值回款</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- 月度填报提醒 -->
+    <div class="mobile-card">
+        <div class="mobile-card-header blue">
+            <i class="bi bi-calendar2-check"></i> 月度填报
+        </div>
+        <div class="mobile-card-body">
+            <div style="font-size: 13px; color: #374151; margin-bottom: 10px;">
+                <i class="bi bi-info-circle" style="color: #3b82f6;"></i>
+                每月 <strong>25 日</strong> 前填报项目动态信息
+            </div>
+            <div class="reminder-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>项目进度、项目状态</span>
+            </div>
+            <div class="reminder-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>本月完成产值、本月回款</span>
+            </div>
+            <div class="reminder-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>人员变动情况、请款情况</span>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <a href="{% url 'eims_app:monthly_report_dashboard' %}" class="btn-mobile primary" style="flex: 1;">
+                    <i class="bi bi-speedometer2"></i> 填报提醒
+                </a>
+                {% load permission_tags %}
+                {% check_monthly_report_permission request.user as can_create_report %}
+                {% if can_create_report %}
+                <a href="{% url 'eims_app:monthly_report_add' %}" class="btn-mobile success" style="flex: 1;">
+                    <i class="bi bi-plus-circle"></i> 新建报告
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最近项目 -->
+    <div class="mobile-card">
+        <div class="mobile-card-header" style="background: linear-gradient(135deg, #4A90E2, #2C5F8D); color: white; border: none;">
+            <i class="bi bi-clock-history"></i> 最近项目
+        </div>
+        {% if recent_projects %}
+            {% for project in recent_projects|slice:":5" %}
+            <a href="{% url 'eims_app:project_ledger_detail' project.pk %}" style="text-decoration: none; color: inherit;">
+                <div class="list-item">
+                    <span class="item-title">{{ project.project_name }}</span>
+                    <div class="item-meta">
+                        <span class="status-tag {{ project.project_status }}">
+                            {{ project.get_project_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-folder2-open"></i>
+                <div>暂无项目数据</div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- 最近合同 -->
+    <div class="mobile-card">
+        <div class="mobile-card-header" style="background: linear-gradient(135deg, #4A90E2, #2C5F8D); color: white; border: none;">
+            <i class="bi bi-file-earmark-text"></i> 最近合同
+        </div>
+        {% if recent_contracts %}
+            {% for contract in recent_contracts|slice:":5" %}
+            <a href="{% url 'eims_app:contract_detail' contract.pk %}" style="text-decoration: none; color: inherit;">
+                <div class="list-item">
+                    <span class="item-title">{{ contract.contract_name }}</span>
+                    <div class="item-meta">
+                        <span class="status-tag {{ contract.status }}">
+                            {{ contract.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-file-earmark-text"></i>
+                <div>暂无合同数据</div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- 月报提醒弹窗 -->
+    {% if has_report_reminder %}
+    <div class="mobile-modal-overlay" id="reportReminderModal">
+        <div class="mobile-modal">
+            <div class="mobile-modal-header">
+                <span><i class="bi bi-exclamation-triangle" style="color: #f59e0b;"></i> 月报填报提醒</span>
+                <button onclick="hideModal('reportReminderModal')" style="border: none; background: none; font-size: 20px; color: #6b7280; cursor: pointer;">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="mobile-modal-body">
+                {% if overdue_reports %}
+                <div style="background: #fee2e2; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                    <div style="font-weight: 600; color: #dc2626; margin-bottom: 6px;">
+                        已逾期月报（{{ overdue_reports|length }}条）
+                    </div>
+                    {% for report in overdue_reports %}
+                    <div style="font-size: 13px; color: #7f1d1d; padding: 4px 0;">
+                        <strong>{{ report.project.project_name }}</strong> - {{ report.report_month }}月报
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if unreported_projects %}
+                <div style="background: #dbeafe; padding: 10px; border-radius: 8px;">
+                    <div style="font-weight: 600; color: #1d4ed8; margin-bottom: 6px;">
+                        待填报月报（{{ unreported_projects|length }}个项目）
+                    </div>
+                    {% for project in unreported_projects|slice:":10" %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #bfdbfe;">
+                        <span style="font-size: 13px; color: #1e40af;">{{ project.project_name }}</span>
+                        <a href="{% url 'eims_app:monthly_report_add' %}?project={{ project.id }}" class="btn-mobile primary" style="padding: 5px 12px; font-size: 12px;">
+                            填报
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div style="display: flex; gap: 10px; margin-top: 16px;">
+                    <button onclick="hideModal('reportReminderModal')" class="btn-mobile" style="flex: 1; background: #e5e7eb; color: #374151;">
+                        稍后处理
+                    </button>
+                    <a href="{% url 'eims_app:monthly_report_list' %}" class="btn-mobile primary" style="flex: 1;">
+                        查看月报
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showModal('reportReminderModal');
+        });
+    </script>
+    {% endif %}
+{% endblock %}

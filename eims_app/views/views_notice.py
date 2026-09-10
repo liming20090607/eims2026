@@ -68,7 +68,9 @@ def notice_list(request):
         'back_url': back_url,
         'active_menu': 'notice'
     }
-    return render(request, 'notice/notice_list.html', context)
+    # 移动端使用手机版模板
+    template_name = 'mobile/notice_list_mobile.html' if getattr(request, 'is_mobile', False) else 'notice/notice_list.html'
+    return render(request, template_name, context)
 
 # 通知公告详情
 @login_required

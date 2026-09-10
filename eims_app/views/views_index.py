@@ -13,7 +13,11 @@ from eims_app.utils.tenant_utils import filter_queryset_by_tenant, get_queryset_
 
 @method_decorator(login_required, name='dispatch')
 class IndexView(TemplateView):
-    template_name = 'index.html'
+    def get_template_names(self):
+        # 移动端使用手机版模板，桌面端使用原模板
+        if getattr(self.request, 'is_mobile', False):
+            return ['mobile/index_mobile.html']
+        return ['index.html']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -36,8 +40,8 @@ class IndexView(TemplateView):
         # 获取最近的项目（应用租户过滤）
         context['recent_projects'] = project_queryset.order_by('-created_at')[:5]
         
-        # 获取最近的合同 - 修正字段名称
-        context['recent_contracts'] = Contract.objects.order_by('-signing_time')[:5]
+        # 获取最近的合同（应用租户过滤）
+        context['recent_contracts'] = contract_queryset.order_by('-signing_time')[:5]
         
         # 获取造价咨询项目数据（应用租户过滤）
         cost_project_queryset = get_queryset_for_tenant(CostProjectUnified, request)

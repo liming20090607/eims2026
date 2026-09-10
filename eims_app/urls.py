@@ -14,7 +14,6 @@ from .views.views_output_payment import (
 )
 from .views import views_contract
 from .views.views_index import IndexView, system_navigation, module_welcome
-from .views import views_cost_sub_modules
 from .views.views_contract import (
     contract_list, contract_add, contract_edit, 
     contract_delete, contract_detail, contract_batch_delete,
@@ -154,7 +153,8 @@ app_name = 'eims_app'
 
 urlpatterns = [
     # 首页
-    path('', views_cost_sub_modules.cost_project_info_list, name='eims_index'),
+    # 首页 - 使用仪表盘视图，移动端自动切换手机版
+    path('', IndexView.as_view(), name='eims_index'),
     path('system/navigation/', system_navigation, name='system_navigation'),
     
     # 工程业务模块路由（待开发）

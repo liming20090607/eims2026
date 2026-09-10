@@ -54,6 +54,12 @@ class ProjectListView(ListView):
     template_name = 'project_ledger/list.html'  # 使用项目台账模板
     context_object_name = 'page_obj'
     
+    def get_template_names(self):
+        # 移动端使用手机版模板
+        if getattr(self.request, 'is_mobile', False):
+            return ['mobile/project_list_mobile.html']
+        return [self.template_name]
+    
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
         # 防止浏览器缓存

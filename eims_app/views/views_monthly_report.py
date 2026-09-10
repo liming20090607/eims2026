@@ -72,7 +72,9 @@ def monthly_report_list(request):
         'title': '月度报告',
     }
     
-    return render(request, 'monthly_report/list.html', context)
+    # 移动端使用手机版模板
+    template_name = 'mobile/monthly_report_list_mobile.html' if getattr(request, 'is_mobile', False) else 'monthly_report/list.html'
+    return render(request, template_name, context)
 
 
 @login_required

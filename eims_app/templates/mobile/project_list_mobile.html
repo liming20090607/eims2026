@@ -1,0 +1,75 @@
+{% extends 'mobile/base_mobile.html' %}
+
+{% block title %}项目管理{% endblock %}
+{% block header_title %}项目管理{% endblock %}
+
+{% block content %}
+    <!-- 搜索栏 -->
+    <div class="mobile-card">
+        <div class="mobile-card-body" style="padding: 12px;">
+            <form method="get" style="display: flex; gap: 8px;">
+                <input type="text" name="keyword" value="{{ keyword }}" placeholder="搜索项目名称/编号..." 
+                       style="flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none;">
+                <button type="submit" class="btn-mobile primary" style="padding: 10px 16px;">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 项目列表 -->
+    {% if page_obj %}
+        {% for project in page_obj %}
+        <a href="{% url 'eims_app:project_ledger_detail' project.pk %}" style="text-decoration: none; color: inherit;">
+            <div class="mobile-card" style="margin-bottom: 10px;">
+                <div class="mobile-card-body" style="padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 6px; line-height: 1.4;">
+                                {{ project.project_name }}
+                            </div>
+                            {% if project.project_code %}
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                                <i class="bi bi-hash"></i> {{ project.project_code }}
+                            </div>
+                            {% endif %}
+                            <div style="font-size: 12px; color: #6b7280;">
+                                <i class="bi bi-calendar"></i> {{ project.created_at|date:"Y-m-d" }}
+                            </div>
+                        </div>
+                        <span class="status-tag {{ project.project_status }}">
+                            {{ project.get_project_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+        
+        <!-- 分页 -->
+        {% if page_obj.has_other_pages %}
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px 0;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&keyword={{ keyword }}" class="btn-mobile" style="padding: 8px 14px; background: #e5e7eb; color: #374151;">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            {% endif %}
+            <span style="font-size: 13px; color: #6b7280;">
+                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&keyword={{ keyword }}" class="btn-mobile" style="padding: 8px 14px; background: #e5e7eb; color: #374151;">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="mobile-card">
+            <div class="empty-state">
+                <i class="bi bi-folder2-open"></i>
+                <div>暂无项目数据</div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
