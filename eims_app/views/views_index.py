@@ -9,13 +9,13 @@ from eims_app.models.model_project_detail import ProjectDetail  # 改用 Project
 from eims_app.models.model_contract import Contract
 from eims_app.models.model_cost_unified import CostProjectUnified  # 造价咨询项目
 from eims_app.models import MonthlyReport
-from eims_app.utils.tenant_utils import filter_queryset_by_tenant, get_queryset_for_tenant  # 租户过滤工具
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant, get_queryset_for_tenant, is_mobile_request  # 租户过滤工具
 
 @method_decorator(login_required, name='dispatch')
 class IndexView(TemplateView):
     def get_template_names(self):
         # 移动端使用手机版模板，桌面端使用原模板
-        if getattr(self.request, 'is_mobile', False):
+        if is_mobile_request(self.request):
             return ['mobile/index_mobile.html']
         return ['index.html']
     

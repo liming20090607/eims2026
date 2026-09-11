@@ -6,6 +6,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>协同 AI 办公系统 - XietongAI</title>
+    <!-- 移动端视口检测：如果屏幕较窄，设置移动端 cookie 并刷新以使用手机版模板 -->
+    <script>
+    (function() {
+        var isSmallScreen = window.innerWidth < 768 || (window.matchMedia && window.matchMedia('(max-width: 767px)').matches);
+        var hasMobileParam = /[?&]mobile=/.test(location.search);
+        if (isSmallScreen && !hasMobileParam) {
+            document.cookie = 'is_mobile=1; path=/; max-age=86400';
+            location.reload();
+        }
+    })();
+    </script>
     <!-- API路径配置 -->
     <script>
         window.API_BASE = '{{ request.path }}'.split('/').filter(Boolean).length > 0 

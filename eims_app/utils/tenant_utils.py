@@ -3,6 +3,36 @@
 """
 
 
+def is_mobile_request(request):
+    """
+    统一的移动端检测函数。
+    
+    检测优先级：
+    1. 中间件设置的 request.is_mobile
+    2. Session 中存储的移动端偏好
+    3. 客户端 Cookie（is_mobile=1）
+    
+    参数：
+        request: HTTP 请求对象
+    
+    返回：
+        bool: 是否为移动端请求
+    """
+    # 优先使用中间件设置的标志
+    if getattr(request, 'is_mobile', False):
+        return True
+    
+    # 防御性回退：检查 session 中存储的移动端偏好
+    if hasattr(request, 'session') and request.session.get('_is_mobile', False):
+        return True
+    
+    # 最后检查客户端 Cookie
+    if request.COOKIES.get('is_mobile', '') == '1':
+        return True
+    
+    return False
+
+
 def get_queryset_for_tenant(model_class, request):
     """
     根据当前租户过滤查询集

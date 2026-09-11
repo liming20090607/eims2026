@@ -12,6 +12,7 @@ from ..models import MonthlyReport
 from ..models.model_user import ProjectReporter
 from ..models.model_project_detail import ProjectDetail  # 改用 ProjectDetail
 from ..forms.form_monthly_report import MonthlyReportForm, MonthlyReportFilterForm
+from ..utils.tenant_utils import is_mobile_request
 
 
 @login_required
@@ -73,7 +74,7 @@ def monthly_report_list(request):
     }
     
     # 移动端使用手机版模板
-    template_name = 'mobile/monthly_report_list_mobile.html' if getattr(request, 'is_mobile', False) else 'monthly_report/list.html'
+    template_name = 'mobile/monthly_report_list_mobile.html' if is_mobile_request(request) else 'monthly_report/list.html'
     return render(request, template_name, context)
 
 

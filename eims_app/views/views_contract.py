@@ -12,7 +12,7 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment
 from eims_app.models.model_project_detail import ProjectDetail  # 改用 ProjectDetail 模型
 from eims_app.forms.form_contract_management import ContractManagementForm  # 使用合同管理表单
-from eims_app.utils.tenant_utils import filter_queryset_by_tenant
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant, is_mobile_request
 from django.urls import reverse 
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
@@ -90,7 +90,7 @@ def contract_list(request):
     }
     
     # 移动端使用手机版模板
-    template_name = 'mobile/contract_list_mobile.html' if getattr(request, 'is_mobile', False) else 'contract_management/list.html'
+    template_name = 'mobile/contract_list_mobile.html' if is_mobile_request(request) else 'contract_management/list.html'
     return render(request, template_name, context)
 
 

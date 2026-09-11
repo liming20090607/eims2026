@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
 from eims_app.models import Notice
-from eims_app.utils.tenant_utils import filter_queryset_by_tenant
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant, is_mobile_request
 from eims_app.forms import NoticeForm
 
 # 通知公告列表（优化版 - 含关键字、上传人、文件预览）
@@ -69,7 +69,7 @@ def notice_list(request):
         'active_menu': 'notice'
     }
     # 移动端使用手机版模板
-    template_name = 'mobile/notice_list_mobile.html' if getattr(request, 'is_mobile', False) else 'notice/notice_list.html'
+    template_name = 'mobile/notice_list_mobile.html' if is_mobile_request(request) else 'notice/notice_list.html'
     return render(request, template_name, context)
 
 # 通知公告详情

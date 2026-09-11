@@ -20,7 +20,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from io import BytesIO
 from datetime import datetime
-from eims_app.utils.tenant_utils import filter_queryset_by_tenant  # 租户过滤工具
+from eims_app.utils.tenant_utils import filter_queryset_by_tenant, is_mobile_request  # 租户过滤工具
 
 def is_superuser(user):
     return user.is_superuser
@@ -56,7 +56,7 @@ class ProjectListView(ListView):
     
     def get_template_names(self):
         # 移动端使用手机版模板
-        if getattr(self.request, 'is_mobile', False):
+        if is_mobile_request(self.request):
             return ['mobile/project_list_mobile.html']
         return [self.template_name]
     

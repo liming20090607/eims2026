@@ -9,6 +9,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
     <title>{% block title %}协同办公系统{% endblock %}</title>
+    <!-- 视口检测：如果在桌面端访问，清除移动端 cookie -->
+    <script>
+    (function() {
+        var isSmallScreen = window.innerWidth < 768 || (window.matchMedia && window.matchMedia('(max-width: 767px)').matches);
+        if (!isSmallScreen) {
+            document.cookie = 'is_mobile=0; path=/; max-age=0';
+        }
+    })();
+    </script>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
