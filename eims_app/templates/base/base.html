@@ -716,9 +716,13 @@
                 left: -280px; /* 默认隐藏在屏幕左侧 */
                 width: 280px;
                 height: 100vh;
+                max-height: 100vh;
                 z-index: 1001;
                 transition: left 0.3s ease;
                 box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
             }
             
             /* 当侧边栏激活时显示 */
